@@ -11,28 +11,27 @@
         body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: #333; }
         .navbar { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; letter-spacing: 1px; }
-        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
+        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; }
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; display: flex; align-items: baseline; gap: 10px; }
+        .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         .title-bar h2 { margin: 0; font-size: 24px; color: #222; }
         
-        /* Grid */
+        /* Product Grid 3 Columns */
         .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.4s; border: 1px solid #f0f0f0; display: flex; flex-direction: column; }
+        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.4s; border: 1px solid #f0f0f0; }
         .product-card:hover { transform: translateY(-10px); }
         .product-img { width: 100%; height: 280px; object-fit: contain; background: #fff; padding: 15px; box-sizing: border-box; }
-        .product-info { padding: 20px; text-align: center; flex-grow: 1; }
+        .product-info { padding: 20px; text-align: center; }
         .product-name { font-weight: 500; font-size: 18px; margin-bottom: 10px; color: #444; }
         .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 20px; }
-        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         
-        /* Topup Page */
         .hidden { display: none; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 30px auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
-        .input-style { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #eee; border-radius: 15px; text-align: center; font-size: 20px; font-weight: bold; color: var(--main); outline: none; }
         .bank-info { background: #f8f0ff; border: 1px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
-        .qr-img { width: 250px; height: auto; margin: 15px auto; display: block; background: #fff; border-radius: 10px; border: 1px solid #ddd; }
-        
+        .qr-img { width: 250px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; }
+        .input-style { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #eee; border-radius: 15px; text-align: center; font-size: 20px; font-weight: bold; color: var(--main); }
+
         @media (max-width: 992px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } }
     </style>
@@ -48,37 +47,25 @@
 
     <div class="container">
         <div id="homePage">
-            <div class="title-bar">
-                <h2>สินค้าแนะนำ</h2>
-                <span>Recommended Products</span>
-            </div>
+            <div class="title-bar"><h2>สินค้าแนะนำ</h2></div>
             <div id="productList" class="product-grid"></div>
         </div>
 
         <div id="topupPage" class="hidden">
             <div class="topup-card">
-                <h2 style="color:var(--main); margin-bottom:5px;">เติมเงินเข้าสู่ระบบ</h2>
-                <p style="color:#888; font-size:14px; margin-top:0;">โอนเงินตามช่องทางด้านล่างแล้วแจ้งแอดมิน</p>
-                
+                <h2 style="color:var(--main); margin-bottom:5px;">ช่องทางการชำระเงิน</h2>
                 <div class="bank-info">
                     <p style="color:var(--bank-color); font-weight:bold; margin:0;">ธนาคารเกียรตินาคินภัทร</p>
-                    <p style="font-size:24px; font-weight:bold; margin:10px 0; color:#333;">201-201-9014</p>
-                    <p style="margin:0; font-size:14px; color:#666;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
-                    
-                    <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Payment QR Code">
-                    <p style="font-size:12px; color:#888; margin-top:10px;">สแกนเพื่อชำระเงิน</p>
+                    <p style="font-size:24px; font-weight:bold; margin:10px 0;">201-201-9014</p>
+                    <p style="margin:0; font-size:14px;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
+                    <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Payment QR">
                 </div>
-
                 <div style="background:#fff7ed; padding:15px; border-radius:15px; border:1px solid #fed7aa; margin-bottom:20px;">
-                    <p style="margin:0; font-size:14px;">ทรูมันนี่ วอลเล็ท: <strong>080-920-0932</strong></p>
+                    <p style="margin:0; font-size:14px;">วอลเล็ท: <strong>080-920-0932</strong></p>
                 </div>
-
                 <input type="text" id="redeemCodeInput" class="input-style" placeholder="กรอกรหัสเติมเงิน">
                 <button class="btn-buy" onclick="redeemCode()">ยืนยันรหัส</button>
-                
-                <div style="margin: 25px 0; border-bottom: 1px solid #eee;"></div>
-                
-                <button class="btn-buy" style="background:#06C755;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
+                <button class="btn-buy" style="background:#06C755; margin-top:15px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
                     <i class="fab fa-line"></i> แจ้งสลิปที่ LINE (@989lkmme)
                 </button>
                 <p onclick="showPage('home')" style="margin-top:20px; color:#aaa; cursor:pointer;">กลับหน้าหลัก</p>
@@ -87,19 +74,18 @@
     </div>
 
     <script>
+        // แก้ไขลิงก์รูปภาพสินค้าให้แสดงผลได้จริง
+        const itemImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
+
         const products = [
-            { id: 1, name: "1.email(นอก) ติดสิท", price: 10,  image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "2.email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "3.emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "4.emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "1.email(นอก) ติดสิท", price: 10,  image: itemImg },
+            { id: 2, name: "2.email(นอก) โนเเพค", price: 12, image: itemImg },
+            { id: 3, name: "3.emailThai ติดสิท", price: 15, image: itemImg },
+            { id: 4, name: "4.emailThai โนแพค", price: 18, image: itemImg }
         ];
 
         const stockPool = [ "user01:pass111", "user02:pass222" ];
-        const redeemCodes = {};
-        for(let i=1; i<=500; i++){
-            let n = i.toString().padStart(3,'0');
-            redeemCodes["A"+n]=50; redeemCodes["B"+n]=100;
-        }
+        const redeemCodes = {"A001": 50, "B001": 100}; 
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
 
