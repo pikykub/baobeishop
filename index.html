@@ -48,12 +48,24 @@
         .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; box-sizing: border-box; }
 
+        /* ระบบคุยในเว็บ (Web Chat) */
+        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 400px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.3s; transform: translateY(20px); opacity: 0; pointer-events: none; }
+        .chat-widget.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; }
+        .msg-admin { background: #eee; align-self: flex-start; }
+        .msg-user { background: var(--main); color: white; align-self: flex-end; margin-left: auto; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; }
+        .chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 10px; outline: none; }
+        .chat-input-area button { background: var(--main); color: white; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+
         /* Floating Chat Button */
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
         .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
         .chat-label { position: absolute; right: 75px; background: white; color: #333; padding: 5px 15px; border-radius: 10px; font-size: 14px; font-weight: bold; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1); pointer-events: none; }
 
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .floating-chat { bottom: 20px; right: 20px; } }
+        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .floating-chat { bottom: 20px; right: 20px; } .chat-widget { right: 10px; width: calc(100% - 20px); } }
     </style>
 </head>
 <body>
@@ -86,10 +98,24 @@
             </div>
         </nav>
 
-        <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="floating-chat">
-            <span class="chat-label">คุยกับแอดมิน</span>
-            <i class="fab fa-line"></i>
-        </a>
+        <div class="chat-widget" id="chatBox">
+            <div class="chat-header">
+                <span><i class="fas fa-comment"></i> แชทกับแอดมิน</span>
+                <i class="fas fa-times" onclick="toggleWebChat()" style="cursor:pointer;"></i>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="msg msg-admin">สวัสดีครับ! มีอะไรให้ BAOBEI SHOP ช่วยเหลือไหมครับ?</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..." onkeypress="if(event.key==='Enter') sendWebMsg()">
+                <button onclick="sendWebMsg()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <div class="floating-chat" onclick="toggleWebChat()">
+            <span class="chat-label">คุยในเว็บ</span>
+            <i class="fas fa-comment-dots"></i>
+        </div>
 
         <div class="container">
             <div id="homePage">
@@ -128,7 +154,6 @@
     </div>
 
     <script>
-        // ระบบจัดการสต็อก
         const inventory = {
             1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
             2: Array.from({length: 9}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
@@ -144,23 +169,44 @@
         ];
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
+        let currentUser = "";
 
-        // ระบบล็อกอินแบบเข้าใช้งานได้ทันที (ใครก็ล็อกอินได้)
         function handleLogin() {
             const u = document.getElementById('username').value.trim();
             if(u !== "") {
+                currentUser = u;
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('shopContent').classList.remove('hidden');
-                Swal.fire({ title: `สวัสดีคุณ ${u}`, text: 'ยินดีต้อนรับสู่ BAOBEI SHOP', icon: 'success', timer: 2000, showConfirmButton: false });
+                Swal.fire({ title: `สวัสดีคุณ ${u}`, text: 'เข้าสู่ระบบสำเร็จ', icon: 'success', timer: 1500, showConfirmButton: false });
                 updateUI();
             } else {
-                Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ระบบ', 'warning');
+                Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้', 'warning');
             }
         }
 
-        function handleLogout() {
-            location.reload();
+        // ระบบแชท
+        function toggleWebChat() {
+            document.getElementById('chatBox').classList.toggle('active');
         }
+
+        function sendWebMsg() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if(msg === "") return;
+
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `<div class="msg msg-user">${msg}</div>`;
+            input.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // จำลองแอดมินตอบกลับ
+            setTimeout(() => {
+                chatMessages.innerHTML += `<div class="msg msg-admin">รับทราบครับคุณ ${currentUser} กรุณารอสักครู่ แอดมินกำลังตรวจสอบให้ครับ</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        }
+
+        function handleLogout() { location.reload(); }
 
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
@@ -186,12 +232,11 @@
         function showPage(page) {
             document.getElementById('homePage').classList.toggle('hidden', page !== 'home');
             document.getElementById('topupPage').classList.toggle('hidden', page !== 'topup');
-            window.scrollTo(0,0);
         }
 
         function copyAcc() {
             navigator.clipboard.writeText("2012019014");
-            Swal.fire({ title: 'คัดลอกสำเร็จ!', text: 'เลขบัญชี 201-201-9014', icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({ title: 'คัดลอกสำเร็จ!', icon: 'success', timer: 1000, showConfirmButton: false });
         }
 
         function redeemCode() {
@@ -211,32 +256,23 @@
             const p = products.find(i => i.id === id);
             const stockItems = inventory[id];
             if(wallet >= p.price) {
-                if(stockItems.length === 0) {
-                    Swal.fire('สินค้าหมด', 'ขออภัย สินค้าชิ้นนี้หมดสต็อกแล้ว', 'error');
-                    return;
-                }
+                if(stockItems.length === 0) return Swal.fire('หมด', 'สินค้าหมด', 'error');
                 Swal.fire({
                     title: 'ยืนยันการซื้อ?',
-                    text: `ต้องการซื้อ ${p.name}`,
+                    text: `ซื้อ ${p.name}`,
                     icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ff2d55',
-                    confirmButtonText: 'ยืนยัน'
+                    showCancelButton: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        const deliveredCode = stockItems.pop(); 
+                        const code = stockItems.pop(); 
                         wallet -= p.price;
                         localStorage.setItem('walletBalance', wallet);
                         updateUI();
-                        Swal.fire({
-                            title: 'สั่งซื้อสำเร็จ!',
-                            html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px;"><p><b>ข้อมูลบัญชี:</b> <br><span style="color:#ff2d55; font-size:1.2em; font-weight:bold;">${deliveredCode}</span></p></div>`,
-                            icon: 'success'
-                        });
+                        Swal.fire({ title: 'สำเร็จ!', html: `รหัสของคุณคือ: <br><b>${code}</b>`, icon: 'success' });
                     }
                 });
             } else {
-                Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
+                Swal.fire('เงินไม่พอ', 'กรุณาเติมเงิน', 'warning').then(() => showPage('topup'));
             }
         }
     </script>
