@@ -9,54 +9,80 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --main: #ff2d55; --bg: #f8f9fa; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; }
+        :root { --main: #ff2d55; --bg: #f8f9fa; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
         body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
         .announcement { background: #222; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
-        .navbar { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        
+        /* Navbar */
+        .navbar { background: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
+        .nav-right { display: flex; gap: 10px; align-items: center; }
+        .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; }
+        .btn-contact:hover { background: var(--line); color: white; }
         .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .balance-tag:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(255, 45, 85, 0.3); }
+
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
+        
+        /* Product */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
-        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; }
+        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; border: 1px solid #f0f0f0; }
         .product-card:hover { transform: translateY(-10px); }
         .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 50px; font-size: 12px; }
         .product-img { width: 100%; height: 240px; object-fit: contain; padding: 20px; box-sizing: border-box; }
         .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; }
-        .product-name { font-weight: 500; margin-bottom: 10px; height: 50px; }
+        .product-name { font-weight: 500; margin-bottom: 10px; height: 50px; font-size: 17px; }
         .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 15px; }
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+
+        /* Topup */
         .hidden { display: none; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
         .bank-box { background: #f8f0ff; border: 2px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
         .qr-img { width: 220px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; background: #fff; }
         .copy-btn { background: var(--bank); color: white; border: none; padding: 5px 15px; border-radius: 50px; font-size: 12px; cursor: pointer; margin-top: 10px; }
-        .faq-section { margin-top: 50px; background: #fff; padding: 30px; border-radius: 20px; }
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } }
+        
+        /* Floating Chat Button */
+        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
+        .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
+        .chat-label { position: absolute; right: 75px; background: white; color: #333; padding: 5px 15px; border-radius: 10px; font-size: 14px; font-weight: bold; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1); pointer-events: none; }
+
+        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .floating-chat { bottom: 20px; right: 20px; } }
     </style>
 </head>
 <body>
 
-    <div class="announcement">✨ BAOBEI SHOP ยินดีต้อนรับ | เติมเงินอัตโนมัติ 24 ชม. ✨</div>
+    <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | บริการไว มั่นใจได้ 100% ✨</div>
 
     <nav class="navbar">
         <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
-        <div class="balance-tag" onclick="showPage('topup')">
-            <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
+        <div class="nav-right">
+            <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="btn-contact">
+                <i class="fab fa-line"></i> ติดต่อแอดมิน
+            </a>
+            <div class="balance-tag" onclick="showPage('topup')">
+                <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
+            </div>
         </div>
     </nav>
+
+    <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="floating-chat">
+        <span class="chat-label">คุยกับแอดมิน</span>
+        <i class="fab fa-line"></i>
+    </a>
 
     <div class="container">
         <div id="homePage">
             <div class="title-bar"><h2>รายการสินค้าพร้อมส่ง</h2></div>
             <div id="productList" class="product-grid"></div>
             
-            <div class="faq-section">
-                <h3><i class="fas fa-shield-alt"></i> การรับประกันสินค้า</h3>
-                <div style="margin-bottom:10px;">✅ สินค้าทุกชิ้นรับประกันเข้าใช้งานได้ 100%</div>
-                <div style="margin-bottom:10px;">✅ หากพบปัญหาเมลล์ติดสิทธิ์/พาสผิด แจ้งเคลมได้ภายใน 30 นาที</div>
-                <div>✅ มีทีมงานดูแลตลอด 24 ชั่วโมง ผ่านระบบ LINE</div>
+            <div style="margin-top:50px; background:#fff; padding:30px; border-radius:20px;">
+                <h3><i class="fas fa-comment-dots" style="color:var(--line)"></i> ต้องการความช่วยเหลือ?</h3>
+                <p style="color:#666;">หากคุณมีปัญหาในการใช้งาน เติมเงินไม่เข้า หรือต้องการสอบถามรายละเอียดสินค้า สามารถทักหาเราได้ทันที</p>
+                <button class="btn-buy" style="background:var(--line); width:auto; padding:10px 30px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
+                    <i class="fab fa-line"></i> แชทกับเราทาง LINE (@989lkmme)
+                </button>
             </div>
         </div>
 
@@ -76,19 +102,14 @@
                 </div>
                 <input type="text" id="redeemCodeInput" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; text-align:center; font-size:18px; margin-bottom:15px;" placeholder="กรอกรหัสเติมเงิน">
                 <button class="btn-buy" onclick="redeemCode()">ยืนยันเติมเงิน</button>
-                <button class="btn-buy" style="background:#06C755; margin-top:15px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
-                    <i class="fab fa-line"></i> ติดต่อแอดมิน (@989lkmme)
-                </button>
                 <p onclick="showPage('home')" style="margin-top:20px; color:#aaa; cursor:pointer; font-size:14px;">กลับหน้าหลัก</p>
             </div>
         </div>
     </div>
 
     <script>
-        // ลิงก์รูปภาพสินค้า
         const prodImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
 
-        // แก้ไขชื่อสินค้าโดยเอาตัวเลขด้านหน้าออกแล้ว
         const products = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: prodImg, stock: 45 },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: prodImg, stock: 12 },
