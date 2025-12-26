@@ -3,44 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAOBEI SHOP - MODERN STORE</title>
+    <title>BAOBEI SHOP - 3 COLUMNS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main-color: #ff2d55; --bg-light: #f8f9fa; --text-dark: #2d3436; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg-light); color: var(--text-dark); }
+        :root { --main-color: #ff2d55; --bg-light: #f8f9fa; }
+        body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg-light); }
         
-        /* Navbar */
         .header { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 20px; font-weight: bold; color: var(--main-color); }
-        .wallet-box { background: var(--main-color); color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .logo { font-size: 20px; font-weight: bold; color: var(--main-color); cursor: pointer; }
+        .wallet-box { background: var(--main-color); color: white; padding: 8px 18px; border-radius: 50px; font-weight: bold; cursor: pointer; }
 
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 15px; }
         
-        /* Title Section */
-        .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-left: 5px solid var(--main-color); padding-left: 15px; }
-        .section-title h2 { margin: 0; font-size: 18px; }
+        .section-title { border-left: 5px solid var(--main-color); padding-left: 15px; margin-bottom: 25px; }
+        .section-title h2 { margin: 0; font-size: 22px; }
 
-        /* Product Grid */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .product-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; border: 1px solid #eee; }
-        .product-card:hover { transform: translateY(-5px); }
-        .product-img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
-        .product-info { padding: 15px; text-align: center; }
-        .product-name { font-weight: bold; margin-bottom: 5px; font-size: 16px; }
-        .product-price { color: var(--main-color); font-size: 20px; font-weight: bold; margin-bottom: 12px; }
-        .btn-buy { background: var(--main-color); color: white; border: none; width: 100%; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* --- ปรับแต่งการเรียง 3 ภาพตรงนี้ --- */
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); /* กำหนดให้มี 3 คอลัมน์เท่ากัน */
+            gap: 25px; /* ระยะห่างระหว่างภาพ */
+        }
+
+        /* ปรับให้เหลือ 1 หรือ 2 คอลัมน์เมื่อดูในมือถือเพื่อให้ภาพไม่เล็กเกินไป */
+        @media (max-width: 768px) {
+            .product-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .product-grid { grid-template-columns: 1fr; }
+        }
+
+        .product-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #eee; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .product-img { width: 100%; height: 250px; object-fit: cover; background: #f0f0f0; }
+        .product-info { padding: 20px; text-align: center; }
+        .product-name { font-weight: bold; font-size: 18px; margin-bottom: 8px; }
+        .product-price { color: var(--main-color); font-size: 22px; font-weight: 700; margin-bottom: 15px; }
         
-        /* Topup Page */
-        .card-topup { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; margin: auto; }
-        .input-box { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; text-align: center; font-size: 16px; }
+        .btn-buy { 
+            background: var(--main-color); color: white; border: none; width: 100%; padding: 12px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-buy:active { transform: scale(0.95); }
+
         .hidden { display: none; }
+        .card-topup { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 450px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .input-box { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #eee; border-radius: 12px; text-align: center; font-size: 18px; font-weight: bold; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <header class="header">
-        <div class="logo" onclick="showPage('home')"><i class="fas fa-store"></i> BAOBEI SHOP</div>
+        <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
         <div class="wallet-box" onclick="showPage('topup')">
             <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
         </div>
@@ -49,57 +65,42 @@
     <div class="container">
         <div id="homePage">
             <div class="section-title">
-                <h2>สินค้าแนะนำ <small style="color:#888; font-weight:normal;">Recommended</small></h2>
+                <h2>สินค้าแนะนำ <small style="color:#888; font-weight:normal; font-size: 14px;">Recommended Products</small></h2>
             </div>
-            <div class="product-grid" id="productList"></div>
+            <div class="product-grid" id="productList">
+                </div>
         </div>
 
         <div id="topupPage" class="hidden">
             <div class="card-topup">
-                <h3 style="color:var(--main-color);">เติมเครดิต</h3>
-                <input type="text" id="redeemCodeInput" class="input-box" placeholder="กรอกรหัสเติมเงิน">
-                <button class="btn-buy" onclick="redeemCode()">ยืนยันรหัส</button>
-                <hr style="margin:20px 0; opacity:0.2;">
-                <p style="font-size:14px; color:#666;">โอนเบอร์วอลเล็ท: <strong>080-920-0932</strong></p>
-                <button class="btn-buy" style="background:#06C755;" onclick="window.open('https://line.me/ti/p/~ใส่ไอดีไลน์')">
-                    <i class="fab fa-line"></i> แจ้งโอนเงิน / รับรหัส
+                <h2 style="color:var(--main-color); margin-top:0;">เติมเครดิต</h2>
+                <p style="color:#666;">กรอกรหัสจากแอดมินเพื่อเพิ่มยอดเงิน</p>
+                <input type="text" id="redeemCodeInput" class="input-box" placeholder="ตัวอย่าง A001">
+                <button class="btn-buy" onclick="redeemCode()">ยืนยันการเติมเงิน</button>
+                <div style="margin: 25px 0; border-top: 1px dashed #ddd;"></div>
+                <p style="font-size:15px; margin-bottom: 5px;">วอลเล็ท: <strong>080-920-0932</strong></p>
+                <button class="btn-buy" style="background:#06C755;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
+                    <i class="fab fa-line"></i> แจ้งโอนเงินทาง LINE
                 </button>
-                <p onclick="showPage('home')" style="margin-top:20px; color:#888; cursor:pointer;">กลับหน้าหลัก</p>
+                <p onclick="showPage('home')" style="margin-top:25px; color:#aaa; cursor:pointer; font-size: 14px;">⬅ กลับหน้าหลัก</p>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. ใส่รูปภาพและข้อมูลสินค้าตรงนี้ ---
+        // ข้อมูลสินค้า (แก้รูปภาพและราคาตรงนี้)
         const products = [
-            { 
-                id: 1, 
-                name: "emailนอก ติดสิท โนเเพค", 
-                price: 12, 
-                image: "https://via.placeholder.com/400x400?text=Product+01" // เปลี่ยนลิงก์รูปที่นี่
-            },
-            { 
-                id: 2, 
-                name: "emailนอก ไม่แพค", 
-                price: 15, 
-                image: "https://via.placeholder.com/400x400?text=Product+02" 
-            },
-            { 
-                id: 3, 
-                name: "email Thai ติดแพค ไม่สิท", 
-                price: 20, 
-                image: "https://via.placeholder.com/400x400?text=Product+03" 
-            }
+            { id: 1, emailนอก ติดสิท: "สินค้าแนะนำ 01", price: 10, image: "https://via.placeholder.com/500x500?text=Product+1" },
+            { id: 2, emailนอก โนสิท: "สินค้าแนะนำ 02", price: 12, image: "https://via.placeholder.com/500x500?text=Product+2" },
+            { id: 3, emailThai ติดสิท: "สินค้าแนะนำ 03", price: 15, image: "https://via.placeholder.com/500x500?text=Product+3" },
+            { id: 4, emailThai โนแพค: "สินค้าแนะนำ 04", price: 18, image: "https://via.placeholder.com/500x500?text=Product+4" }
         ];
 
-        // --- 2. คลังเมล (Stock) ---
-        const stockPool = [ "user01:pass123", "user02:pass456", "user03:pass789" ];
-
-        // --- 3. ระบบรหัส (A001-D500) ---
+        const stockPool = [ "user01:pass123", "user02:pass456" ];
         const redeemCodes = {};
         for(let i=1; i<=500; i++){
             let n = i.toString().padStart(3,'0');
-            redeemCodes["A"+n]=50; redeemCodes["B"+n]=100; redeemCodes["D"+n]=200;
+            redeemCodes["A"+n]=50; redeemCodes["B"+n]=100;
         }
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
@@ -114,7 +115,7 @@
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
                         <button class="btn-buy" onclick="buyProduct(${p.id})">
-                            <i class="fas fa-shopping-cart"></i> สั่งซื้อสินค้า
+                            <i class="fas fa-shopping-basket"></i> สั่งซื้อสินค้า
                         </button>
                     </div>
                 </div>
@@ -124,6 +125,7 @@
         function showPage(page) {
             document.getElementById('homePage').classList.toggle('hidden', page !== 'home');
             document.getElementById('topupPage').classList.toggle('hidden', page !== 'topup');
+            window.scrollTo(0,0);
         }
 
         function redeemCode() {
@@ -132,9 +134,10 @@
                 wallet += redeemCodes[code];
                 localStorage.setItem('walletBalance', wallet);
                 updateUI();
-                alert("เติมเงินสำเร็จ!");
+                alert("✅ เติมเงินสำเร็จ!");
+                document.getElementById('redeemCodeInput').value = "";
                 showPage('home');
-            } else { alert("รหัสไม่ถูกต้อง"); }
+            } else { alert("❌ รหัสไม่ถูกต้อง"); }
         }
 
         function buyProduct(id) {
@@ -145,9 +148,9 @@
                     wallet -= p.price;
                     localStorage.setItem('walletBalance', wallet);
                     updateUI();
-                    alert(`✅ ซื้อสำเร็จ!\nข้อมูลของคุณคือ: ${mail}`);
+                    alert(`🎉 สำเร็จ!\nข้อมูล: ${mail}`);
                 }
-            } else { alert("เงินไม่พอ! กรุณาเติมเงิน"); showPage('topup'); }
+            } else { alert("ยอดเงินไม่เพียงพอ!"); showPage('topup'); }
         }
 
         updateUI();
