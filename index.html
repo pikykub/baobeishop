@@ -1,190 +1,106 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAOBEI SHOP - PREMIUM STORE</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <style>
-        :root { --main: #ff2d55; --bg: #f8f9fa; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
-        .announcement { background: #222; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
-        
-        /* Navbar */
-        .navbar { background: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
-        .nav-right { display: flex; gap: 10px; align-items: center; }
-        .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; }
-        .btn-contact:hover { background: var(--line); color: white; }
-        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .balance-tag:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(255, 45, 85, 0.3); }
-
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
-        
-        /* Product */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
-        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; border: 1px solid #f0f0f0; }
-        .product-card:hover { transform: translateY(-10px); }
-        .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 50px; font-size: 12px; }
-        .product-img { width: 100%; height: 240px; object-fit: contain; padding: 20px; box-sizing: border-box; }
-        .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; }
-        .product-name { font-weight: 500; margin-bottom: 10px; height: 50px; font-size: 17px; }
-        .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 15px; }
-        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-
-        /* Topup */
-        .hidden { display: none; }
-        .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
-        .bank-box { background: #f8f0ff; border: 2px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
-        .qr-img { width: 220px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; background: #fff; }
-        .copy-btn { background: var(--bank); color: white; border: none; padding: 5px 15px; border-radius: 50px; font-size: 12px; cursor: pointer; margin-top: 10px; }
-        
-        /* Floating Chat Button */
-        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
-        .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
-        .chat-label { position: absolute; right: 75px; background: white; color: #333; padding: 5px 15px; border-radius: 10px; font-size: 14px; font-weight: bold; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1); pointer-events: none; }
-
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .floating-chat { bottom: 20px; right: 20px; } }
-    </style>
-</head>
-<body>
-
-    <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | บริการไว มั่นใจได้ 100% ✨</div>
-
-    <nav class="navbar">
-        <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
-        <div class="nav-right">
-            <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="btn-contact">
-                <i class="fab fa-line"></i> ติดต่อแอดมิน
-            </a>
-            <div class="balance-tag" onclick="showPage('topup')">
-                <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
-            </div>
-        </div>
-    </nav>
-
-    <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="floating-chat">
-        <span class="chat-label">คุยกับแอดมิน</span>
-        <i class="fab fa-line"></i>
-    </a>
-
-    <div class="container">
-        <div id="homePage">
-            <div class="title-bar"><h2>รายการสินค้าพร้อมส่ง</h2></div>
-            <div id="productList" class="product-grid"></div>
-            
-            <div style="margin-top:50px; background:#fff; padding:30px; border-radius:20px;">
-                <h3><i class="fas fa-comment-dots" style="color:var(--line)"></i> ต้องการความช่วยเหลือ?</h3>
-                <p style="color:#666;">หากคุณมีปัญหาในการใช้งาน เติมเงินไม่เข้า หรือต้องการสอบถามรายละเอียดสินค้า สามารถทักหาเราได้ทันที</p>
-                <button class="btn-buy" style="background:var(--line); width:auto; padding:10px 30px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
-                    <i class="fab fa-line"></i> แชทกับเราทาง LINE (@989lkmme)
-                </button>
-            </div>
-        </div>
-
-        <div id="topupPage" class="hidden">
-            <div class="topup-card">
-                <h3 style="margin-top:0;">ช่องทางการชำระเงิน</h3>
-                <div class="bank-box">
-                    <img src="https://upload.wikimedia.org/wikipedia/th/thumb/f/f0/KKP_Logo.png/220px-KKP_Logo.png" style="width: 50px; margin-bottom:10px;">
-                    <div style="font-weight:bold; color:var(--bank);">ธนาคารเกียรตินาคินภัทร (KKP)</div>
-                    <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
-                    <div style="font-size:14px; color:#555;">ชื่อบัญชี: จิตราภรณ์ จันทร</div>
-                    <button class="copy-btn" onclick="copyAcc()"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
-                    <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Scan QR">
-                </div>
-                <div style="background:#fff7ed; padding:15px; border-radius:15px; border:1px solid #fed7aa; margin-bottom:20px;">
-                    <p style="margin:0; font-size:14px;">ทรูวอลเล็ท: <strong>080-920-0932</strong></p>
-                </div>
-                <input type="text" id="redeemCodeInput" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; text-align:center; font-size:18px; margin-bottom:15px;" placeholder="กรอกรหัสเติมเงิน">
-                <button class="btn-buy" onclick="redeemCode()">ยืนยันเติมเงิน</button>
-                <p onclick="showPage('home')" style="margin-top:20px; color:#aaa; cursor:pointer; font-size:14px;">กลับหน้าหลัก</p>
-            </div>
-        </div>
+<div id="homePage">
+    <div class="title-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <h2>รายการสินค้าพร้อมส่ง</h2>
+        <input type="text" id="searchInput" onkeyup="searchProduct()" placeholder="🔍 ค้นหาสินค้า..." style="padding: 10px 20px; border-radius: 50px; border: 1px solid #ddd; outline: none; width: 250px;">
     </div>
+    <div id="productList" class="product-grid"></div>
+</div>
 
-    <script>
-        const prodImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
+<script>
+    // 1. เพิ่มระบบฐานข้อมูลสินค้า (สต็อกจริง)
+    const productData = {
+        1: ["out1:pass111", "out2:pass222", "out3:pass333"], // เมลล์นอก ติดสิท
+        2: ["free1:pass444", "free2:pass555"],               // เมลล์นอก โนแพค
+        3: ["thai1:pass666"],                                 // เมลล์ไทย ติดสิท
+        4: []                                                // เมลล์ไทย โนแพค (ของหมด)
+    };
 
-        const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: prodImg, stock: 10 },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: prodImg, stock: 0 },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: prodImg, stock: 0 },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: prodImg, stock: 0 }
-        ];
+    const products = [
+        { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+        { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+        { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+        { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+    ];
 
-        let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
+    let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
 
-        function updateUI() {
-            document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
-            const list = document.getElementById('productList');
-            list.innerHTML = products.map(p => `
+    // 2. ปรับปรุงการแสดงผลให้รองรับการค้นหาและสต็อกจริง
+    function updateUI(filter = "") {
+        document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
+        const list = document.getElementById('productList');
+        
+        const filtered = products.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+        
+        list.innerHTML = filtered.map(p => {
+            const currentStock = productData[p.id].length;
+            return `
                 <div class="product-card">
-                    <div class="stock-tag">${p.stock > 0 ? 'คงเหลือ: ' + p.stock : 'สินค้าหมด'}</div>
+                    <div class="stock-tag">${currentStock > 0 ? 'คงเหลือ: ' + currentStock : 'สินค้าหมด'}</div>
                     <img src="${p.image}" class="product-img">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${p.stock === 0 ? 'style="background:#ccc" disabled' : ''}>
-                            ${p.stock > 0 ? 'สั่งซื้อสินค้า' : 'ของหมด'}
+                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${currentStock === 0 ? 'style="background:#ccc" disabled' : ''}>
+                            ${currentStock > 0 ? 'สั่งซื้อสินค้า' : 'ของหมด'}
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }).join('');
+    }
+
+    // 3. ระบบค้นหา
+    function searchProduct() {
+        const term = document.getElementById('searchInput').value;
+        updateUI(term);
+    }
+
+    // 4. ระบบซื้อและตัดสต็อกจริง
+    function buyProduct(id) {
+        const p = products.find(i => i.id === id);
+        const stock = productData[id];
+
+        if (wallet < p.price) {
+            Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup'));
+            return;
         }
 
-        function showPage(page) {
-            document.getElementById('homePage').classList.toggle('hidden', page !== 'home');
-            document.getElementById('topupPage').classList.toggle('hidden', page !== 'topup');
-            window.scrollTo(0,0);
+        if (stock.length === 0) {
+            Swal.fire('ขออภัย', 'สินค้าชิ้นนี้เพิ่งหมดไป', 'error');
+            updateUI();
+            return;
         }
 
-        function copyAcc() {
-            navigator.clipboard.writeText("2012019014");
-            Swal.fire({ title: 'คัดลอกสำเร็จ!', text: 'เลขบัญชี 201-201-9014', icon: 'success', timer: 1500, showConfirmButton: false });
-        }
-
-        function redeemCode() {
-            const code = document.getElementById('redeemCodeInput').value.trim().toUpperCase();
-            if(code === "PROMO50") {
-                wallet += 50;
+        Swal.fire({
+            title: 'ยืนยันการสั่งซื้อ?',
+            text: `ซื้อ ${p.name} ราคา ${p.price} ฿`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'ตกลง',
+            confirmButtonColor: '#ff2d55'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ดึงข้อมูลสินค้าตัวแรกออกมา (First-in First-out)
+                const itemReceived = stock.shift(); 
+                wallet -= p.price;
                 localStorage.setItem('walletBalance', wallet);
+                
                 updateUI();
-                Swal.fire('สำเร็จ!', 'เติมเงิน 50 บาทเรียบร้อย', 'success');
-                showPage('home');
-            } else {
-                Swal.fire('ผิดพลาด', 'รหัสไม่ถูกต้อง', 'error');
-            }
-        }
 
-        function buyProduct(id) {
-            const p = products.find(i => i.id === id);
-            if(wallet >= p.price) {
                 Swal.fire({
-                    title: 'ยืนยันการซื้อ?',
-                    text: `ต้องการซื้อ ${p.name}`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ff2d55',
-                    confirmButtonText: 'ยืนยัน'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        wallet -= p.price;
-                        localStorage.setItem('walletBalance', wallet);
-                        updateUI();
-                        Swal.fire('สำเร็จ!', 'โปรดรอรับข้อมูลจากแอดมิน', 'success');
-                    }
+                    title: 'สั่งซื้อสำเร็จ!',
+                    html: `<div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-top:10px;">
+                            <p style="margin-bottom:5px; font-size:14px; color:#666;">ข้อมูลสินค้าของคุณ:</p>
+                            <code style="font-size:18px; color:#ff2d55; font-weight:bold;">${itemReceived}</code>
+                           </div>`,
+                    icon: 'success',
+                    confirmButtonText: 'คัดลอกข้อมูล'
+                }).then(() => {
+                    navigator.clipboard.writeText(itemReceived);
                 });
-            } else {
-                Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
             }
-        }
+        });
+    }
 
-        updateUI();
-    </script>
-</body>
-</html>
+    updateUI();
+</script>
