@@ -120,32 +120,52 @@
             document.getElementById('checkoutPage').style.display = 'block';
         }
 
-                document.getElementById('orderForm').onsubmit = (e) => {
+        document.getElementById('orderForm').onsubmit = (e) => {
             e.preventDefault();
             const orderId = "EML-" + Date.now().toString().slice(-6);
             const total = document.getElementById('totalPrice').innerText;
             
-            // ส่วนที่แสดงเลขบัญชี
+            // 1. ใส่ไอดีไลน์ของคุณตรงนี้ (เช่น lineId = "mylineid")
+            const lineID = "@989lkmme"; 
+
             const bankDetails = `
-                <div style="text-align:center; background:white; padding:20px; border-radius:15px; border:2px solid #1e3a8a;">
-                    <h2 style="color:#22c55e;">สั่งซื้อสำเร็จ!</h2>
+                <div style="text-align:center; background:white; padding:20px; border-radius:15px; border:2px solid #1e3a8a; font-family: sans-serif;">
+                    <h2 style="color:#22c55e; margin-bottom:10px;">สั่งซื้อสำเร็จ!</h2>
                     <p>รหัสสั่งซื้อ: <strong>${orderId}</strong></p>
-                    <p>ยอดที่ต้องโอน: <strong style="color:red;">${total} บาท</strong></p>
-                    <hr>
-                    <p><strong>ธนาคารเกียรนาคินภัทร</strong></p>
-                    <p>เลขบัญชี: <strong>201-2-01901-4</strong> </p>
+                    <p>ยอดที่ต้องโอน: <strong style="color:red; font-size:1.4rem;">${total} บาท</strong></p>
+                    <hr style="border:0.5px solid #eee; margin:15px 0;">
+                    <p style="margin-bottom:5px;"><strong>ธนาคารเกียรตินาคินภัทร</strong></p>
+                    <p style="font-size:1.2rem; margin-bottom:10px;">
+                        <span id="accNum">201-2-01901-4</span>
+                    </p>
+                    <button onclick="copyAccount()" style="background:#e2e8f0; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold; margin-bottom:10px;">
+                        📋 คัดลอกเลขบัญชี
+                    </button>
                     <p>ชื่อบัญชี: <strong>จิตราภรณ์ จันทร</strong></p>
-                    <p style="font-size:0.8rem; color:gray;">โอนแล้วแจ้งสลิปทางแชทนะครับ</p>
-                    <button onclick="location.reload()" class="btn-primary">กลับหน้าหลัก</button>
+                    <hr style="border:0.5px solid #eee; margin:15px 0;">
+                    
+                    <a href="https://line.me/ti/p/~${lineID}" target="_blank" style="text-decoration:none;">
+                        <button style="background:#06C755; color:white; border:none; padding:12px; border-radius:10px; width:100%; font-weight:bold; font-size:1rem; cursor:pointer; margin-bottom:10px;">
+                            🟢 แจ้งโอนเงินผ่าน Line
+                        </button>
+                    </a>
+                    
+                    <button onclick="location.reload()" class="btn-primary" style="width:100%; padding:10px; border-radius:10px; border:none; background:#1e3a8a; color:white; font-weight:bold;">กลับหน้าหลัก</button>
                 </div>
             `;
+            
             document.getElementById('checkoutPage').innerHTML = bankDetails;
             
-            // เก็บข้อมูลลงเครื่อง
-            const data = { orderId, name: document.getElementById('custName').value, items: cart, total: total };
-            localStorage.setItem(orderId, JSON.stringify(data));
-        };
+            // ฟังก์ชันสำหรับปุ่มคัดลอก
+            window.copyAccount = () => {
+                const accNo = document.getElementById('accNum').innerText;
+                navigator.clipboard.writeText(accNo).then(() => {
+                    alert("คัดลอกเลขบัญชีแล้ว: " + accNo);
+                });
+            };
 
+            localStorage.setItem(orderId, JSON.stringify({ orderId, total }));
+        };
 
         renderProducts();
     </script>
