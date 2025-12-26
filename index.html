@@ -6,7 +6,7 @@
     <title>BAOBEI SHOP - ระบบสุ่มเมลอัตโนมัติ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #1e3a8a; --secondary: #22c55e; --bg: #f4f7f6; }
+        :root { --primary: #1e3a8a; --secondary: #22c55e; --truemoney: #ff8c00; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: #333; }
         .navbar { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .container { padding: 15px; max-width: 500px; margin: auto; }
@@ -14,11 +14,14 @@
         .btn { border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; font-size: 1rem; }
         .btn-green { background: var(--secondary); color: white; }
         .btn-blue { background: var(--primary); color: white; }
+        .btn-orange { background: var(--truemoney); color: white; }
         .btn-outline { background: white; border: 1px solid var(--primary); color: var(--primary); }
         .price { color: #ef4444; font-weight: bold; font-size: 1.3rem; }
         .hidden { display: none; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1.1rem; text-align: center; }
-        .stock-label { font-size: 0.8rem; color: #666; background: #eee; padding: 2px 8px; border-radius: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; text-align: center; }
+        .tab-container { display: flex; margin-bottom: 15px; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: #eee; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
@@ -39,51 +42,60 @@
         <div id="topupPage" class="hidden">
             <button class="btn-outline" onclick="showPage('home')" style="width:auto; margin-bottom:15px; border-radius: 20px;"><i class="fas fa-arrow-left"></i> กลับ</button>
             
-            <div class="card">
-                <h3 style="margin-top:0;"><i class="fas fa-key"></i> เติมเครดิตด้วยรหัส</h3>
-                <p style="font-size:0.9rem; color:#666;">นำรหัสจากแอดมินมาแจ้งเพื่อเพิ่มเงินเข้ากระเป๋า</p>
-                <input type="text" id="redeemCodeInput" placeholder="กรอกรหัสที่นี่ (เช่น A001)">
+            <div class="tab-container">
+                <button id="btnTab1" class="tab-btn active" onclick="switchTab(1)">ใช้รหัสเติมเงิน</button>
+                <button id="btnTab2" class="tab-btn" onclick="switchTab(2)">ซองทรูมันนี่</button>
+            </div>
+
+            <div id="tabContent1" class="card">
+                <h3 style="margin-top:0;"><i class="fas fa-key"></i> เติมด้วยรหัส</h3>
+                <p style="font-size:0.85rem; color:#666;">นำรหัสจากแอดมินมาแจ้งเพื่อเพิ่มเงิน</p>
+                <input type="text" id="redeemCodeInput" placeholder="กรอกรหัส (เช่น A001)">
                 <button class="btn btn-green" onclick="redeemCode()">ยืนยันรหัสเติมเงิน</button>
             </div>
 
+            <div id="tabContent2" class="card hidden">
+                <h3 style="margin-top:0; color:var(--truemoney);"><i class="fas fa-envelope-open-text"></i> ซองของขวัญ</h3>
+                <p style="font-size:0.85rem; color:#666;">แปะลิงก์ซองทรูมันนี่ แอดมินจะเติมเงินให้ครับ</p>
+                <input type="text" id="giftLinkInput" placeholder="https://gift.truemoney.com/...">
+                <button class="btn btn-orange" onclick="sendGiftLink()">ส่งลิงก์ซองให้แอดมิน</button>
+            </div>
+
             <div class="card" style="text-align:center;">
-                <h4 style="margin:0;">ช่องทางติดต่อแอดมิน</h4>
-                <p style="font-size:0.85rem; color:#666; margin: 10px 0;">โอนเงิน -> ส่งสลิป -> รับรหัสเติมเงิน</p>
-                <div style="background:#f0f9ff; padding:15px; border-radius:10px; margin-bottom:15px; border: 1px solid #bae6fd;">
-                    <p style="margin:0; font-weight:bold;">เกียรตินาคินภัทร</p>
-                    <p style="font-size:1.3rem; color:var(--primary); margin:5px 0;"><strong>201-2-01901-4</strong></p>
-                    <p style="margin:0; font-size:0.9rem;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
+                <h4 style="margin:0;">ช่องทางการชำระเงิน</h4>
+                <div style="background:#f0f9ff; padding:12px; border-radius:10px; margin: 10px 0; border: 1px solid #bae6fd;">
+                    <p style="margin:0; font-weight:bold;">ธนาคารเกียรตินาคินภัทร</p>
+                    <p style="font-size:1.2rem; color:var(--primary); margin:5px 0;"><strong>201-2-01901-4</strong></p>
+                    <p style="margin:0; font-size:0.85rem;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
                 </div>
-                <button class="btn btn-blue" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
-                    <i class="fab fa-line"></i> ทักไลน์รับรหัสเติมเงิน
+                <div style="background:#fff7ed; padding:12px; border-radius:10px; margin-bottom:15px; border: 1px solid #fed7aa;">
+                    <p style="margin:0; font-weight:bold; color:var(--truemoney);">ทรูมันนี่ วอลเล็ท (โอนเบอร์)</p>
+                    <p style="font-size:1.3rem; color:var(--truemoney); margin:5px 0;"><strong>080-920-0932</strong></p>
+                    <p style="margin:0; font-size:0.85rem;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
+                </div>
+                <button class="btn btn-blue" onclick="contactAdmin()">
+                    <i class="fab fa-line"></i> แจ้งโอนเงิน / ติดต่อแอดมิน
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. ระบบรหัสเติมเงินอัตโนมัติ 2,000 รหัส ---
+        // --- 1. รหัสเติมเงิน 2,000 รหัส (A001-D500) ---
         const redeemCodes = {};
         for(let i=1; i<=500; i++) {
-            let num = i.toString().padStart(3, '0');
-            redeemCodes["A" + num] = 50;  // A001-A500 (50 บ.)
-            redeemCodes["B" + num] = 100; // B001-B500 (100 บ.)
-            redeemCodes["C" + num] = 150; // C001-C500 (150 บ.)
-            redeemCodes["D" + num] = 200; // D001-D500 (200 บ.)
+            let n = i.toString().padStart(3, '0');
+            redeemCodes["A"+n] = 50;  redeemCodes["B"+n] = 100;
+            redeemCodes["C"+n] = 150; redeemCodes["D"+n] = 200;
         }
 
-        // --- 2. คลังเมลดิบ (ใส่เมลทั้งหมดที่มีตรงนี้) ---
-        // เมื่อลูกค้าซื้อ ระบบจะสุ่มดึงจากรายการเหล่านี้ไปให้ 1 บรรทัด
+        // --- 2. คลังเมลดิบ (มาเติมเมลตรงนี้บ่อยๆ นะครับ) ---
         const stockPool = [
             "user01@gmail.com:pass1234",
             "user02@gmail.com:pass5678",
-            "user03@gmail.com:pass9999",
-            "user04@gmail.com:secret04",
-            "user05@gmail.com:login05"
-            // สามารถเพิ่มเมลลงไปได้เรื่อยๆ โดยใส่ในเครื่องหมาย " " และคั่นด้วยจุลภาค ,
+            "user03@gmail.com:pass9999"
         ];
 
-        // --- 3. ข้อมูลหน้าเว็บ ---
         const products = [
             { id: 1, name: "สุ่มเมลคุณภาพ A", price: 50 },
             { id: 2, name: "สุ่มเมลคุณภาพ B", price: 100 }
@@ -100,19 +112,11 @@
             document.getElementById('topupPage').classList.toggle('hidden', page !== 'topup');
         }
 
-        function renderProducts() {
-            const list = document.getElementById('productList');
-            list.innerHTML = products.map(p => `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <strong style="font-size:1.1rem;">${p.name}</strong> <span class="stock-label">มีสินค้า</span><br>
-                            <span class="price">${p.price} ฿</span>
-                        </div>
-                        <button onclick="buyProduct(${p.id})" class="btn btn-blue" style="width:auto; padding:10px 25px;">ซื้อเลย</button>
-                    </div>
-                </div>
-            `).join('');
+        function switchTab(tab) {
+            document.getElementById('tabContent1').classList.toggle('hidden', tab !== 1);
+            document.getElementById('tabContent2').classList.toggle('hidden', tab !== 2);
+            document.getElementById('btnTab1').classList.toggle('active', tab === 1);
+            document.getElementById('btnTab2').classList.toggle('active', tab === 2);
         }
 
         function redeemCode() {
@@ -122,41 +126,57 @@
                 wallet += amount;
                 localStorage.setItem('walletBalance', wallet);
                 updateUI();
-                alert(`✅ เติมเงินสำเร็จ!\nคุณได้รับเครดิตจำนวน ${amount} บาท เรียบร้อยแล้ว`);
+                alert(`✅ เติมเงินสำเร็จ ${amount} บาท!`);
                 document.getElementById('redeemCodeInput').value = "";
                 showPage('home');
             } else {
-                alert("❌ รหัสไม่ถูกต้อง หรืออาจถูกใช้งานไปแล้ว");
+                alert("❌ รหัสไม่ถูกต้อง");
             }
+        }
+
+        function sendGiftLink() {
+            const link = document.getElementById('giftLinkInput').value.trim();
+            if (link.includes("gift.truemoney.com")) {
+                // เปลี่ยน 'YOUR_LINE_ID' เป็นไอดีไลน์ของคุณ
+                window.open(`https://line.me/ti/p/~YOUR_LINE_ID?text=ส่งซองทรูมันนี่ครับ: ${link}`);
+                alert("กำลังพาไปแจ้งแอดมินทาง Line ครับ");
+            } else {
+                alert("❌ ลิงก์ซองไม่ถูกต้อง");
+            }
+        }
+
+        function contactAdmin() {
+            window.open('https://line.me/ti/p/~YOUR_LINE_ID');
         }
 
         function buyProduct(id) {
             const p = products.find(i => i.id === id);
             if (wallet >= p.price) {
-                if(confirm(`ยืนยันการซื้อยอดเงินจะลดลง ${p.price} บาท?`)) {
-                    
-                    // ระบบสุ่มเมล
-                    if (stockPool.length === 0) {
-                        alert("❌ ขออภัย สินค้าในคลังหมดชั่วคราว กรุณาติดต่อแอดมิน");
-                        return;
-                    }
-                    const randomIndex = Math.floor(Math.random() * stockPool.length);
-                    const selectedEmail = stockPool[randomIndex];
-
+                if(confirm(`ยืนยันการซื้อ ${p.name}?`)) {
+                    if(stockPool.length === 0) { alert("ของหมด!"); return; }
+                    const mail = stockPool[Math.floor(Math.random() * stockPool.length)];
                     wallet -= p.price;
                     localStorage.setItem('walletBalance', wallet);
                     updateUI();
-                    
-                    alert(`🎉 ซื้อสำเร็จ!\n\nนี่คืออีเมลของคุณ:\n--------------------------\n${selectedEmail}\n--------------------------\n(กรุณาแคปหน้าจอเก็บไว้ทันที)`);
+                    alert(`🎉 ซื้อสำเร็จ!\nข้อมูลของคุณ:\n${mail}\n(แคปจอไว้ด้วยนะคะ)`);
                 }
             } else {
-                alert("❌ ยอดเงินไม่พอ! กรุณาเติมเครดิตก่อนซื้อครับ");
+                alert("❌ เงินไม่พอ!");
                 showPage('topup');
             }
         }
 
+        // วาดรายการสินค้า
+        document.getElementById('productList').innerHTML = products.map(p => `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><strong>${p.name}</strong><br><span class="price">${p.price} ฿</span></div>
+                    <button onclick="buyProduct(${p.id})" class="btn btn-blue" style="width:auto; padding:8px 25px;">ซื้อ</button>
+                </div>
+            </div>
+        `).join('');
+
         updateUI();
-        renderProducts();
     </script>
 </body>
 </html>
