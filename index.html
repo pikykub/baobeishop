@@ -120,14 +120,32 @@
             document.getElementById('checkoutPage').style.display = 'block';
         }
 
-        document.getElementById('orderForm').onsubmit = (e) => {
+                document.getElementById('orderForm').onsubmit = (e) => {
             e.preventDefault();
             const orderId = "EML-" + Date.now().toString().slice(-6);
-            const data = { orderId, name: document.getElementById('custName').value, items: cart };
+            const total = document.getElementById('totalPrice').innerText;
+            
+            // ส่วนที่แสดงเลขบัญชี
+            const bankDetails = `
+                <div style="text-align:center; background:white; padding:20px; border-radius:15px; border:2px solid #1e3a8a;">
+                    <h2 style="color:#22c55e;">สั่งซื้อสำเร็จ!</h2>
+                    <p>รหัสสั่งซื้อ: <strong>${orderId}</strong></p>
+                    <p>ยอดที่ต้องโอน: <strong style="color:red;">${total} บาท</strong></p>
+                    <hr>
+                    <p><strong>ธนาคารเกียรนาคินภัทร</strong></p>
+                    <p>เลขบัญชี: <strong>201-2-01901-4</strong> </p>
+                    <p>ชื่อบัญชี: <strong>จิตราภรณ์ จันทร</strong></p>
+                    <p style="font-size:0.8rem; color:gray;">โอนแล้วแจ้งสลิปทางแชทนะครับ</p>
+                    <button onclick="location.reload()" class="btn-primary">กลับหน้าหลัก</button>
+                </div>
+            `;
+            document.getElementById('checkoutPage').innerHTML = bankDetails;
+            
+            // เก็บข้อมูลลงเครื่อง
+            const data = { orderId, name: document.getElementById('custName').value, items: cart, total: total };
             localStorage.setItem(orderId, JSON.stringify(data));
-            alert("สั่งซื้อสำเร็จ! รหัสของคุณคือ: " + orderId);
-            location.reload();
         };
+
 
         renderProducts();
     </script>
