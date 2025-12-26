@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAOBEI SHOP - PREMIUM</title>
+    <title>BAOBEI SHOP - PREMIUM STORE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
@@ -11,29 +11,27 @@
         body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: #333; }
         .navbar { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; letter-spacing: 1px; }
-        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; }
+        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         .title-bar h2 { margin: 0; font-size: 24px; color: #222; }
         
-        /* Product Grid 3 Columns */
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.4s; border: 1px solid #f0f0f0; }
+        /* Product Display */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.4s; border: 1px solid #f0f0f0; display: flex; flex-direction: column; }
         .product-card:hover { transform: translateY(-10px); }
         .product-img { width: 100%; height: 280px; object-fit: contain; background: #fff; padding: 15px; box-sizing: border-box; }
-        .product-info { padding: 20px; text-align: center; }
+        .product-info { padding: 20px; text-align: center; flex-grow: 1; }
         .product-name { font-weight: 500; font-size: 18px; margin-bottom: 10px; color: #444; }
         .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 20px; }
-        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         
+        /* Topup UI */
         .hidden { display: none; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 30px auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
         .bank-info { background: #f8f0ff; border: 1px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
-        .qr-img { width: 250px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; }
-        .input-style { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #eee; border-radius: 15px; text-align: center; font-size: 20px; font-weight: bold; color: var(--main); }
-
-        @media (max-width: 992px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } }
+        .qr-img { width: 250px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; background: #fff; }
+        .input-style { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #eee; border-radius: 15px; text-align: center; font-size: 20px; font-weight: bold; color: var(--main); outline: none; }
     </style>
 </head>
 <body>
@@ -47,25 +45,35 @@
 
     <div class="container">
         <div id="homePage">
-            <div class="title-bar"><h2>สินค้าแนะนำ</h2></div>
+            <div class="title-bar">
+                <h2>สินค้าแนะนำ</h2>
+            </div>
             <div id="productList" class="product-grid"></div>
         </div>
 
         <div id="topupPage" class="hidden">
             <div class="topup-card">
                 <h2 style="color:var(--main); margin-bottom:5px;">ช่องทางการชำระเงิน</h2>
+                
                 <div class="bank-info">
-                    <p style="color:var(--bank-color); font-weight:bold; margin:0;">ธนาคารเกียรตินาคินภัทร</p>
-                    <p style="font-size:24px; font-weight:bold; margin:10px 0;">201-201-9014</p>
-                    <p style="margin:0; font-size:14px;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
-                    <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Payment QR">
+                    <p style="color:var(--bank-color); font-weight:bold; margin:0;">ธนาคารเกียรตินาคินภัทร (KKP)</p>
+                    <p style="font-size:26px; font-weight:bold; margin:10px 0; color:#333;">201-201-9014</p>
+                    <p style="margin:0; font-size:14px; color:#666;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
+                    
+                    <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Scan QR Code">
+                    <p style="font-size:12px; color:#888; margin-top:10px;">สแกนเพื่อชำระเงิน</p>
                 </div>
+
                 <div style="background:#fff7ed; padding:15px; border-radius:15px; border:1px solid #fed7aa; margin-bottom:20px;">
-                    <p style="margin:0; font-size:14px;">วอลเล็ท: <strong>080-920-0932</strong></p>
+                    <p style="margin:0; font-size:14px;">ทรูมันนี่ วอลเล็ท: <strong>080-920-0932</strong></p>
                 </div>
+
                 <input type="text" id="redeemCodeInput" class="input-style" placeholder="กรอกรหัสเติมเงิน">
                 <button class="btn-buy" onclick="redeemCode()">ยืนยันรหัส</button>
-                <button class="btn-buy" style="background:#06C755; margin-top:15px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
+                
+                <div style="margin: 25px 0; border-bottom: 1px solid #eee;"></div>
+                
+                <button class="btn-buy" style="background:#06C755;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
                     <i class="fab fa-line"></i> แจ้งสลิปที่ LINE (@989lkmme)
                 </button>
                 <p onclick="showPage('home')" style="margin-top:20px; color:#aaa; cursor:pointer;">กลับหน้าหลัก</p>
@@ -74,18 +82,21 @@
     </div>
 
     <script>
-        // แก้ไขลิงก์รูปภาพสินค้าให้แสดงผลได้จริง
-        const itemImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
+        // ลิงก์รูปภาพสินค้าที่แก้ไขให้แสดงผลได้ทันที
+        const productImageUrl = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
 
         const products = [
-            { id: 1, name: "1.email(นอก) ติดสิท", price: 10,  image: itemImg },
-            { id: 2, name: "2.email(นอก) โนเเพค", price: 12, image: itemImg },
-            { id: 3, name: "3.emailThai ติดสิท", price: 15, image: itemImg },
-            { id: 4, name: "4.emailThai โนแพค", price: 18, image: itemImg }
+            { id: 1, name: "1.email(นอก) ติดสิท", price: 10, image: productImageUrl },
+            { id: 2, name: "2.email(นอก) โนเเพค", price: 12, image: productImageUrl },
+            { id: 3, name: "3.emailThai ติดสิท", price: 15, image: productImageUrl },
+            { id: 4, name: "4.emailThai โนแพค", price: 18, image: productImageUrl }
         ];
 
-        const stockPool = [ "user01:pass111", "user02:pass222" ];
-        const redeemCodes = {"A001": 50, "B001": 100}; 
+        // ตัวอย่างข้อมูลสต็อก (ใส่ user:pass เพิ่มได้ที่นี่)
+        const stockPool = [ "example01:pass111", "example02:pass222" ];
+
+        // ระบบรหัสเติมเงินเบื้องต้น (A001 = 50บาท, B001 = 100บาท)
+        const redeemCodes = {"A001": 50, "B001": 100, "C001": 200};
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
 
@@ -98,7 +109,9 @@
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})">สั่งซื้อสินค้า</button>
+                        <button class="btn-buy" onclick="buyProduct(${p.id})">
+                            <i class="fas fa-shopping-basket"></i> สั่งซื้อสินค้า
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -116,25 +129,26 @@
                 wallet += redeemCodes[code];
                 localStorage.setItem('walletBalance', wallet);
                 updateUI();
-                alert("✅ เติมเงินสำเร็จ!");
+                alert("✅ เติมเงินสำเร็จ ยอดปัจจุบัน: " + wallet + " ฿");
                 document.getElementById('redeemCodeInput').value = "";
                 showPage('home');
-            } else { alert("❌ รหัสไม่ถูกต้อง"); }
+            } else { alert("❌ รหัสไม่ถูกต้อง กรุณาแจ้งแอดมินเพื่อขอรหัส"); }
         }
 
         function buyProduct(id) {
             const p = products.find(i => i.id === id);
             if(wallet >= p.price) {
-                if(confirm(`ยืนยันการซื้อ ${p.name}?`)) {
+                if(confirm(`ยืนยันการซื้อ ${p.name} ราคา ${p.price} ฿?`)) {
                     const mail = stockPool[Math.floor(Math.random() * stockPool.length)];
                     wallet -= p.price;
                     localStorage.setItem('walletBalance', wallet);
                     updateUI();
-                    alert(`🎉 สำเร็จ!\nข้อมูล: ${mail}`);
+                    alert(`🎉 สั่งซื้อสำเร็จ!\nข้อมูลสินค้าของคุณคือ: ${mail}`);
                 }
-            } else { alert("ยอดเงินไม่เพียงพอ!"); showPage('topup'); }
+            } else { alert("เงินไม่พอ! กรุณาเติมเงินก่อนสั่งซื้อ"); showPage('topup'); }
         }
 
+        // เริ่มต้นการทำงาน
         updateUI();
     </script>
 </body>
