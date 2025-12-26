@@ -18,7 +18,7 @@
         .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
         .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.4s; border: 1px solid #f0f0f0; display: flex; flex-direction: column; }
         .product-card:hover { transform: translateY(-10px); }
-        .product-img { width: 100%; height: 280px; object-fit: cover; }
+        .product-img { width: 100%; height: 280px; object-fit: contain; background: #fff; padding: 20px; box-sizing: border-box; }
         .product-info { padding: 20px; text-align: center; flex-grow: 1; }
         .product-name { font-weight: 500; font-size: 18px; margin-bottom: 10px; color: #444; }
         .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 20px; }
@@ -64,12 +64,12 @@
     </div>
 
     <script>
-        // ข้อมูลสินค้าที่อัปเดตแล้ว
+        // อัปเดตราคาและรูปภาพใหม่
         const products = [
-            { id: 1, name: "1.email(นอก) ติดสิท", price: 50,  image: "https://pin.it/6vRAHDFtU" },
-            { id: 2, name: "2.email(นอก) โนเเพค", price: 100, image: "https://pin.it/6vRAHDFtU" },
-            { id: 3, name: "3.emailThai ติดสิท", price: 150, image: "https://pin.it/6vRAHDFtU" },
-            { id: 4, name: "4.emailThai โนแพค", price: 200, image: "https://pin.it/6vRAHDFtU" }
+            { id: 1, name: "1.email(นอก) ติดสิท", price: 10,  image: "https://i.ibb.co/VmqS08Y/image.png" },
+            { id: 2, name: "2.email(นอก) โนเเพค", price: 12, image: "https://i.ibb.co/VmqS08Y/image.png" },
+            { id: 3, name: "3.emailThai ติดสิท", price: 15, image: "https://i.ibb.co/VmqS08Y/image.png" },
+            { id: 4, name: "4.emailThai โนแพค", price: 18, image: "https://i.ibb.co/VmqS08Y/image.png" }
         ];
 
         const stockPool = [ "user01:pass111", "user02:pass222" ];
