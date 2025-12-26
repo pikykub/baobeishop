@@ -61,10 +61,10 @@
     <div id="loginPage">
         <div class="login-card">
             <h2 style="color: var(--main); margin-bottom: 25px;">BAOBEI LOGIN</h2>
-            <input type="text" id="username" class="login-input" placeholder="ชื่อผู้ใช้">
-            <input type="password" id="password" class="login-input" placeholder="รหัสผ่าน">
-            <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าสู่ระบบ</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">ติดต่อแอดมินเพื่อขอรับบัญชีใช้งาน</p>
+            <p style="margin-bottom: 20px; color: #666;">กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ร้านค้า</p>
+            <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้ของคุณ">
+            <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าใช้งานทันที</button>
+            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">*ไม่ต้องรออนุมัติ เข้าใช้งานได้เลย*</p>
         </div>
     </div>
 
@@ -128,15 +128,7 @@
     </div>
 
     <script>
-        // ข้อมูลล็อกอิน (สามารถแก้ไขได้ที่นี่)
-        const AUTH_CONFIG = {
-            user: "admin",
-            pass: "1234"
-        };
-
-        // ---------------------------------------------------------
-        // ระบบจัดการสต็อกจริง (Stock Database) - ตั้งค่าไว้ไอดีละ 9 ตัว
-        // ---------------------------------------------------------
+        // ระบบจัดการสต็อก
         const inventory = {
             1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
             2: Array.from({length: 9}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
@@ -144,44 +136,30 @@
             4: Array.from({length: 9}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
-        const prodImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
-
         const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: prodImg },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: prodImg },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: prodImg },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: prodImg }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
 
-        // ระบบล็อกอิน
+        // ระบบล็อกอินแบบเข้าใช้งานได้ทันที (ใครก็ล็อกอินได้)
         function handleLogin() {
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-
-            if(u === AUTH_CONFIG.user && p === AUTH_CONFIG.pass) {
+            const u = document.getElementById('username').value.trim();
+            if(u !== "") {
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('shopContent').classList.remove('hidden');
-                Swal.fire({ title: 'ยินดีต้อนรับ!', text: 'เข้าสู่ระบบสำเร็จ', icon: 'success', timer: 1500, showConfirmButton: false });
+                Swal.fire({ title: `สวัสดีคุณ ${u}`, text: 'ยินดีต้อนรับสู่ BAOBEI SHOP', icon: 'success', timer: 2000, showConfirmButton: false });
                 updateUI();
             } else {
-                Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+                Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ระบบ', 'warning');
             }
         }
 
         function handleLogout() {
-            Swal.fire({
-                title: 'ออกจากระบบ?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'ยืนยัน',
-                cancelButtonText: 'ยกเลิก'
-            }).then((res) => {
-                if(res.isConfirmed) {
-                    location.reload();
-                }
-            });
+            location.reload();
         }
 
         function updateUI() {
@@ -232,13 +210,11 @@
         function buyProduct(id) {
             const p = products.find(i => i.id === id);
             const stockItems = inventory[id];
-
             if(wallet >= p.price) {
                 if(stockItems.length === 0) {
                     Swal.fire('สินค้าหมด', 'ขออภัย สินค้าชิ้นนี้หมดสต็อกแล้ว', 'error');
                     return;
                 }
-
                 Swal.fire({
                     title: 'ยืนยันการซื้อ?',
                     text: `ต้องการซื้อ ${p.name}`,
@@ -252,16 +228,9 @@
                         wallet -= p.price;
                         localStorage.setItem('walletBalance', wallet);
                         updateUI();
-
                         Swal.fire({
                             title: 'สั่งซื้อสำเร็จ!',
-                            html: `
-                                <div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; margin-top:10px;">
-                                    <p><b>สินค้า:</b> ${p.name}</p>
-                                    <p><b>ข้อมูลบัญชี:</b> <br><span style="color:#ff2d55; font-size:1.2em; font-weight:bold;">${deliveredCode}</span></p>
-                                </div>
-                                <p style="font-size:12px; color:gray; margin-top:10px;">*กรุณาบันทึกข้อมูลไว้ก่อนปิดหน้าต่างนี้</p>
-                            `,
+                            html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px;"><p><b>ข้อมูลบัญชี:</b> <br><span style="color:#ff2d55; font-size:1.2em; font-weight:bold;">${deliveredCode}</span></p></div>`,
                             icon: 'success'
                         });
                     }
@@ -270,8 +239,6 @@
                 Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
             }
         }
-
-        // เริ่มต้นด้วยหน้าล็อกอินเสมอ (ลบ updateUI() ออกจากตรงนี้ไปไว้ใน handleLogin)
     </script>
 </body>
 </html>
