@@ -108,13 +108,23 @@
     </div>
 
     <script>
+        // ---------------------------------------------------------
+        // ระบบจัดการสต็อกจริง (ใส่รหัสสินค้าไว้ในอาเรย์นี้)
+        // ---------------------------------------------------------
+        const inventory = {
+            1: Array.from({length: 2500}, (_, i) => `EMAIL-OUT-${i+1}:PASS123`), // รหัส 2,500 ตัว
+            2: Array.from({length: 2500}, (_, i) => `EMAIL-FREE-${i+1}:PASS456`), // รหัส 2,500 ตัว
+            3: Array.from({length: 2500}, (_, i) => `EMAIL-THAI-${i+1}:PASS789`), // รหัส 2,500 ตัว
+            4: Array.from({length: 2500}, (_, i) => `EMAIL-TH-NOPACK-${i+1}:PASS000`) // รหัส 2,500 ตัว
+        };
+
         const prodImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
 
         const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: prodImg, stock: 9 },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: prodImg, stock: 0 },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: prodImg, stock: 0 },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: prodImg, stock: 0 }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: prodImg },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: prodImg },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: prodImg },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: prodImg }
         ];
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
@@ -122,19 +132,22 @@
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
             const list = document.getElementById('productList');
-            list.innerHTML = products.map(p => `
+            list.innerHTML = products.map(p => {
+                // ดึงสต็อกจริงจากจำนวนรหัสที่เหลือใน inventory
+                const currentStock = inventory[p.id].length;
+                return `
                 <div class="product-card">
-                    <div class="stock-tag">${p.stock > 0 ? 'คงเหลือ: ' + p.stock : 'สินค้าหมด'}</div>
+                    <div class="stock-tag">${currentStock > 0 ? 'คงเหลือ: ' + currentStock : 'สินค้าหมด'}</div>
                     <img src="${p.image}" class="product-img">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${p.stock === 0 ? 'style="background:#ccc" disabled' : ''}>
-                            ${p.stock > 0 ? 'สั่งซื้อสินค้า' : 'ของหมด'}
+                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${currentStock === 0 ? 'style="background:#ccc" disabled' : ''}>
+                            ${currentStock > 0 ? 'สั่งซื้อสินค้า' : 'ของหมด'}
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function showPage(page) {
@@ -163,7 +176,14 @@
 
         function buyProduct(id) {
             const p = products.find(i => i.id === id);
+            const stockItems = inventory[id]; // ดึงอาเรย์สต็อกตาม ID
+
             if(wallet >= p.price) {
+                if(stockItems.length === 0) {
+                    Swal.fire('สินค้าหมด', 'ขออภัย สินค้าชิ้นนี้หมดสต็อกแล้ว', 'error');
+                    return;
+                }
+
                 Swal.fire({
                     title: 'ยืนยันการซื้อ?',
                     text: `ต้องการซื้อ ${p.name}`,
@@ -173,10 +193,25 @@
                     confirmButtonText: 'ยืนยัน'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // --- ระบบหักสต็อกจริง ---
+                        const deliveredCode = stockItems.pop(); // ดึงรหัสออกมา 1 ตัว
+                        
                         wallet -= p.price;
                         localStorage.setItem('walletBalance', wallet);
                         updateUI();
-                        Swal.fire('สำเร็จ!', 'โปรดรอรับข้อมูลจากแอดมิน', 'success');
+
+                        // แสดงรหัสสินค้าให้ลูกค้าเห็นทันที
+                        Swal.fire({
+                            title: 'สั่งซื้อสำเร็จ!',
+                            html: `
+                                <p style="margin-bottom:10px;">ขอบคุณที่ใช้บริการ ข้อมูลสินค้าของคุณคือ:</p>
+                                <div style="background:#f4f4f4; padding:15px; border-radius:10px; border:2px dashed var(--main); font-weight:bold; color:var(--main); font-size:18px;">
+                                    ${deliveredCode}
+                                </div>
+                                <p style="font-size:12px; color:gray; margin-top:10px;">*กรุณาคัดลอกหรือแคปจอไว้ก่อนปิดหน้าต่างนี้</p>
+                            `,
+                            icon: 'success'
+                        });
                     }
                 });
             } else {
