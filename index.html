@@ -37,12 +37,17 @@
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
         /* Topup */
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
         .bank-box { background: #f8f0ff; border: 2px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
         .qr-img { width: 220px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; background: #fff; }
         .copy-btn { background: var(--bank); color: white; border: none; padding: 5px 15px; border-radius: 50px; font-size: 12px; cursor: pointer; margin-top: 10px; }
         
+        /* Login UI */
+        #loginPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 3000; }
+        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; box-sizing: border-box; }
+
         /* Floating Chat Button */
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
         .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
@@ -53,69 +58,90 @@
 </head>
 <body>
 
-    <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | บริการไว มั่นใจได้ 100% ✨</div>
-
-    <nav class="navbar">
-        <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
-        <div class="nav-right">
-            <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="btn-contact">
-                <i class="fab fa-line"></i> ติดต่อแอดมิน
-            </a>
-            <div class="balance-tag" onclick="showPage('topup')">
-                <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
-            </div>
+    <div id="loginPage">
+        <div class="login-card">
+            <h2 style="color: var(--main); margin-bottom: 25px;">BAOBEI LOGIN</h2>
+            <input type="text" id="username" class="login-input" placeholder="ชื่อผู้ใช้">
+            <input type="password" id="password" class="login-input" placeholder="รหัสผ่าน">
+            <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าสู่ระบบ</button>
+            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">ติดต่อแอดมินเพื่อขอรับบัญชีใช้งาน</p>
         </div>
-    </nav>
+    </div>
 
-    <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="floating-chat">
-        <span class="chat-label">คุยกับแอดมิน</span>
-        <i class="fab fa-line"></i>
-    </a>
+    <div id="shopContent" class="hidden">
+        <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | บริการไว มั่นใจได้ 100% ✨</div>
 
-    <div class="container">
-        <div id="homePage">
-            <div class="title-bar"><h2>รายการสินค้าพร้อมส่ง</h2></div>
-            <div id="productList" class="product-grid"></div>
-            
-            <div style="margin-top:50px; background:#fff; padding:30px; border-radius:20px;">
-                <h3><i class="fas fa-comment-dots" style="color:var(--line)"></i> ต้องการความช่วยเหลือ?</h3>
-                <p style="color:#666;">หากคุณมีปัญหาในการใช้งาน เติมเงินไม่เข้า หรือต้องการสอบถามรายละเอียดสินค้า สามารถทักหาเราได้ทันที</p>
-                <button class="btn-buy" style="background:var(--line); width:auto; padding:10px 30px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
-                    <i class="fab fa-line"></i> แชทกับเราทาง LINE (@989lkmme)
-                </button>
+        <nav class="navbar">
+            <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
+            <div class="nav-right">
+                <a href="#" onclick="handleLogout()" class="btn-contact" style="margin-right: 5px; color: var(--main);">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </a>
+                <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="btn-contact">
+                    <i class="fab fa-line"></i> ติดต่อแอดมิน
+                </a>
+                <div class="balance-tag" onclick="showPage('topup')">
+                    <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
+                </div>
             </div>
-        </div>
+        </nav>
 
-        <div id="topupPage" class="hidden">
-            <div class="topup-card">
-                <h3 style="margin-top:0;">ช่องทางการชำระเงิน</h3>
-                <div class="bank-box">
-                    <img src="https://upload.wikimedia.org/wikipedia/th/thumb/f/f0/KKP_Logo.png/220px-KKP_Logo.png" style="width: 50px; margin-bottom:10px;">
-                    <div style="font-weight:bold; color:var(--bank);">ธนาคารเกียรตินาคินภัทร (KKP)</div>
-                    <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
-                    <div style="font-size:14px; color:#555;">ชื่อบัญชี: จิตราภรณ์ จันทร</div>
-                    <button class="copy-btn" onclick="copyAcc()"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
-                    <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Scan QR">
+        <a href="https://line.me/ti/p/~@989lkmme" target="_blank" class="floating-chat">
+            <span class="chat-label">คุยกับแอดมิน</span>
+            <i class="fab fa-line"></i>
+        </a>
+
+        <div class="container">
+            <div id="homePage">
+                <div class="title-bar"><h2>รายการสินค้าพร้อมส่ง</h2></div>
+                <div id="productList" class="product-grid"></div>
+                
+                <div style="margin-top:50px; background:#fff; padding:30px; border-radius:20px;">
+                    <h3><i class="fas fa-comment-dots" style="color:var(--line)"></i> ต้องการความช่วยเหลือ?</h3>
+                    <p style="color:#666;">หากคุณมีปัญหาในการใช้งาน เติมเงินไม่เข้า หรือต้องการสอบถามรายละเอียดสินค้า สามารถทักหาเราได้ทันที</p>
+                    <button class="btn-buy" style="background:var(--line); width:auto; padding:10px 30px;" onclick="window.open('https://line.me/ti/p/~@989lkmme')">
+                        <i class="fab fa-line"></i> แชทกับเราทาง LINE (@989lkmme)
+                    </button>
                 </div>
-                <div style="background:#fff7ed; padding:15px; border-radius:15px; border:1px solid #fed7aa; margin-bottom:20px;">
-                    <p style="margin:0; font-size:14px;">ทรูวอลเล็ท: <strong>080-920-0932</strong></p>
+            </div>
+
+            <div id="topupPage" class="hidden">
+                <div class="topup-card">
+                    <h3 style="margin-top:0;">ช่องทางการชำระเงิน</h3>
+                    <div class="bank-box">
+                        <img src="https://upload.wikimedia.org/wikipedia/th/thumb/f/f0/KKP_Logo.png/220px-KKP_Logo.png" style="width: 50px; margin-bottom:10px;">
+                        <div style="font-weight:bold; color:var(--bank);">ธนาคารเกียรตินาคินภัทร (KKP)</div>
+                        <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
+                        <div style="font-size:14px; color:#555;">ชื่อบัญชี: จิตราภรณ์ จันทร</div>
+                        <button class="copy-btn" onclick="copyAcc()"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
+                        <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Scan QR">
+                    </div>
+                    <div style="background:#fff7ed; padding:15px; border-radius:15px; border:1px solid #fed7aa; margin-bottom:20px;">
+                        <p style="margin:0; font-size:14px;">ทรูวอลเล็ท: <strong>080-920-0932</strong></p>
+                    </div>
+                    <input type="text" id="redeemCodeInput" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; text-align:center; font-size:18px; margin-bottom:15px;" placeholder="กรอกรหัสเติมเงิน">
+                    <button class="btn-buy" onclick="redeemCode()">ยืนยันเติมเงิน</button>
+                    <p onclick="showPage('home')" style="margin-top:20px; color:#aaa; cursor:pointer; font-size:14px;">กลับหน้าหลัก</p>
                 </div>
-                <input type="text" id="redeemCodeInput" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; text-align:center; font-size:18px; margin-bottom:15px;" placeholder="กรอกรหัสเติมเงิน">
-                <button class="btn-buy" onclick="redeemCode()">ยืนยันเติมเงิน</button>
-                <p onclick="showPage('home')" style="margin-top:20px; color:#aaa; cursor:pointer; font-size:14px;">กลับหน้าหลัก</p>
             </div>
         </div>
     </div>
 
     <script>
+        // ข้อมูลล็อกอิน (สามารถแก้ไขได้ที่นี่)
+        const AUTH_CONFIG = {
+            user: "admin",
+            pass: "1234"
+        };
+
         // ---------------------------------------------------------
-        // ระบบจัดการสต็อกจริง (Stock Database)
+        // ระบบจัดการสต็อกจริง (Stock Database) - ตั้งค่าไว้ไอดีละ 9 ตัว
         // ---------------------------------------------------------
         const inventory = {
-            1: Array.from({length: 9}, (_, i) => `BAOBEI-OUT-SIT-${i+1}:PASS999`), 
-            2: Array.from({length: 0}, (_, i) => `BAOBEI-OUT-FREE-${i+1}:PASS888`), 
-            3: Array.from({length: 0}, (_, i) => `BAOBEI-THAI-SIT-${i+1}:PASS777`), 
-            4: Array.from({length: 0}, (_, i) => `BAOBEI-THAI-FREE-${i+1}:PASS666`)
+            1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
+            2: Array.from({length: 9}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
+            3: Array.from({length: 9}, (_, i) => `EMAIL-THAI-SIT-${i+1}:PASS777`), 
+            4: Array.from({length: 9}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
         const prodImg = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
@@ -129,11 +155,40 @@
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
 
+        // ระบบล็อกอิน
+        function handleLogin() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            if(u === AUTH_CONFIG.user && p === AUTH_CONFIG.pass) {
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('shopContent').classList.remove('hidden');
+                Swal.fire({ title: 'ยินดีต้อนรับ!', text: 'เข้าสู่ระบบสำเร็จ', icon: 'success', timer: 1500, showConfirmButton: false });
+                updateUI();
+            } else {
+                Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
+        }
+
+        function handleLogout() {
+            Swal.fire({
+                title: 'ออกจากระบบ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    location.reload();
+                }
+            });
+        }
+
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
             const list = document.getElementById('productList');
+            if(!list) return;
             list.innerHTML = products.map(p => {
-                // อัปเดตสต็อกตามจำนวนข้อมูลจริงใน inventory
                 const currentStock = inventory[p.id].length;
                 return `
                 <div class="product-card">
@@ -193,14 +248,11 @@
                     confirmButtonText: 'ยืนยัน'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // ดึงข้อมูลรหัสออกจากอาเรย์ (ตัดสต็อกจริง)
                         const deliveredCode = stockItems.pop(); 
-                        
                         wallet -= p.price;
                         localStorage.setItem('walletBalance', wallet);
                         updateUI();
 
-                        // แสดงผลรหัสให้ลูกค้า
                         Swal.fire({
                             title: 'สั่งซื้อสำเร็จ!',
                             html: `
@@ -219,7 +271,7 @@
             }
         }
 
-        updateUI();
+        // เริ่มต้นด้วยหน้าล็อกอินเสมอ (ลบ updateUI() ออกจากตรงนี้ไปไว้ใน handleLogin)
     </script>
 </body>
 </html>
