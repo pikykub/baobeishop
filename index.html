@@ -26,6 +26,10 @@
 
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
+
+        /* สไตล์ส่วนของรูป Banner ด้านบน */
+        .banner-container { width: 100%; margin-bottom: 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .banner-img { width: 100%; height: auto; display: block; object-fit: cover; }
         
         /* ปรับสถิติเป็นแถวละ 2 ช่อง */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
@@ -120,6 +124,10 @@
 
         <div class="container">
             <div id="homePage">
+                <div class="banner-container">
+                    <img src="https://lh3.googleusercontent.com/d/1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" alt="Banner" class="banner-img">
+                </div>
+
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-box"></i> สต็อกรวม</div>
