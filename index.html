@@ -106,7 +106,8 @@
                         <option value="3">emailThai ติดสิท</option>
                         <option value="4">emailThai โนแพค</option>
                     </select>
-                    <textarea id="stockInput" rows="3" placeholder="วางรายการเมลที่นี่ (1 บรรทัด = 1 เมล)&#10;ตัวอย่าง: user:pass"></textarea>
+                    <textarea id="stockInput" rows="3" placeholder="วางรายการเมลที่นี่ (1 บรรทัด = 1 เมล)
+ตัวอย่าง: user:pass"></textarea>
                     <button class="btn-buy" onclick="addStock()" style="padding: 8px;">เติมสินค้าเข้าสต็อก</button>
                 </div>
             </div>
@@ -254,11 +255,18 @@
             if(!chats[user]) chats[user] = [];
             chats[user].push({ text, type, time: new Date().toLocaleTimeString() });
             localStorage.setItem('baobei_chats', JSON.stringify(chats));
+            
+            // เพิ่มการอัปเดตแชททันทีหลังจากบันทึก
+            if(currentUser.toUpperCase() === "ADMIN") {
+                renderAdminChat();
+            } else {
+                syncChat();
+            }
         }
 
         function syncChat() {
-            if(currentUser === "ADMIN") return;
             const chatMessages = document.getElementById('chatMessages');
+            if(!chatMessages) return;
             let chats = JSON.parse(localStorage.getItem('baobei_chats') || '{}');
             const myChats = chats[currentUser] || [];
             chatMessages.innerHTML = myChats.map(m => `<div class="msg msg-${m.type}">${m.text}</div>`).join('');
@@ -280,6 +288,7 @@
 
         function renderAdminChat() {
             const box = document.getElementById('adminChatMessages');
+            if(!box) return;
             let chats = JSON.parse(localStorage.getItem('baobei_chats') || '{}');
             const targetChats = chats[currentAdminTarget] || [];
             box.innerHTML = targetChats.map(m => `<div class="msg msg-${m.type}">${m.text}</div>`).join('');
@@ -297,7 +306,11 @@
         window.addEventListener('storage', () => {
             inventory = JSON.parse(localStorage.getItem('baobei_inventory')) || inventory;
             updateUI();
-            syncChat();
+            if(currentUser.toUpperCase() === "ADMIN") {
+                renderAdminChat();
+            } else {
+                syncChat();
+            }
         });
 
         function handleLogout() { location.reload(); }
