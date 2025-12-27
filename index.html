@@ -10,48 +10,76 @@
     
     <style>
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --tmw: #ff8c00; }
+        
         * { box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            margin: 0; 
+            background: url('https://pikykub.github.io/bg-image.jpg') no-repeat center center fixed; /* ปรับ URL พื้นหลัง */
+            background-size: cover;
+            color: var(--text); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
         .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
         .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
+        
         .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; }
+
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
-        .product-img { width: 100%; height: 200px; object-fit: contain; padding: 20px; }
         .product-info { padding: 20px; text-align: center; background: #fff; }
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .btn-buy:disabled { background: #ccc; }
-        .hidden { display: none !important; }
-        
-        /* New Topup UI */
+
+        /* ส่วนเติมเงินใหม่ */
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         .topup-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer; background: #eee; font-family: 'Kanit'; transition: 0.3s; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; cursor: pointer; background: #f0f0f0; font-family: 'Kanit'; font-weight: 500; transition: 0.3s; }
         .tab-btn.active { background: var(--main); color: white; }
         .tab-btn.tmw.active { background: var(--tmw); }
-        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; }
-        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; display: none; }
+        
+        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #eee; }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
+        .login-input:focus { border-color: var(--main); }
+        .hidden { display: none !important; }
+        
+        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
+        .login-card { background: white; padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; text-align: center; }
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
 
+    <div id="registerPage" class="hidden">
+        <div class="login-card">
+            <h2 style="color: var(--main);">CREATE ACCOUNT</h2>
+            <input type="text" id="regUsername" class="login-input" placeholder="ตั้งชื่อผู้ใช้">
+            <input type="password" id="regPassword" class="login-input" placeholder="ตั้งรหัสผ่าน">
+            <button class="btn-buy" onclick="handleRegister()">สมัครสมาชิก</button>
+            <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none;">เข้าสู่ระบบ</a></p>
+        </div>
+    </div>
+
     <div id="loginPage">
-        <div class="login-card" style="background:white; padding:40px; border-radius:25px; margin:auto; width:90%; max-width:400px; text-align:center;">
+        <div class="login-card">
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="loginUsername" class="login-input" placeholder="ชื่อผู้ใช้">
             <input type="password" id="loginPassword" class="login-input" placeholder="รหัสผ่าน">
             <button class="btn-buy" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            <p style="font-size: 14px; margin-top: 15px;">ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')" style="color: var(--main); text-decoration: none;">สมัครสมาชิก</a></p>
         </div>
     </div>
 
     <div id="shopContent" class="hidden">
+        <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | ระบบเติมเงินอัตโนมัติ ✨</div>
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
@@ -59,114 +87,92 @@
                 <div class="balance-tag" onclick="showPage('topup')">
                     <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
                 </div>
+                <button onclick="location.reload()" style="background:none; border:none; cursor:pointer; color:#999;"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </nav>
 
         <div class="container">
             <div id="homePage">
-                <div id="productList" class="product-grid"></div>
+                <div class="product-grid" id="productList"></div>
             </div>
 
             <div id="topupPage" class="hidden">
                 <div class="topup-card">
-                    <h3 style="margin-top:0"><i class="fas fa-coins"></i> เลือกช่องทางเติมเงิน</h3>
-                    
+                    <h3><i class="fas fa-coins"></i> เติมเงินเข้าระบบ</h3>
                     <div class="topup-tabs">
-                        <button class="tab-btn active" onclick="switchTab('bank')">Bank/Slip</button>
-                        <button class="tab-btn tmw" onclick="switchTab('tmw')">TrueMoney</button>
+                        <button id="tabBankBtn" class="tab-btn active" onclick="switchTab('bank')">ธนาคาร/สลิป</button>
+                        <button id="tabTmwBtn" class="tab-btn" onclick="switchTab('tmw')">TrueMoney</button>
                     </div>
 
                     <div id="tab-bank">
                         <div class="qr-section">
-                            <p style="color: var(--bank); font-weight: bold; margin:0;">ธนาคารเกียรตินาคินภัทร</p>
-                            <p style="font-size: 20px; font-weight: bold; margin:5px 0;">201-201-9014</p>
-                            <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" width="150" alt="QR Code">
+                            <p style="color: var(--bank); font-weight: bold; margin:0;">ธนาคารเกียรตินาคินภัทร (KKP)</p>
+                            <p style="font-size: 22px; font-weight: bold; margin:5px 0;">201-201-9014</p>
+                            <p style="font-size: 14px;">ชื่อ: จิตราภรณ์ จันทร</p>
+                            <img src="https://pikykub.github.io/qr-sample.png" width="160" style="margin-top:10px; border-radius:10px;">
                         </div>
-                        <label for="slipInput" style="display: block; cursor: pointer; background: #eee; padding: 12px; border-radius: 10px; border: 1px dashed #bbb;">
-                            <i class="fas fa-file-upload"></i> อัปโหลดสลิปธนาคาร
-                        </label>
                         <input type="file" id="slipInput" accept="image/*" class="hidden" onchange="previewSlip(this)">
-                        <img id="slipPreviewImg" class="slip-preview">
-                        <button class="btn-buy" onclick="verifySlipAuto()" style="margin-top:15px;">ยืนยันสลิป (Auto)</button>
+                        <label for="slipInput" style="display:block; background:#eee; padding:15px; border-radius:12px; cursor:pointer; border:1px dashed #bbb;">
+                            <i class="fas fa-upload"></i> อัปโหลดสลิปเพื่อตรวจสอบออโต้
+                        </label>
+                        <img id="slipPreviewImg" style="width:100px; margin-top:10px; display:none; border-radius:10px;">
+                        <button class="btn-buy" onclick="verifySlipAuto()" style="margin-top:15px;">ยืนยันการแจ้งโอน</button>
                     </div>
 
                     <div id="tab-tmw" class="hidden">
                         <div class="qr-section" style="border-color: var(--tmw);">
-                            <p style="color: var(--tmw); font-weight: bold; margin:0;">เบอร์วอลเล็ท (TrueMoney)</p>
-                            <p style="font-size: 20px; font-weight: bold; margin:5px 0;">080-920-0932</p>
-                            <p style="font-size: 13px;">ชื่อ: จิตราภรณ์ จันทร</p>
+                            <p style="color: var(--tmw); font-weight: bold; margin:0;">โอนผ่านเบอร์ TrueMoney</p>
+                            <p style="font-size: 22px; font-weight: bold; margin:5px 0;">080-920-0932</p>
+                            <p style="font-size: 14px;">ชื่อ: จิตราภรณ์ จันทร</p>
                         </div>
-                        <p style="font-size: 12px; color: #666; margin: 10px 0;">หรือ วางลิงก์ซองของขวัญด้านล่าง</p>
-                        <input type="text" id="giftLink" class="login-input" placeholder="https://gift.truemoney.com/campaign/?v=...">
-                        <button class="btn-buy" onclick="verifyGiftAuto()" style="background: var(--tmw);">เติมด้วยซองของขวัญ (Auto)</button>
-                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-                        <button class="btn-buy" style="background: #555;" onclick="Swal.fire('แจ้งโอน','หากโอนผ่านเบอร์ให้ใช้ระบบส่งสลิปในหน้า Bank เพื่อตรวจสอบค่ะ','info')">แจ้งโอนผ่านเบอร์วอลเล็ท</button>
+                        <p style="font-size: 13px; color: #666;">หรือ เติมผ่านลิงก์ซองของขวัญ</p>
+                        <input type="text" id="giftLink" class="login-input" placeholder="วางลิงก์ซองของขวัญที่นี่...">
+                        <button class="btn-buy" onclick="verifyGiftAuto()" style="background: var(--tmw);">ตรวจสอบซองของขวัญออโต้</button>
                     </div>
 
-                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999; font-size:14px;"><i class="fas fa-chevron-left"></i> กลับหน้าหลัก</p>
+                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999;"><i class="fas fa-arrow-left"></i> กลับหน้าหลัก</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // ข้อมูลระบบ
         let state = {
-            users: JSON.parse(localStorage.getItem('baobei_users')) || { "admin": {password: "admin123", balance: 99999} },
-            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: ["CODE-001"], 2: [], 3: [], 4: [] },
+            users: JSON.parse(localStorage.getItem('baobei_users')) || { 
+                "admin": { password: "123", balance: 1000 } // ไอดีแอดมินเบื้องต้น
+            },
+            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: ["CODE-SAMPLE-01"], 2: [], 3: [], 4: [] },
             currentUser: null,
             isAdmin: false
         };
 
-        const SLIP_API_KEY = "YOUR_API_KEY"; // สมัครที่ easyslip.com หรือ slipok.com
+        const PRODUCTS = [
+            { id: 1, name: "email(นอก) ติดสิท", price: 10 },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12 },
+            { id: 3, name: "emailThai ติดสิท", price: 15 },
+            { id: 4, name: "emailThai โนแพค", price: 18 }
+        ];
 
-        function switchTab(type) {
-            document.getElementById('tab-bank').classList.toggle('hidden', type !== 'bank');
-            document.getElementById('tab-tmw').classList.toggle('hidden', type !== 'tmw');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        // ระบบ Auth
+        function toggleAuth(type) {
+            document.getElementById('loginPage').classList.toggle('hidden', type !== 'login');
+            document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
         }
 
-        // --- ระบบเติมเงินซองของขวัญ (Conceptual Auto) ---
-        async function verifyGiftAuto() {
-            const link = document.getElementById('giftLink').value.trim();
-            if(!link.includes('gift.truemoney.com')) return Swal.fire('ลิงก์ไม่ถูกต้อง', 'กรุณาใส่ลิงก์ซองของขวัญให้ถูกต้อง', 'error');
-
-            Swal.fire({ title: 'กำลังตรวจสอบซอง...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            // หมายเหตุ: การเช็คซองต้องมี Backend ของตัวเองเพื่อเรียก API TrueMoney 
-            // โค้ดส่วนนี้เป็นส่วนจำลองการรับค่า (Success Simulation)
-            setTimeout(() => {
-                const mockAmount = 50; // ในระบบจริงค่านี้จะได้มาจาก API
-                state.users[state.currentUser].balance += mockAmount;
-                localStorage.setItem('baobei_users', JSON.stringify(state.users));
-                updateUI();
-                Swal.fire('สำเร็จ', `เติมเงินจากซองจำนวน ${mockAmount} บาทแล้ว`, 'success');
-                document.getElementById('giftLink').value = "";
-            }, 2000);
+        function handleRegister() {
+            const u = document.getElementById('regUsername').value.trim();
+            const p = document.getElementById('regPassword').value.trim();
+            if(!u || !p) return Swal.fire('ผิดพลาด', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
+            if(state.users[u]) return Swal.fire('ผิดพลาด', 'มีชื่อผู้ใช้นี้แล้ว', 'error');
+            state.users[u] = { password: p, balance: 0 };
+            save();
+            Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว กรุณาล็อกอิน', 'success').then(() => toggleAuth('login'));
         }
 
-        // --- ระบบเช็คสลิปอัตโนมัติ ---
-        async function verifySlipAuto() {
-            const file = document.getElementById('slipInput').files[0];
-            if(!file) return Swal.fire('แนบรูปภาพ', 'กรุณาอัปโหลดรูปสลิป', 'warning');
-
-            Swal.fire({ title: 'ระบบกำลังอ่านสลิป...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            // จำลองการส่งไป API ตรวจสอบ
-            setTimeout(() => {
-                const mockAmount = 100;
-                state.users[state.currentUser].balance += mockAmount;
-                localStorage.setItem('baobei_users', JSON.stringify(state.users));
-                updateUI();
-                Swal.fire('สำเร็จ', `ตรวจพบยอดเงิน ${mockAmount} บาท เติมเข้าบัญชีแล้ว`, 'success');
-                document.getElementById('slipPreviewImg').style.display = 'none';
-            }, 2500);
-        }
-
-        // --- ฟังก์ชันพื้นฐาน ---
         function handleLogin() {
-            const u = document.getElementById('loginUsername').value;
-            const p = document.getElementById('loginPassword').value;
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
             if(state.users[u] && state.users[u].password === p) {
                 state.currentUser = u;
                 state.isAdmin = (u === 'admin');
@@ -179,29 +185,68 @@
             }
         }
 
+        // ระบบเติมเงิน
+        function switchTab(type) {
+            document.getElementById('tab-bank').classList.toggle('hidden', type !== 'bank');
+            document.getElementById('tab-tmw').classList.toggle('hidden', type !== 'tmw');
+            document.getElementById('tabBankBtn').classList.toggle('active', type === 'bank');
+            document.getElementById('tabTmwBtn').classList.toggle('active', type === 'tmw');
+        }
+
+        async function verifyGiftAuto() {
+            const link = document.getElementById('giftLink').value.trim();
+            if(!link.includes('gift.truemoney.com')) return Swal.fire('ลิงก์ผิด', 'กรุณาวางลิงก์ซองของขวัญ', 'warning');
+            
+            Swal.fire({ title: 'กำลังตรวจสอบ...', didOpen: () => Swal.showLoading() });
+            
+            // จำลองการเช็คออโต้ (ในระบบจริงต้องต่อ API หลังบ้าน)
+            setTimeout(() => {
+                const amount = 50; // สมมติยอดเงิน
+                state.users[state.currentUser].balance += amount;
+                save(); updateUI();
+                Swal.fire('สำเร็จ', `รับเงินจากซองแล้ว ${amount} บาท`, 'success');
+                document.getElementById('giftLink').value = "";
+            }, 2000);
+        }
+
+        async function verifySlipAuto() {
+            if(!document.getElementById('slipInput').files[0]) return Swal.fire('ไม่มีรูป', 'กรุณาอัปโหลดสลิป', 'warning');
+            
+            Swal.fire({ title: 'ระบบออโต้กำลังตรวจสลิป...', didOpen: () => Swal.showLoading() });
+            
+            setTimeout(() => {
+                const amount = 100; // สมมติยอดจากสลิป
+                state.users[state.currentUser].balance += amount;
+                save(); updateUI();
+                Swal.fire('สำเร็จ', `ตรวจพบยอดโอน ${amount} บาท เข้าบัญชีแล้ว`, 'success');
+            }, 2500);
+        }
+
+        // ฟังก์ชันเสริม
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
             const list = document.getElementById('productList');
-            list.innerHTML = [
-                {id: 1, name: "Email นอก (ติดสิท)", price: 10},
-                {id: 2, name: "Email Thai (โนแพค)", price: 18}
-            ].map(p => `
+            list.innerHTML = PRODUCTS.map(p => `
                 <div class="product-card">
-                    <img src="https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" class="product-img">
+                    <div style="background:#333; color:white; padding:5px; position:absolute; top:10px; right:10px; border-radius:50px; font-size:10px;">สต็อก: ${state.inventory[p.id].length}</div>
+                    <img src="https://pikykub.github.io/item-img.png" style="width:100%; height:180px; object-fit:contain; padding:20px;">
                     <div class="product-info">
-                        <b>${p.name}</b><br><span style="color:var(--main)">${p.price} ฿</span>
-                        <button class="btn-buy" style="margin-top:10px" onclick="buy(${p.id}, ${p.price})">ซื้อเลย</button>
+                        <b>${p.name}</b><br>
+                        <span style="color:var(--main); font-size:20px;">${p.price} ฿</span>
+                        <button class="btn-buy" style="margin-top:10px;" onclick="buyItem(${p.id}, ${p.price})">ซื้อสินค้า</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function buy(id, price) {
+        function buyItem(id, price) {
             if(state.users[state.currentUser].balance < price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนค่ะ', 'warning');
+            if(state.inventory[id].length === 0) return Swal.fire('ของหมด', 'ขออภัย สินค้าหมดชั่วคราว', 'error');
+            
+            const code = state.inventory[id].pop();
             state.users[state.currentUser].balance -= price;
-            localStorage.setItem('baobei_users', JSON.stringify(state.users));
-            updateUI();
-            Swal.fire('สำเร็จ', 'ขอบคุณที่ใช้บริการค่ะ!', 'success');
+            save(); updateUI();
+            Swal.fire({ title: 'สำเร็จ!', html: `ได้รับรหัส: <br><b>${code}</b>`, icon: 'success' });
         }
 
         function showPage(p) {
@@ -213,35 +258,34 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const img = document.getElementById('slipPreviewImg');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
+                    document.getElementById('slipPreviewImg').src = e.target.result;
+                    document.getElementById('slipPreviewImg').style.display = 'inline-block';
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function initSnow() {
-            const canvas = document.getElementById('snowCanvas');
-            const ctx = canvas.getContext('2d');
-            let w = window.innerWidth, h = window.innerHeight;
-            canvas.width = w; canvas.height = h;
-            let fs = Array.from({length: 50}, () => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*3+1, d: Math.random()*1+0.5}));
-            function draw() {
-                ctx.clearRect(0,0,w,h);
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                fs.forEach(f => {
-                    ctx.moveTo(f.x, f.y);
-                    ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
-                    f.y += f.d; if(f.y > h) f.y = -10;
-                });
-                ctx.fill();
-                requestAnimationFrame(draw);
-            }
-            draw();
+        function openAdminPanel() {
+            Swal.fire({
+                title: 'ADMIN: เติมสต็อก',
+                html: `<select id="pid" class="swal2-input">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select><textarea id="codes" class="swal2-textarea" placeholder="ใส่รหัส (บรรทัดละชิ้น)"></textarea>`,
+                preConfirm: () => {
+                    const pid = document.getElementById('pid').value;
+                    const codes = document.getElementById('codes').value.split('\n').filter(c => c.trim() !== "");
+                    state.inventory[pid].push(...codes);
+                    save(); updateUI();
+                }
+            });
         }
-        initSnow();
+
+        function save() { localStorage.setItem('baobei_users', JSON.stringify(state.users)); localStorage.setItem('baobei_inv', JSON.stringify(state.inventory)); }
+        
+        // Snow Effect
+        const canvas = document.getElementById('snowCanvas'); const ctx = canvas.getContext('2d');
+        let w = window.innerWidth, h = window.innerHeight; canvas.width = w; canvas.height = h;
+        let particles = Array.from({length: 50}, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 3 + 1, d: Math.random() * 1 }));
+        function draw() { ctx.clearRect(0, 0, w, h); ctx.fillStyle = "white"; ctx.beginPath(); particles.forEach(p => { ctx.moveTo(p.x, p.y); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); p.y += p.d; if (p.y > h) p.y = -10; }); ctx.fill(); requestAnimationFrame(draw); }
+        draw();
     </script>
 </body>
 </html>
