@@ -11,7 +11,7 @@
     <style>
         :root { 
             --main: #ff6b81; 
-            --bg: #ffe4e1; /* เปลี่ยนเป็นสีชมพูพาสเทล */
+            --bg: #ffe4e1; 
             --card-bg: #ffffff; 
             --bank: #5d2e8e; 
             --text: #2d3436; 
@@ -22,13 +22,29 @@
         body { 
             font-family: 'Kanit', sans-serif; 
             margin: 0; 
-            background: var(--bg); 
-            background-attachment: fixed;
+            /* ใส่ภาพพื้นหลังจากลิงก์ที่กำหนด */
+            background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed;
+            background-size: cover;
             color: var(--text); 
             overflow-x: hidden; 
+            position: relative;
+        }
+
+        /* เพิ่ม Overlay เพื่อให้เนื้อหาอ่านง่ายขึ้น และทำให้พื้นหลังดูดุกดิก */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 228, 225, 0.3); /* สีชมพูจางๆ */
+            z-index: -1;
+            animation: backgroundMove 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes backgroundMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
         }
         
-        /* Decorations (Images only) */
         .decoration-snowman {
             position: fixed;
             bottom: 10px;
@@ -38,7 +54,9 @@
             filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1));
             pointer-events: none;
             user-select: none;
+            animation: float 3s ease-in-out infinite;
         }
+        
         .decoration-tree {
             position: fixed;
             bottom: 0;
@@ -49,9 +67,13 @@
             pointer-events: none;
         }
 
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
         .announcement { background: #ff4757; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
         
-        /* Navbar */
         .navbar { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
@@ -62,10 +84,22 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; color: #2c3e50; }
         
-        /* Stats Bar - ไล่สีชมพู */
+        /* เพิ่ม Banner บนสุดของสถิติ */
+        .banner-top {
+            width: 100%;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .banner-top img {
+            width: 100%;
+            display: block;
+        }
+
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
         .stat-item { 
-            background: linear-gradient(180deg, #ffffff 0%, #ffeef2 100%); 
+            background: rgba(255, 255, 255, 0.9); 
             padding: 20px; 
             border-radius: 20px; 
             text-align: center; 
@@ -79,10 +113,9 @@
         .stat-value { font-size: 20px; font-weight: bold; display: block; }
         .stat-label { font-size: 13px; color: #888; }
 
-        /* Product Grid with Pink Gradient - ไล่สีชมพู */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
         .product-card { 
-            background: linear-gradient(180deg, #ffffff 0%, #ffeef2 100%); 
+            background: rgba(255, 255, 255, 0.95); 
             border-radius: 20px; 
             overflow: hidden; 
             box-shadow: 0 5px 20px rgba(0,0,0,0.08); 
@@ -99,14 +132,12 @@
         .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 15px; }
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
-        /* Realistic Snow Effect */
         .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
         .snow { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.8; animation: fall linear infinite; }
         @keyframes fall {
             to { transform: translateY(105vh) translateX(20px); }
         }
 
-        /* Topup & Login UI */
         .hidden { display: none !important; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
         .qr-img { width: 250px; height: auto; margin-top: 15px; border-radius: 10px; }
@@ -130,7 +161,7 @@
         .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
         .chat-label { position: absolute; right: 75px; background: white; color: #333; padding: 5px 15px; border-radius: 10px; font-size: 14px; font-weight: bold; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1); pointer-events: none; }
 
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .decoration-snowman { width: 100px; } .decoration-tree { width: 120px; } }
+        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .decoration-snowman { width: 100px; } .decoration-tree { width: 120px; } .stats-bar { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -162,8 +193,7 @@
                         <option value="3">emailThai ติดสิท</option>
                         <option value="4">emailThai โนแพค</option>
                     </select>
-                    <textarea id="stockInput" rows="3" placeholder="วางรายการเมลที่นี่ (1 บรรทัด = 1 เมล)
-ตัวอย่าง: user:pass"></textarea>
+                    <textarea id="stockInput" rows="3" placeholder="วางรายการเมลที่นี่..."></textarea>
                     <button class="btn-buy" onclick="addStock()" style="padding: 8px;">เติมสินค้าเข้าสต็อก</button>
                 </div>
             </div>
@@ -176,7 +206,6 @@
             <p style="margin-bottom: 20px; color: #666;">กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ร้านค้า</p>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้ของคุณ">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าใช้งานทันที</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">(Adminรบกวน:ทักมาถามชื่อแอค)</p>
         </div>
     </div>
 
@@ -217,6 +246,10 @@
 
         <div class="container">
             <div id="homePage">
+                <div class="banner-top">
+                    <img src="https://lh3.googleusercontent.com/d/1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" alt="Banner">
+                </div>
+
                 <div class="stats-bar">
                     <div class="stat-item">
                         <i class="fas fa-users"></i>
@@ -249,13 +282,6 @@
                         <br>
                         <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" class="qr-img" alt="สแกนจ่าย">
                     </div>
-                    
-                    <div class="tm-box" style="margin-top: 20px;">
-                        <p style="margin:0; font-weight:bold; color:var(--truemoney);">TrueMoney Wallet</p>
-                        <div style="font-size:24px; font-weight:bold; margin:10px 0; color:#444;">080-920-0932</div>
-                        <p style="font-size:13px; color:#666;">หรือส่งลิ้งค์ซองวอเลทในแชทแอดมิน</p>
-                    </div>
-                    
                     <button class="btn-buy" onclick="showPage('home')" style="margin-top: 20px;">กลับหน้าหลัก</button>
                 </div>
             </div>
@@ -263,6 +289,7 @@
     </div>
 
     <script>
+        // Script ทั้งหมดเหมือนเดิม
         function createSnow() {
             const container = document.getElementById('snowContainer');
             const count = 50;
@@ -288,9 +315,7 @@
             4: Array.from({length: 0}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
-        // ภาพจากลิงก์ที่ระบุสำหรับรายการสินค้า
         const productImageUrl = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
-
         const products = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: productImageUrl },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: productImageUrl },
@@ -321,7 +346,7 @@
         function addStock() {
             const id = document.getElementById('stockTarget').value;
             const input = document.getElementById('stockInput').value.trim();
-            if(!input) return Swal.fire('แจ้งเตือน', 'กรุณาใส่ข้อมูลเมล', 'warning');
+            if(!input) return;
             const newItems = input.split('\n').filter(line => line.trim() !== "");
             inventory[id] = [...inventory[id], ...newItems];
             localStorage.setItem('baobei_inventory', JSON.stringify(inventory));
@@ -334,9 +359,8 @@
 
         function sendWebMsg() {
             const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if(!msg) return;
-            saveMessage(currentUser, msg, 'user');
+            if(!input.value.trim()) return;
+            saveMessage(currentUser, input.value, 'user');
             input.value = "";
             syncChat();
         }
