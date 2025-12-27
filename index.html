@@ -10,14 +10,14 @@
     
     <style>
         :root { 
-            --main: #ff2d55; 
-            --bg: #e0f4ff; /* เปลี่ยนเป็นสีฟ้าพาสเทล */
+            --main: #ff6b81; 
+            --bg: #ffe4e1; /* เปลี่ยนเป็นสีชมพูพาสเทล */
             --card-bg: #ffffff; 
             --bank: #5d2e8e; 
             --text: #2d3436; 
             --line: #06C755; 
             --truemoney: #ff8c00; 
-            --snow-blue: #87ceeb;
+            --snow-pink: #ffb6c1;
         }
         body { 
             font-family: 'Kanit', sans-serif; 
@@ -28,32 +28,28 @@
             overflow-x: hidden; 
         }
         
-        /* Chibi Snowman & Decorations */
-        .chibi-snowman {
+        /* Decorations (Images only) */
+        .decoration-snowman {
             position: fixed;
-            bottom: -20px;
-            left: -20px;
-            font-size: 150px;
+            bottom: 10px;
+            left: 10px;
+            width: 150px;
             z-index: 5;
             filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1));
             pointer-events: none;
             user-select: none;
         }
-        .decoration-gift {
+        .decoration-tree {
             position: fixed;
-            top: 80px;
-            right: 20px;
-            font-size: 40px;
+            bottom: 0;
+            right: 0;
+            width: 180px;
             z-index: 5;
-            animation: floating 3s ease-in-out infinite;
-        }
-        @keyframes floating {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+            filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1));
+            pointer-events: none;
         }
 
-        .announcement { background: #222; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
+        .announcement { background: #ff4757; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
         
         /* Navbar */
         .navbar { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
@@ -66,10 +62,10 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; color: #2c3e50; }
         
-        /* Stats Bar */
+        /* Stats Bar - ไล่สีชมพู */
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
         .stat-item { 
-            background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%); /* ไล่สีลงมา */
+            background: linear-gradient(180deg, #ffffff 0%, #ffeef2 100%); 
             padding: 20px; 
             border-radius: 20px; 
             text-align: center; 
@@ -83,10 +79,10 @@
         .stat-value { font-size: 20px; font-weight: bold; display: block; }
         .stat-label { font-size: 13px; color: #888; }
 
-        /* Product Grid with Gradient */
+        /* Product Grid with Pink Gradient - ไล่สีชมพู */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
         .product-card { 
-            background: linear-gradient(180deg, #ffffff 0%, #eefaff 100%); /* ไล่สีหีบห่อสินค้าลงมา */
+            background: linear-gradient(180deg, #ffffff 0%, #ffeef2 100%); 
             border-radius: 20px; 
             overflow: hidden; 
             box-shadow: 0 5px 20px rgba(0,0,0,0.08); 
@@ -95,7 +91,7 @@
             border: 2px solid white; 
             z-index: 10; 
         }
-        .product-card:hover { transform: translateY(-10px); border-color: var(--snow-blue); }
+        .product-card:hover { transform: translateY(-10px); border-color: var(--main); }
         .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 50px; font-size: 12px; }
         .product-img { width: 100%; height: 240px; object-fit: contain; padding: 20px; box-sizing: border-box; }
         .product-info { padding: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.5); }
@@ -113,6 +109,7 @@
         /* Topup & Login UI */
         .hidden { display: none !important; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
+        .qr-img { width: 250px; height: auto; margin-top: 15px; border-radius: 10px; }
         
         #loginPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 3000; }
         .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
@@ -133,16 +130,15 @@
         .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
         .chat-label { position: absolute; right: 75px; background: white; color: #333; padding: 5px 15px; border-radius: 10px; font-size: 14px; font-weight: bold; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1); pointer-events: none; }
 
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .chibi-snowman { font-size: 80px; left: -10px; bottom: -10px; } .decoration-gift { font-size: 30px; } }
+        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .decoration-snowman { width: 100px; } .decoration-tree { width: 120px; } }
     </style>
 </head>
 <body>
 
     <div class="snow-container" id="snowContainer"></div>
     
-    <div class="chibi-snowman">⛄</div>
-    <div class="decoration-gift">🎁</div>
-    <div class="decoration-gift" style="top:auto; bottom:150px; right:auto; left:30px; animation-delay: 1s;">❄️</div>
+    <img src="https://cdn-icons-png.flaticon.com/512/3593/3593843.png" class="decoration-snowman" alt="snowman">
+    <img src="https://cdn-icons-png.flaticon.com/512/633/633590.png" class="decoration-tree" alt="tree">
 
     <div id="adminPanel" class="hidden">
         <div class="chat-header">
@@ -249,24 +245,24 @@
                     <div class="bank-box">
                         <p style="margin:0; font-weight:bold; color:var(--bank);">โอนผ่านธนาคาร</p>
                         <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
-                        <button class="copy-btn" onclick="copyAcc()"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=2012019014" class="qr-img" alt="สแกนจ่าย">
+                        <button class="copy-btn" onclick="copyAcc()" style="padding: 10px; border-radius: 10px; border: 1px solid #ddd; cursor: pointer;"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
+                        <br>
+                        <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" class="qr-img" alt="สแกนจ่าย">
                     </div>
                     
-                    <div class="tm-box">
+                    <div class="tm-box" style="margin-top: 20px;">
                         <p style="margin:0; font-weight:bold; color:var(--truemoney);">TrueMoney Wallet</p>
                         <div style="font-size:24px; font-weight:bold; margin:10px 0; color:#444;">080-920-0932</div>
                         <p style="font-size:13px; color:#666;">หรือส่งลิ้งค์ซองวอเลทในแชทแอดมิน</p>
                     </div>
                     
-                    <button class="btn-buy" onclick="showPage('home')">กลับหน้าหลัก</button>
+                    <button class="btn-buy" onclick="showPage('home')" style="margin-top: 20px;">กลับหน้าหลัก</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Realistic Snow Script
         function createSnow() {
             const container = document.getElementById('snowContainer');
             const count = 50;
@@ -292,11 +288,14 @@
             4: Array.from({length: 0}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
+        // ภาพจากลิงก์ที่ระบุสำหรับรายการสินค้า
+        const productImageUrl = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
+
         const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: productImageUrl },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: productImageUrl },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: productImageUrl },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: productImageUrl }
         ];
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
