@@ -10,9 +10,20 @@
     
     <style>
         :root { --main: #ff2d55; --bg: #f8f9fa; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+        body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
         .announcement { background: #222; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
         
+        /* Snow Canvas Style */
+        #snowCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* ให้คลิกทะลุหิมะได้ */
+            z-index: 9999;
+        }
+
         /* Navbar */
         .navbar { background: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
@@ -84,6 +95,7 @@
     </style>
 </head>
 <body>
+    <canvas id="snowCanvas"></canvas>
 
     <div id="loginPage">
         <div class="login-card">
@@ -193,6 +205,55 @@
     </div>
 
     <script>
+        // Snow Effect Logic
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, flakes = [];
+
+        function initSnow() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            flakes = [];
+            for (let i = 0; i < 150; i++) {
+                flakes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 3 + 1,
+                    d: Math.random() * 1
+                });
+            }
+        }
+
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.beginPath();
+            for (let i = 0; i < flakes.length; i++) {
+                let f = flakes[i];
+                ctx.moveTo(f.x, f.y);
+                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+            }
+            ctx.fill();
+            moveSnow();
+        }
+
+        function moveSnow() {
+            for (let i = 0; i < flakes.length; i++) {
+                let f = flakes[i];
+                f.y += Math.pow(f.d, 2) + 1;
+                f.x += Math.sin(f.y / 50);
+                if (f.y > height) {
+                    flakes[i] = { x: Math.random() * width, y: -10, r: f.r, d: f.d };
+                }
+            }
+        }
+
+        window.addEventListener('resize', initSnow);
+        initSnow();
+        setInterval(drawSnow, 30);
+
         const inventory = {
             1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
             2: Array.from({length: 9}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
@@ -223,7 +284,6 @@
             }
         }
 
-        // ระบบแชท
         function toggleWebChat() {
             document.getElementById('chatBox').classList.toggle('active');
         }
@@ -238,7 +298,6 @@
             input.value = "";
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // จำลองแอดมินตอบกลับ
             setTimeout(() => {
                 chatMessages.innerHTML += `<div class="msg msg-admin">รับทราบครับคุณ ${currentUser} กรุณารอสักครู่ แอดมินกำลังตรวจสอบให้ครับ</div>`;
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -249,12 +308,8 @@
 
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
-            
-            // อัปเดตสต็อกรวมใน Dashboard
             let totalStock = 0;
-            for(let id in inventory) {
-                totalStock += inventory[id].length;
-            }
+            for(let id in inventory) { totalStock += inventory[id].length; }
             document.getElementById('statStock').innerHTML = `${totalStock} <span>ชิ้น</span>`;
 
             const list = document.getElementById('productList');
@@ -272,8 +327,8 @@
                             ${currentStock > 0 ? 'สั่งซื้อสินค้า' : 'ของหมด'}
                         </button>
                     </div>
-                </div>
-            `}).join('');
+                </div>`;
+            }).join('');
         }
 
         function showPage(page) {
@@ -294,9 +349,7 @@
                 updateUI();
                 Swal.fire('สำเร็จ!', 'เติมเงิน 50 บาทเรียบร้อย', 'success');
                 showPage('home');
-            } else {
-                Swal.fire('ผิดพลาด', 'รหัสไม่ถูกต้อง', 'error');
-            }
+            } else { Swal.fire('ผิดพลาด', 'รหัสไม่ถูกต้อง', 'error'); }
         }
 
         function buyProduct(id) {
@@ -318,9 +371,7 @@
                         Swal.fire({ title: 'สำเร็จ!', html: `รหัสของคุณคือ: <br><b>${code}</b>`, icon: 'success' });
                     }
                 });
-            } else {
-                Swal.fire('เงินไม่พอ', 'กรุณาเติมเงิน', 'warning').then(() => showPage('topup'));
-            }
+            } else { Swal.fire('เงินไม่พอ', 'กรุณาเติมเงิน', 'warning').then(() => showPage('topup')); }
         }
     </script>
 </body>
