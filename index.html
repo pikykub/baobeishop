@@ -125,7 +125,7 @@
         <div class="container">
             <div id="homePage">
                 <div class="banner-container">
-                    <img src="https://lh3.googleusercontent.com/u/0/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="Banner" class="banner-img">
+                    <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="Banner" class="banner-img">
                 </div>
 
                 <div class="stats-grid">
@@ -156,12 +156,12 @@
                     <h3>แจ้งโอนเงิน / เติมเงิน</h3>
                     
                     <div class="qr-section">
-                        <p style="font-weight: bold; color: #1e3a8a;">ธนาคารเกียรตินาคินภัทร (KKP)</p>
-                        <p style="font-size: 18px; letter-spacing: 1px; font-weight: bold;">201-201-9014</p>
-                        <p style="font-weight: bold; color: #f59e0b;">TrueMoney Wallet</p>
-                        <p style="font-size: 18px; letter-spacing: 1px; font-weight: bold;">080-920-0932</p>
-                        <p style="font-size: 14px;">ชื่อบัญชี: เบ๋าเป๋ย พรีเมียม</p>
-                        <img src="https://lh3.googleusercontent.com/u/0/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 10px; width: 200px; border-radius: 10px;">
+                        <p style="font-weight: bold; color: #6a1b9a;">ธนาคารเกียรตินาคิน</p>
+                        <p style="font-size: 18px; letter-spacing: 1px; color: #6a1b9a; font-weight: bold;">201-201-9014</p>
+                        <hr style="border: 0.5px solid #eee; margin: 10px 0;">
+                        <p style="font-weight: bold; color: #ff5722;">TrueMoney Wallet</p>
+                        <p style="font-size: 18px; letter-spacing: 1px; color: #ff5722; font-weight: bold;">080-920-0932</p>
+                        <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 15px; width: 220px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     </div>
 
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">กรุณาโอนเงินและแนบรูปภาพสลิปเพื่อตรวจสอบ</p>
@@ -205,10 +205,10 @@
         let isAdmin = false;
 
         const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/u/0/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/u/0/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/u/0/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/u/0/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://via.placeholder.com/150?text=Email+Nok" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://via.placeholder.com/150?text=Email+No+Pack" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://via.placeholder.com/150?text=Email+Thai" },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://via.placeholder.com/150?text=Email+Thai+No+Pack" }
         ];
 
         function saveLocal() {
@@ -309,7 +309,7 @@
             const slipImg = document.getElementById('slipPreviewImg').src;
             
             if(!amt || amt <= 0) return Swal.fire('Error', 'ระบุจำนวนเงินที่ถูกต้อง', 'warning');
-            if(!slipImg || slipImg.includes('api.qrserver.com') || slipImg === "") return Swal.fire('Error', 'กรุณาแนบสลิปการโอน', 'warning');
+            if(!slipImg || slipImg === "" || slipImg.includes('api.qrserver.com')) return Swal.fire('Error', 'กรุณาแนบสลิปการโอน', 'warning');
             
             topupRequests.push({ 
                 user: currentUser, 
