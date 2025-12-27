@@ -30,12 +30,11 @@
         .shop-banner-container { width: 100%; margin-bottom: 25px; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .shop-banner-img { width: 100%; display: block; object-fit: cover; }
 
-        /* ปรับปรุง Stats Grid ให้รองรับข้อมูลมากขึ้น */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: #1a1a1a; color: white; padding: 15px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; transition: 0.3s; }
-        .stat-box:hover { border-color: var(--main); }
-        .stat-label { font-size: 12px; color: #aaa; margin-bottom: 5px; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #fff; }
+        /* สไตล์ระบบสถิติแบบรวม */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a1a; color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; text-align: center; }
+        .stat-label { font-size: 14px; color: #aaa; margin-bottom: 5px; }
+        .stat-value { font-size: 26px; font-weight: bold; color: #fff; }
         .stat-value span { color: var(--main); }
 
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
@@ -86,7 +85,7 @@
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าสู่ระบบ</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">อย่าลืมแคปหน้าจอเพื่อจำชื่อผู้ใช้นะคะ</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">อย่าลืมแคปชื่อผู้ใช้ของท่านนะคะ</p>
         </div>
     </div>
 
@@ -108,12 +107,14 @@
         <div class="container">
             <div id="homePage">
                 <div class="stats-grid">
-                    <div class="stat-box"><div class="stat-label">สต็อกทั้งหมด</div><div class="stat-value" id="statStock">0</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดขายสะสม</div><div class="stat-value" id="statSalesTotal">1,089</div></div>
-                    <div class="stat-box"><div class="stat-label">Email นอก (สิท)</div><div class="stat-value"><span id="stat_1">0</span></div></div>
-                    <div class="stat-box"><div class="stat-label">Email นอก (โน)</div><div class="stat-value"><span id="stat_2">0</span></div></div>
-                    <div class="stat-box"><div class="stat-label">Email ไทย (สิท)</div><div class="stat-value"><span id="stat_3">0</span></div></div>
-                    <div class="stat-box"><div class="stat-label">Email ไทย (โน)</div><div class="stat-value"><span id="stat_4">0</span></div></div>
+                    <div class="stat-box">
+                        <div class="stat-label"><i class="fas fa-boxes"></i> สต็อกรวมทั้งหมด</div>
+                        <div class="stat-value"><span id="statStock">0</span> ชิ้น</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label"><i class="fas fa-shopping-cart"></i> ยอดขายสะสม</div>
+                        <div class="stat-value"><span id="statSalesTotal">0</span> รายการ</div>
+                    </div>
                 </div>
                 
                 <div class="title-bar"><h2>สินค้าพร้อมส่ง</h2></div>
@@ -196,7 +197,6 @@
             if(isAdmin) {
                 document.getElementById('adminBtn').style.display = "block";
                 document.getElementById('chatTitle').innerText = "ระบบจัดการแอดมิน";
-                Swal.fire('แอดมินเข้าสู่ระบบ', 'คุณสามารถอนุมัติเงิน ตอบแชท และเติมสต็อกได้', 'success');
             }
             updateUI();
         }
@@ -205,16 +205,11 @@
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
             document.getElementById('statSalesTotal').innerText = salesCount.toLocaleString();
             
-            let total = 0;
-            // อัปเดตสถิติรายประเภท
+            let totalStock = 0;
             for(let key in inventory) {
-                let count = inventory[key].length;
-                total += count;
-                if(document.getElementById(`stat_${key}`)) {
-                    document.getElementById(`stat_${key}`).innerText = count + " ชิ้น";
-                }
+                totalStock += inventory[key].length;
             }
-            document.getElementById('statStock').innerText = total + " ชิ้น";
+            document.getElementById('statStock').innerText = totalStock.toLocaleString();
 
             const list = document.getElementById('productList');
             list.innerHTML = products.map(p => {
@@ -306,7 +301,7 @@
                     const code = inventory[id].pop();
                     if(!isAdmin) {
                         wallet -= p.price;
-                        salesCount += 1; // เพิ่มสถิติยอดขายเมื่อซื้อจริง
+                        salesCount += 1;
                     }
                     updateUI();
                     Swal.fire('ซื้อสำเร็จ', `รหัสสินค้า: <br><b style="font-size:20px; color:var(--main);">${code}</b>`, 'success');
@@ -316,7 +311,6 @@
             } else { Swal.fire('ยอดเงินไม่พอ', 'กรุณาแจ้งเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup')); }
         }
 
-        // --- Chat System ---
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
 
         function sendChat() {
