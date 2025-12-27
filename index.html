@@ -30,10 +30,13 @@
         .shop-banner-container { width: 100%; margin-bottom: 25px; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .shop-banner-img { width: 100%; display: block; object-fit: cover; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: #1a1a1a; color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; }
-        .stat-label { font-size: 14px; color: #aaa; margin-bottom: 5px; }
-        .stat-value { font-size: 24px; font-weight: bold; }
+        /* ปรับปรุง Stats Grid ให้รองรับข้อมูลมากขึ้น */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a1a; color: white; padding: 15px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; transition: 0.3s; }
+        .stat-box:hover { border-color: var(--main); }
+        .stat-label { font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #fff; }
+        .stat-value span { color: var(--main); }
 
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
         .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; border: 1px solid #f0f0f0; }
@@ -83,7 +86,7 @@
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าสู่ระบบ</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">รบกวนจำชื่อผู้ใช้หรือแคปเก็บไว้นะคะ</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">อย่าลืมแคปหน้าจอเพื่อจำชื่อผู้ใช้นะคะ</p>
         </div>
     </div>
 
@@ -106,8 +109,13 @@
             <div id="homePage">
                 <div class="stats-grid">
                     <div class="stat-box"><div class="stat-label">สต็อกทั้งหมด</div><div class="stat-value" id="statStock">0</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดขายสะสม</div><div class="stat-value">1,089</div></div>
+                    <div class="stat-box"><div class="stat-label">ยอดขายสะสม</div><div class="stat-value" id="statSalesTotal">1,089</div></div>
+                    <div class="stat-box"><div class="stat-label">Email นอก (สิท)</div><div class="stat-value"><span id="stat_1">0</span></div></div>
+                    <div class="stat-box"><div class="stat-label">Email นอก (โน)</div><div class="stat-value"><span id="stat_2">0</span></div></div>
+                    <div class="stat-box"><div class="stat-label">Email ไทย (สิท)</div><div class="stat-value"><span id="stat_3">0</span></div></div>
+                    <div class="stat-box"><div class="stat-label">Email ไทย (โน)</div><div class="stat-value"><span id="stat_4">0</span></div></div>
                 </div>
+                
                 <div class="title-bar"><h2>สินค้าพร้อมส่ง</h2></div>
                 <div id="productList" class="product-grid"></div>
             </div>
@@ -157,6 +165,8 @@
         // --- Core Data ---
         let inventory = JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] };
         let topupRequests = JSON.parse(localStorage.getItem('baobei_requests')) || [];
+        let salesCount = parseInt(localStorage.getItem('baobei_sales')) || 1089;
+
         const products = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://cdn-icons-png.flaticon.com/512/281/281769.png" },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://cdn-icons-png.flaticon.com/512/281/281769.png" },
@@ -172,6 +182,7 @@
             localStorage.setItem('baobei_inv', JSON.stringify(inventory));
             localStorage.setItem('baobei_requests', JSON.stringify(topupRequests));
             localStorage.setItem('walletBalance', wallet);
+            localStorage.setItem('baobei_sales', salesCount);
         }
 
         function handleLogin() {
@@ -192,9 +203,18 @@
 
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
+            document.getElementById('statSalesTotal').innerText = salesCount.toLocaleString();
+            
             let total = 0;
-            for(let key in inventory) total += inventory[key].length;
-            document.getElementById('statStock').innerText = total;
+            // อัปเดตสถิติรายประเภท
+            for(let key in inventory) {
+                let count = inventory[key].length;
+                total += count;
+                if(document.getElementById(`stat_${key}`)) {
+                    document.getElementById(`stat_${key}`).innerText = count + " ชิ้น";
+                }
+            }
+            document.getElementById('statStock').innerText = total + " ชิ้น";
 
             const list = document.getElementById('productList');
             list.innerHTML = products.map(p => {
@@ -284,7 +304,10 @@
             if(wallet >= p.price || isAdmin) {
                 if(inventory[id].length > 0) {
                     const code = inventory[id].pop();
-                    if(!isAdmin) wallet -= p.price;
+                    if(!isAdmin) {
+                        wallet -= p.price;
+                        salesCount += 1; // เพิ่มสถิติยอดขายเมื่อซื้อจริง
+                    }
                     updateUI();
                     Swal.fire('ซื้อสำเร็จ', `รหัสสินค้า: <br><b style="font-size:20px; color:var(--main);">${code}</b>`, 'success');
                 } else {
