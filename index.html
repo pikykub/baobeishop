@@ -3,159 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M&A SHOP - PREMIUM</title>
+    <title>BAOBEI SHOP - PREMIUM STORE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --main: #ff2d55; --bg: #0a0a20; --card: rgba(15, 15, 35, 0.8); --tmw: #ff8c00; --text: #ffffff; }
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Kanit', sans-serif; 
-            margin: 0; 
-            background: #050510 url('https://w0.peakpx.com/wallpaper/419/840/HD-wallpaper-dark-blue-galaxy-star-night-sky-background.jpg');
-            background-size: cover; background-attachment: fixed;
-            color: var(--text); overflow-x: hidden;
-        }
-
-        /* Auth Pages (Login/Register) */
-        .auth-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(10px); }
-        .auth-card { background: white; padding: 40px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; color: #333; }
-        .auth-title { color: var(--main); font-size: 24px; font-weight: bold; margin-bottom: 25px; }
-        .auth-input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #eee; border-radius: 15px; background: #f9f9f9; font-family: 'Kanit'; }
-        .btn-auth { width: 100%; padding: 15px; border: none; border-radius: 15px; background: var(--main); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
-
-        /* Dashboard & Layout */
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .stat-label { font-size: 14px; opacity: 0.8; }
-        .stat-value { font-size: 24px; font-weight: bold; margin-top: 5px; }
-
-        /* Topup UI */
-        .topup-card { background: var(--card); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .topup-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.1); color: white; font-family: 'Kanit'; }
-        .tab-btn.active { background: var(--main); }
-        .qr-area { background: white; padding: 20px; border-radius: 20px; color: #333; margin: 20px 0; }
+        :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --tmw: #ff8c00; }
         
+        /* สไตล์เดิมของคุณที่คงไว้ */
+        * { box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
+        .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
+        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
+        .nav-right { display: flex; gap: 10px; align-items: center; }
+        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
+        .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
+        .product-info { padding: 20px; text-align: center; background: #fff; }
+        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        
+        /* สไตล์ใหม่สำหรับระบบเติมเงิน */
+        .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .topup-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Kanit'; font-weight: bold; background: #f0f0f0; transition: 0.3s; }
+        .tab-btn.active { background: var(--main); color: white; }
+        .tab-btn.tmw.active { background: var(--tmw); }
+        .qr-section { background: #f8f9fa; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #eee; }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; }
         .hidden { display: none !important; }
+        .slip-preview { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 2px solid var(--main); display: none; }
     </style>
 </head>
 <body>
+    <canvas id="snowCanvas"></canvas>
 
-    <div id="loginPage" class="auth-container">
-        <div class="auth-card">
-            <div class="auth-title">BAOBEI LOGIN</div>
-            <input type="text" id="l_user" class="auth-input" placeholder="ชื่อผู้ใช้">
-            <input type="password" id="l_pass" class="auth-input" placeholder="รหัสผ่าน">
-            <button class="btn-auth" onclick="doLogin()">เข้าสู่ระบบ</button>
-            <p style="font-size: 14px;">ยังไม่มีบัญชี? <span style="color:var(--main); cursor:pointer;" onclick="showAuth('reg')">สมัครสมาชิก</span></p>
+    <div id="registerPage" class="hidden">
+        <div class="login-card">
+            <h2 style="color: var(--main);">CREATE ACCOUNT</h2>
+            <input type="text" id="regUsername" class="login-input" placeholder="ตั้งชื่อผู้ใช้">
+            <input type="password" id="regPassword" class="login-input" placeholder="ตั้งรหัสผ่าน">
+            <button class="btn-buy" onclick="handleRegister()">สมัครสมาชิก</button>
+            <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none;">เข้าสู่ระบบ</a></p>
         </div>
     </div>
 
-    <div id="regPage" class="auth-container hidden">
-        <div class="auth-card">
-            <div class="auth-title">CREATE ACCOUNT</div>
-            <input type="text" id="r_user" class="auth-input" placeholder="ตั้งชื่อผู้ใช้">
-            <input type="password" id="r_pass" class="auth-input" placeholder="ตั้งรหัสผ่าน">
-            <button class="btn-auth" onclick="doRegister()">สมัครสมาชิก</button>
-            <p style="font-size: 14px;">มีบัญชีอยู่แล้ว? <span style="color:var(--main); cursor:pointer;" onclick="showAuth('login')">เข้าสู่ระบบ</span></p>
+    <div id="loginPage">
+        <div class="login-card">
+            <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
+            <input type="text" id="loginUsername" class="login-input" placeholder="ชื่อผู้ใช้">
+            <input type="password" id="loginPassword" class="login-input" placeholder="รหัสผ่าน">
+            <button class="btn-buy" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            <p style="font-size: 14px; margin-top: 15px;">ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')" style="color: var(--main); text-decoration: none;">สมัครสมาชิก</a></p>
         </div>
     </div>
 
-    <div id="mainContent" class="container hidden">
-        <div class="navbar">
-            <div style="font-size: 24px; font-weight: bold;">M&A SHOP</div>
-            <div onclick="showPage('topup')" style="background: var(--main); padding: 8px 20px; border-radius: 50px; cursor: pointer;">
-                <i class="fas fa-wallet"></i> <span id="balText">0.00</span> ฿
-            </div>
-        </div>
-
-        <div id="homePage">
-            <div class="stats-grid">
-                <div class="stat-box"><div class="stat-label">ผู้ใช้งาน</div><div class="stat-value">218 <small>คน</small></div></div>
-                <div class="stat-box"><div class="stat-label">ยอดเติม</div><div class="stat-value">15,155.71 <small>บาท</small></div></div>
-                <div class="stat-box"><div class="stat-label">สต็อก</div><div class="stat-value">26 <small>ชิ้น</small></div></div>
-                <div class="stat-box"><div class="stat-label">ยอดขาย</div><div class="stat-value">1,089 <small>ครั้ง</small></div></div>
-            </div>
-            <p><i class="fas fa-shopping-basket"></i> สินค้าแนะนำสำหรับคุณ</p>
-            <div id="prodList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
-        </div>
-
-        <div id="topupPage" class="hidden">
-            <div class="topup-card">
-                <h3>เติมเงินเข้าระบบ</h3>
-                <div class="topup-tabs">
-                    <button id="t1" class="tab-btn active" onclick="setTab(1)">ซอง TrueMoney</button>
-                    <button id="t2" class="tab-btn" onclick="setTab(2)">โอน/สแกนสลิป</button>
+    <div id="shopContent" class="hidden">
+        <nav class="navbar">
+            <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
+            <div class="nav-right">
+                <button id="adminBtn" class="btn-admin" onclick="openAdminPanel()"><i class="fas fa-user-shield"></i></button>
+                <div class="balance-tag" onclick="showPage('topup')">
+                    <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
                 </div>
+                <button onclick="location.reload()" style="background:none; border:none; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </nav>
 
-                <div id="area1">
-                    <input type="text" id="giftLink" class="auth-input" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.2);" placeholder="วางลิ้งค์ซองของขวัญที่นี่">
-                    <button class="btn-auth" style="background: var(--tmw);" onclick="checkGift()">เติมเงินด้วยซองของขวัญ (Auto)</button>
-                </div>
+        <div class="container">
+            <div id="homePage">
+                <div id="productList" class="product-grid"></div>
+            </div>
 
-                <div id="area2" class="hidden">
-                    <div class="qr-area">
-                        <b style="color: #5d2e8e;">ธนาคารเกียรตินาคินภัทร</b><br>
-                        <span style="font-size: 20px;">201-201-9014</span><br>
-                        <small>ชื่อบัญชี: จิตราภรณ์ จันทร</small>
+            <div id="topupPage" class="hidden">
+                <div class="topup-card">
+                    <h3 style="margin-top:0"><i class="fas fa-coins"></i> เลือกช่องทางการเติมเงิน</h3>
+                    
+                    <div class="topup-tabs">
+                        <button class="tab-btn active" onclick="switchTopupTab('gift')">ซองของขวัญ</button>
+                        <button class="tab-btn" onclick="switchTopupTab('bank')">ธนาคาร/สลิป</button>
                     </div>
-                    <p style="font-size: 13px;">หรือโอนเบอร์วอลเล็ท: <b>080-920-0932</b></p>
-                    <input type="file" id="slip" class="hidden" onchange="Swal.fire('สำเร็จ','ระบบกำลังตรวจสอบสลิปของคุณ','success')">
-                    <button class="btn-auth" onclick="document.getElementById('slip').click()">อัปโหลดสลิปตรวจสอบออโต้</button>
-                </div>
 
-                <p style="margin-top: 20px; cursor: pointer; opacity: 0.6;" onclick="showPage('home')">ย้อนกลับ</p>
+                    <div id="topup-gift">
+                        <div class="qr-section" style="border-color: var(--tmw);">
+                            <img src="https://img5.pic.in.th/file/secure-sv1/twm-logo.png" width="100" style="margin-bottom:10px;">
+                            <p style="font-size: 14px; color: #666;">สร้างซองของขวัญแบบ "แบ่งเท่ากัน" แล้ววางลิ้งค์ด้านล่าง</p>
+                        </div>
+                        <input type="text" id="giftLinkInput" class="login-input" placeholder="https://gift.truemoney.com/campaign/?v=...">
+                        <button class="btn-buy" style="background: var(--tmw);" onclick="verifyGiftAuto()">ตรวจสอบซองของขวัญ (Auto)</button>
+                    </div>
+
+                    <div id="topup-bank" class="hidden">
+                        <div class="qr-section">
+                            <p style="color: var(--bank); font-weight: bold; margin:0;">ธนาคารเกียรตินาคินภัทร</p>
+                            <p style="font-size: 22px; font-weight: bold; margin:5px 0;">201-201-9014</p>
+                            <p style="font-size: 13px;">ชื่อ: จิตราภรณ์ จันทร</p>
+                            <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" width="160" style="margin-top:10px; border-radius:10px;">
+                        </div>
+                        <input type="number" id="bankAmount" class="login-input" placeholder="ระบุจำนวนเงินที่โอน">
+                        <label for="slipInputBank" style="display:block; background:#eee; padding:12px; border-radius:12px; cursor:pointer; border:1px dashed #bbb;">
+                            <i class="fas fa-upload"></i> อัปโหลดรูปสลิป
+                        </label>
+                        <input type="file" id="slipInputBank" accept="image/*" class="hidden" onchange="previewTopupSlip(this)">
+                        <img id="topupSlipPreview" class="slip-preview">
+                        <button class="btn-buy" onclick="submitBankTopup()" style="margin-top:15px;">แจ้งโอนเงิน</button>
+                    </div>
+
+                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999; font-size:14px;"><i class="fas fa-chevron-left"></i> กลับหน้าหลัก</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('shop_db')) || { users: {}, current: null };
+        // State คงเดิม เพิ่มเติมระบบแจ้งโอน
+        let state = {
+            users: JSON.parse(localStorage.getItem('baobei_users')) || { "admin": {password: "admin123", balance: 999} },
+            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: ["CODE-01"], 2: [], 3: [], 4: [] },
+            topupRequests: JSON.parse(localStorage.getItem('baobei_requests')) || [],
+            currentUser: null,
+            isAdmin: false
+        };
 
-        function showAuth(t) {
-            document.getElementById('loginPage').classList.toggle('hidden', t !== 'login');
-            document.getElementById('regPage').classList.toggle('hidden', t !== 'reg');
+        // ฟังก์ชันสลับ Tab เติมเงิน
+        function switchTopupTab(type) {
+            document.getElementById('topup-gift').classList.toggle('hidden', type !== 'gift');
+            document.getElementById('topup-bank').classList.toggle('hidden', type !== 'bank');
+            const btns = document.querySelectorAll('.tab-btn');
+            btns[0].classList.toggle('active', type === 'gift');
+            btns[1].classList.toggle('active', type === 'bank');
         }
 
-        function doRegister() {
-            let u = document.getElementById('r_user').value;
-            let p = document.getElementById('r_pass').value;
-            if(!u || !p) return Swal.fire('เตือน','กรุณากรอกให้ครบ','warning');
-            db.users[u] = { pass: p, bal: 0 };
-            localStorage.setItem('shop_db', JSON.stringify(db));
-            Swal.fire('สำเร็จ','สมัครเรียบร้อย ล็อกอินได้เลย','success').then(() => showAuth('login'));
-        }
+        // --- ระบบเติมเงินซองของขวัญ (Auto Simulation) ---
+        async function verifyGiftAuto() {
+            const link = document.getElementById('giftLinkInput').value.trim();
+            if(!link.includes('gift.truemoney.com')) return Swal.fire('ลิ้งค์ไม่ถูกต้อง', 'กรุณาใส่ลิ้งค์ซองของขวัญให้ถูกต้อง', 'error');
 
-        function doLogin() {
-            let u = document.getElementById('l_user').value;
-            let p = document.getElementById('l_pass').value;
-            if(db.users[u] && db.users[u].pass === p) {
-                db.current = u;
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
+            Swal.fire({ title: 'กำลังตรวจสอบซอง...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            // ในระบบจริงต้องส่ง link ไปยัง Backend เพื่อเรียก API TrueMoney
+            setTimeout(() => {
+                const mockAmount = 50; // สมมติว่าในซองมี 50 บาท
+                state.users[state.currentUser].balance += mockAmount;
+                saveData();
                 updateUI();
-            } else {
-                Swal.fire('ผิดพลาด','ชื่อหรือรหัสผ่านไม่ถูกต้อง','error');
+                Swal.fire('สำเร็จ', `เติมเงินจำนวน ${mockAmount} บาท เข้าบัญชีแล้วค่ะ`, 'success');
+                document.getElementById('giftLinkInput').value = "";
+            }, 2000);
+        }
+
+        // --- ระบบแจ้งโอนธนาคาร ---
+        function previewTopupSlip(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('topupSlipPreview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function updateUI() {
-            document.getElementById('balText').innerText = db.users[db.current].bal.toFixed(2);
-            document.getElementById('prodList').innerHTML = [
-                {n: 'ไอดีไก่เลเวล 30', p: 15, img: 'https://img5.pic.in.th/file/secure-sv1/item1.png'},
-                {n: 'Gmail ประกัน 3 วัน', p: 10, img: 'https://img5.pic.in.th/file/secure-sv1/item2.png'}
-            ].map(x => `
-                <div class="stat-box" style="text-align:center;">
-                    <img src="${x.img}" style="width:100%; border-radius:10px;">
-                    <div style="margin:10px 0;">${x.n}</div>
-                    <button class="btn-auth" style="padding:5px; font-size:12px;">ซื้อ ${x.p} ฿</button>
+        function submitBankTopup() {
+            const amt = parseFloat(document.getElementById('bankAmount').value);
+            const slip = document.getElementById('topupSlipPreview').src;
+            if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงิน', 'warning');
+            if(!slip || slip.includes('window')) return Swal.fire('ขาดสลิป', 'กรุณาอัปโหลดรูปสลิป', 'warning');
+
+            state.topupRequests.push({
+                user: state.currentUser,
+                amount: amt,
+                slip: slip,
+                time: new Date().toLocaleString(),
+                status: 'pending'
+            });
+            saveData();
+            Swal.fire('ส่งข้อมูลแล้ว', 'รอแอดมินตรวจสอบสลิปสักครู่นะคะ', 'success').then(() => showPage('home'));
+        }
+
+        // ฟังก์ชันจัดการ Admin Panel (อนุมัติสลิป)
+        function openAdminPanel() {
+            let reqList = state.topupRequests.filter(r => r.status === 'pending').map((r, i) => `
+                <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:10px; text-align:left;">
+                    <p><b>ผู้ใช้:</b> ${r.user} | <b>ยอด:</b> ${r.amount} ฿</p>
+                    <img src="${r.slip}" style="width:100%; border-radius:5px;">
+                    <button onclick="approveTopup(${i})" style="background:green; color:white; border:none; padding:5px 10px; border-radius:5px; margin-top:5px;">อนุมัติ</button>
                 </div>
-            `).join('');
+            `).join('') || "ไม่มีคำขอค้างอยู่";
+
+            Swal.fire({
+                title: 'รายการแจ้งโอน',
+                html: `<div style="max-height:400px; overflow-y:auto;">${reqList}</div>`,
+                showCloseButton: true
+            });
+        }
+
+        window.approveTopup = (idx) => {
+            const req = state.topupRequests[idx];
+            state.users[req.user].balance += req.amount;
+            req.status = 'approved';
+            saveData();
+            updateUI();
+            Swal.fire('สำเร็จ', 'เติมเงินให้ลูกค้าแล้ว', 'success').then(() => openAdminPanel());
+        };
+
+        // ฟังก์ชันพื้นฐานอื่นๆ
+        function handleLogin() {
+            const u = document.getElementById('loginUsername').value;
+            const p = document.getElementById('loginPassword').value;
+            if(u === 'admin' && p === 'admin123') {
+                state.currentUser = u; state.isAdmin = true;
+            } else if(state.users[u] && state.users[u].password === p) {
+                state.currentUser = u; state.isAdmin = false;
+            } else {
+                return Swal.fire('ผิดพลาด', 'ชื่อหรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('shopContent').classList.remove('hidden');
+            if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
+            updateUI();
+        }
+
+        function handleRegister() {
+            const u = document.getElementById('regUsername').value;
+            const p = document.getElementById('regPassword').value;
+            if(!u || !p) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning');
+            state.users[u] = { password: p, balance: 0 };
+            saveData();
+            Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้วค่ะ', 'success').then(() => toggleAuth('login'));
+        }
+
+        function toggleAuth(p) {
+            document.getElementById('loginPage').classList.toggle('hidden', p !== 'login');
+            document.getElementById('registerPage').classList.toggle('hidden', p !== 'register');
         }
 
         function showPage(p) {
@@ -163,24 +248,52 @@
             document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
         }
 
-        function setTab(n) {
-            document.getElementById('area1').classList.toggle('hidden', n !== 1);
-            document.getElementById('area2').classList.toggle('hidden', n !== 2);
-            document.getElementById('t1').classList.toggle('active', n === 1);
-            document.getElementById('t2').classList.toggle('active', n === 2);
+        function saveData() {
+            localStorage.setItem('baobei_users', JSON.stringify(state.users));
+            localStorage.setItem('baobei_requests', JSON.stringify(state.topupRequests));
         }
 
-        function checkGift() {
-            let link = document.getElementById('giftLink').value;
-            if(!link.includes('gift.truemoney.com')) return Swal.fire('รูปแบบผิด','ลิ้งค์ซองไม่ถูกต้อง','error');
-            Swal.fire({title: 'กำลังตรวจสอบซอง', didOpen: () => Swal.showLoading()});
-            setTimeout(() => {
-                db.users[db.current].bal += 50; // ตัวอย่างบวกเงิน
-                localStorage.setItem('shop_db', JSON.stringify(db));
-                updateUI();
-                Swal.fire('สำเร็จ','เติมเงิน 50 บาทเรียบร้อย','success');
-            }, 2000);
+        function updateUI() {
+            document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
+            const list = document.getElementById('productList');
+            const prods = [
+                {id: 1, name: "email(นอก) ติดสิท", price: 10},
+                {id: 2, name: "email(นอก) โนเเพค", price: 12},
+                {id: 3, name: "emailThai ติดสิท", price: 15},
+                {id: 4, name: "emailThai โนแพค", price: 18}
+            ];
+            list.innerHTML = prods.map(p => `
+                <div class="product-card">
+                    <img src="https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" class="product-img">
+                    <div class="product-info">
+                        <div style="font-weight:bold;">${p.name}</div>
+                        <div style="color:var(--main); font-size:20px; margin:10px 0;">${p.price} ฿</div>
+                        <button class="btn-buy" onclick="buy(${p.id}, ${p.price})">ซื้อสินค้า</button>
+                    </div>
+                </div>
+            `).join('');
         }
+
+        function buy(id, price) {
+            if(state.users[state.currentUser].balance < price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนนะคะ', 'warning');
+            state.users[state.currentUser].balance -= price;
+            saveData();
+            updateUI();
+            Swal.fire('สำเร็จ', 'ขอบคุณที่อุดหนุนค่ะ!', 'success');
+        }
+
+        // Snow Effect
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let w = window.innerWidth, h = window.innerHeight;
+        canvas.width = w; canvas.height = h;
+        let particles = Array.from({length: 50}, () => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*3+1, d: Math.random()*1}));
+        function draw() {
+            ctx.clearRect(0,0,w,h); ctx.fillStyle = "white"; ctx.beginPath();
+            particles.forEach(p => { ctx.moveTo(p.x, p.y); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); p.y += p.d; if(p.y > h) p.y = -10; });
+            ctx.fill(); requestAnimationFrame(draw);
+        }
+        draw();
     </script>
 </body>
 </html>
