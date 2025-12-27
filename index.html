@@ -25,16 +25,16 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         
-        /* New Stats Bar */
+        /* Stats Bar */
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-item { background: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom: 4px solid var(--main); }
+        .stat-item { background: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom: 4px solid var(--main); position: relative; z-index: 10; }
         .stat-item i { font-size: 24px; color: var(--main); margin-bottom: 10px; }
         .stat-value { font-size: 20px; font-weight: bold; display: block; }
         .stat-label { font-size: 13px; color: #888; }
 
         /* Product */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
-        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; border: 1px solid #f0f0f0; }
+        .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; border: 1px solid #f0f0f0; z-index: 10; }
         .product-card:hover { transform: translateY(-10px); border-color: var(--main); }
         .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 50px; font-size: 12px; }
         .product-img { width: 100%; height: 240px; object-fit: contain; padding: 20px; box-sizing: border-box; }
@@ -43,7 +43,14 @@
         .product-price { color: var(--main); font-size: 24px; font-weight: 700; margin-bottom: 15px; }
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
-        /* Topup */
+        /* Realistic Snow Effect */
+        .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .snow { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.8; animation: fall linear infinite; }
+        @keyframes fall {
+            to { transform: translateY(105vh) translateX(20px); }
+        }
+
+        /* Topup & Login UI */
         .hidden { display: none !important; }
         .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
         .bank-box { background: #f8f0ff; border: 2px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
@@ -51,12 +58,11 @@
         .copy-btn { background: var(--bank); color: white; border: none; padding: 5px 15px; border-radius: 50px; font-size: 12px; cursor: pointer; margin-top: 10px; }
         .tm-box { background: #fff4e6; border: 2px solid #ffd8a8; padding: 20px; border-radius: 20px; margin: 20px 0; }
         
-        /* Login UI */
         #loginPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 3000; }
         .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; box-sizing: border-box; }
 
-        /* Web Chat */
+        /* Web Chat & Admin Panel */
         .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 400px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.3s; transform: translateY(20px); opacity: 0; pointer-events: none; }
         .chat-widget.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -68,7 +74,6 @@
         .chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 10px; outline: none; }
         .chat-input-area button { background: var(--main); color: white; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
 
-        /* Admin Layout */
         #adminPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 4000; display: flex; flex-direction: column; }
         .admin-content { display: flex; flex: 1; overflow: hidden; }
         .admin-sidebar { width: 250px; background: #f1f1f1; border-right: 1px solid #ddd; overflow-y: auto; }
@@ -80,28 +85,16 @@
         .stock-editor { padding: 20px; border-top: 2px solid #eee; background: #fafafa; }
         .stock-editor select, .stock-editor textarea { width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Kanit'; }
 
-        /* Floating Chat Button */
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
         .floating-chat:hover { transform: scale(1.1) rotate(5deg); }
         .chat-label { position: absolute; right: 75px; background: white; color: #333; padding: 5px 15px; border-radius: 10px; font-size: 14px; font-weight: bold; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1); pointer-events: none; }
-
-        /* Cute Effects */
-        .snowflake { color: #fff; font-size: 1em; font-family: Arial; text-shadow: 0 0 1px #000; position: fixed; top: -10%; z-index: 9999; user-select: none; cursor: default; animation-name: snowflakes-fall, snowflakes-shake; animation-duration: 10s, 3s; animation-timing-function: linear, ease-in-out; animation-iteration-count: infinite, infinite; animation-play-state: running, running; }
-        @keyframes snowflakes-fall { 0% { top: -10%; } 100% { top: 100%; } }
-        @keyframes snowflakes-shake { 0% { transform: translateX(0px); } 50% { transform: translateX(80px); } 100% { transform: translateX(0px); } }
 
         @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .floating-chat { bottom: 20px; right: 20px; } .chat-widget { right: 10px; width: calc(100% - 20px); } .stats-bar { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="snowflakes" aria-hidden="true">
-        <div class="snowflake" style="left:10%; animation-delay:0s,0s;">🌸</div>
-        <div class="snowflake" style="left:30%; animation-delay:1s,1s;">✨</div>
-        <div class="snowflake" style="left:50%; animation-delay:2s,2s;">🌸</div>
-        <div class="snowflake" style="left:70%; animation-delay:3s,3s;">✨</div>
-        <div class="snowflake" style="left:90%; animation-delay:1.5s,1s;">🌸</div>
-    </div>
+    <div class="snow-container" id="snowContainer"></div>
 
     <div id="adminPanel" class="hidden">
         <div class="chat-header">
@@ -225,6 +218,25 @@
     </div>
 
     <script>
+        // Realistic Snow Script
+        function createSnow() {
+            const container = document.getElementById('snowContainer');
+            const count = 50; // จำนวนหิมะ
+            for (let i = 0; i < count; i++) {
+                const snow = document.createElement('div');
+                snow.className = 'snow';
+                const size = Math.random() * 5 + 2 + 'px';
+                snow.style.width = size;
+                snow.style.height = size;
+                snow.style.left = Math.random() * 100 + 'vw';
+                snow.style.animationDuration = Math.random() * 3 + 4 + 's';
+                snow.style.opacity = Math.random();
+                snow.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(snow);
+            }
+        }
+        createSnow();
+
         let inventory = JSON.parse(localStorage.getItem('baobei_inventory')) || {
             1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
             2: Array.from({length: 0}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
