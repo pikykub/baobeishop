@@ -52,21 +52,22 @@
         .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 400px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.3s; transform: translateY(20px); opacity: 0; pointer-events: none; }
         .chat-widget.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
-        .msg { margin-bottom: 2px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
-        .msg-admin { background: #eee; align-self: flex-start; border-bottom-left-radius: 2px; color: #333; }
-        .msg-user { background: var(--main); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
+        .msg-admin { background: #eee; align-self: flex-start; color: #333; }
+        .msg-user { background: var(--main); color: white; align-self: flex-end; }
         .chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; }
         .chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 10px; outline: none; }
         .chat-input-area button { background: var(--main); color: white; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
 
-        /* Admin Dashboard Mode UI */
-        .admin-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; color: white; z-index: 4000; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 15px; }
-        .admin-chat-grid { display: grid; grid-template-columns: 1fr; gap: 20px; flex: 1; overflow: hidden; }
-        .admin-msg-area { background: #222; border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; }
-        .admin-input-box { background: #333; padding: 15px; display: flex; gap: 10px; }
-        .admin-input-box input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #444; color: white; }
+        /* Admin Layout */
+        #adminPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 4000; display: flex; flex-direction: column; }
+        .admin-content { display: flex; flex: 1; overflow: hidden; }
+        .admin-sidebar { width: 250px; background: #f1f1f1; border-right: 1px solid #ddd; overflow-y: auto; }
+        .user-tab { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; transition: 0.2s; }
+        .user-tab:hover { background: #e2e2e2; }
+        .user-tab.active { background: var(--main); color: white; }
+        .admin-chat-area { flex: 1; display: flex; flex-direction: column; }
 
         /* Floating Chat Button */
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
@@ -78,18 +79,18 @@
 </head>
 <body>
 
-    <div id="adminPanel" class="admin-panel hidden">
-        <div class="admin-header">
-            <h2><i class="fas fa-user-shield"></i> BAOBEI ADMIN DASHBOARD (<span id="adminNameTag"></span>)</h2>
-            <button class="btn-contact" onclick="handleLogout()" style="background:var(--main); color:white; border:none;">ออกจากระบบ</button>
+    <div id="adminPanel" class="hidden">
+        <div class="chat-header">
+            <span><i class="fas fa-user-shield"></i> BAOBEI ADMIN SYSTEM</span>
+            <button onclick="handleLogout()" style="background:none; border:1px solid white; color:white; border-radius:5px; padding:2px 10px; cursor:pointer;">ออก</button>
         </div>
-        <div class="admin-chat-grid">
-            <div class="admin-msg-area">
-                <div class="chat-header" style="background:#333;">รายการสนทนารวม (เปิดค้างไว้เพื่อรับแจ้งเตือน)</div>
-                <div id="adminChatMessages" class="chat-messages" style="padding:20px;"></div>
-                <div class="admin-input-box">
-                    <input type="text" id="adminReplyInput" placeholder="พิมพ์ในฐานะแอดมิน..." onkeypress="if(event.key==='Enter') sendAdminReply()">
-                    <button class="btn-buy" onclick="sendAdminReply()" style="width:100px;">ส่งตอบ</button>
+        <div class="admin-content">
+            <div class="admin-sidebar" id="adminSidebar"></div>
+            <div class="admin-chat-area">
+                <div id="adminChatMessages" class="chat-messages" style="background:#fff; height: 100%;"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="adminInput" placeholder="ตอบแชทลูกค้า..." onkeypress="if(event.key==='Enter') adminSendMsg()">
+                    <button onclick="adminSendMsg()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
@@ -101,7 +102,7 @@
             <p style="margin-bottom: 20px; color: #666;">กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ร้านค้า</p>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้ของคุณ">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าใช้งานทันที</button>
-            <p style="font-size: 11px; color: #aaa; margin-top: 20px;">แอดมินใช้ชื่อขึ้นต้น: ADMIN_ (เช่น ADMIN_SOMBAT)</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">(Admin พิมพ์: ADMIN)</p>
         </div>
     </div>
 
@@ -150,7 +151,6 @@
                 <div class="topup-card">
                     <h3 style="margin-top:0;">ช่องทางการชำระเงิน</h3>
                     <div class="bank-box">
-                        <img src="https://upload.wikimedia.org/wikipedia/th/thumb/f/f0/KKP_Logo.png/220px-KKP_Logo.png" style="width: 50px; margin-bottom:10px;">
                         <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
                         <button class="copy-btn" onclick="copyAcc()"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
                     </div>
@@ -177,130 +177,100 @@
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
         let currentUser = "";
-        let isAdmin = false;
+        let currentAdminTarget = "";
 
         function handleLogin() {
             const u = document.getElementById('username').value.trim();
-            if(u === "") return Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้ใช้', 'warning');
-
+            if(!u) return;
             currentUser = u;
-            if(u.toUpperCase().startsWith("ADMIN_")) {
-                isAdmin = true;
+            if(u.toUpperCase() === "ADMIN") {
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('adminNameTag').innerText = u;
-                loadChatRealtime();
+                initAdmin();
             } else {
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('shopContent').classList.remove('hidden');
-                Swal.fire({ title: `สวัสดีคุณ ${u}`, icon: 'success', timer: 1500, showConfirmButton: false });
                 updateUI();
-                loadChatRealtime();
+                syncChat();
             }
         }
 
-        function toggleWebChat() {
-            document.getElementById('chatBox').classList.toggle('active');
-        }
-
-        function getChatData() {
-            return JSON.parse(localStorage.getItem('baobei_chats_v2') || '[]');
-        }
-
-        function saveChatData(data) {
-            localStorage.setItem('baobei_chats_v2', JSON.stringify(data));
-        }
-
-        function loadChatRealtime() {
-            const chats = getChatData();
-            const userBox = document.getElementById('chatMessages');
-            const adminBox = document.getElementById('adminChatMessages');
-            
-            const html = chats.map(m => `
-                <div class="msg ${m.role === 'ADMIN' ? 'msg-admin' : 'msg-user'}">
-                    <small style="display:block; font-size:10px; opacity:0.6;">${m.sender}</small>
-                    ${m.text}
-                </div>
-            `).join('');
-
-            if(userBox) { userBox.innerHTML = html; userBox.scrollTop = userBox.scrollHeight; }
-            if(adminBox) { adminBox.innerHTML = html; adminBox.scrollTop = adminBox.scrollHeight; }
-        }
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'baobei_chats_v2') {
-                loadChatRealtime();
-                const chats = JSON.parse(e.newValue);
-                const lastMsg = chats[chats.length - 1];
-                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-                
-                if (isAdmin && lastMsg.role !== 'ADMIN') {
-                    audio.play().catch(()=>{});
-                    Swal.fire({ title: 'ลูกค้าทักแชท!', text: lastMsg.text, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                } else if (!isAdmin && lastMsg.role === 'ADMIN') {
-                    audio.play().catch(()=>{});
-                    if(!document.getElementById('chatBox').classList.contains('active')) {
-                        Swal.fire({ title: `แอดมิน ${lastMsg.sender.split('_')[1] || ''} ตอบกลับ!`, icon: 'info', toast: true, position: 'top-end', timer: 3000 });
-                    }
-                }
-            }
-        });
+        // ระบบแชท Real-time
+        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
 
         function sendWebMsg() {
             const input = document.getElementById('chatInput');
-            if(!input.value.trim()) return;
-            const chats = getChatData();
-            chats.push({ sender: currentUser, text: input.value, role: 'USER', time: Date.now() });
-            saveChatData(chats);
+            const msg = input.value.trim();
+            if(!msg) return;
+            saveMessage(currentUser, msg, 'user');
             input.value = "";
-            loadChatRealtime();
+            syncChat();
         }
 
-        function sendAdminReply() {
-            const input = document.getElementById('adminReplyInput');
-            if(!input.value.trim()) return;
-            const chats = getChatData();
-            chats.push({ sender: currentUser, text: input.value, role: 'ADMIN', time: Date.now() });
-            saveChatData(chats);
-            input.value = "";
-            loadChatRealtime();
+        function saveMessage(user, text, type) {
+            let chats = JSON.parse(localStorage.getItem('baobei_chats') || '{}');
+            if(!chats[user]) chats[user] = [];
+            chats[user].push({ text, type, time: new Date().toLocaleTimeString() });
+            localStorage.setItem('baobei_chats', JSON.stringify(chats));
         }
+
+        function syncChat() {
+            if(currentUser === "ADMIN") return;
+            const chatMessages = document.getElementById('chatMessages');
+            let chats = JSON.parse(localStorage.getItem('baobei_chats') || '{}');
+            const myChats = chats[currentUser] || [];
+            chatMessages.innerHTML = myChats.map(m => `<div class="msg msg-${m.type}">${m.text}</div>`).join('');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Admin Functions
+        function initAdmin() {
+            setInterval(() => {
+                const chats = JSON.parse(localStorage.getItem('baobei_chats') || '{}');
+                const sidebar = document.getElementById('adminSidebar');
+                const users = Object.keys(chats);
+                sidebar.innerHTML = users.map(u => `<div class="user-tab ${u === currentAdminTarget ? 'active' : ''}" onclick="selectUser('${u}')">${u}</div>`).join('');
+                if(currentAdminTarget) renderAdminChat();
+            }, 1000);
+        }
+
+        function selectUser(u) { currentAdminTarget = u; renderAdminChat(); }
+
+        function renderAdminChat() {
+            const box = document.getElementById('adminChatMessages');
+            let chats = JSON.parse(localStorage.getItem('baobei_chats') || '{}');
+            const targetChats = chats[currentAdminTarget] || [];
+            box.innerHTML = targetChats.map(m => `<div class="msg msg-${m.type}">${m.text}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function adminSendMsg() {
+            const input = document.getElementById('adminInput');
+            if(!input.value.trim() || !currentAdminTarget) return;
+            saveMessage(currentAdminTarget, input.value, 'admin');
+            input.value = "";
+            renderAdminChat();
+        }
+
+        window.addEventListener('storage', syncChat);
 
         function handleLogout() { location.reload(); }
         function showPage(page) {
             document.getElementById('homePage').classList.toggle('hidden', page !== 'home');
             document.getElementById('topupPage').classList.toggle('hidden', page !== 'topup');
         }
-        function copyAcc() {
-            navigator.clipboard.writeText("2012019014");
-            Swal.fire({ title: 'คัดลอกแล้ว', icon: 'success', timer: 1000, showConfirmButton: false });
-        }
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
             const list = document.getElementById('productList');
-            list.innerHTML = products.map(p => `
-                <div class="product-card">
-                    <div class="stock-tag">คงเหลือ: ${inventory[p.id].length}</div>
-                    <img src="${p.image}" class="product-img">
-                    <div class="product-info">
-                        <div class="product-name">${p.name}</div>
-                        <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})">ซื้อสินค้า</button>
-                    </div>
-                </div>`).join('');
+            list.innerHTML = products.map(p => `<div class="product-card"><div class="stock-tag">คงเหลือ: ${inventory[p.id].length}</div><img src="${p.image}" class="product-img"><div class="product-info"><div class="product-name">${p.name}</div><div class="product-price">${p.price} ฿</div><button class="btn-buy" onclick="buyProduct(${p.id})">ซื้อสินค้า</button></div></div>`).join('');
         }
         function buyProduct(id) {
             const p = products.find(i => i.id === id);
-            if(wallet >= p.price) {
-                if(inventory[id].length === 0) return Swal.fire('ของหมด', '', 'error');
-                wallet -= p.price;
-                localStorage.setItem('walletBalance', wallet);
-                const code = inventory[id].pop();
+            if(wallet >= p.price && inventory[id].length > 0) {
+                wallet -= p.price; localStorage.setItem('walletBalance', wallet);
+                Swal.fire('สำเร็จ', `รหัส: ${inventory[id].pop()}`, 'success');
                 updateUI();
-                Swal.fire({ title: 'สำเร็จ!', html: `รหัส: <b>${code}</b>`, icon: 'success' });
-            } else {
-                Swal.fire('เงินไม่พอ', '', 'warning').then(() => showPage('topup'));
-            }
+            } else { Swal.fire('เงินไม่พอ', '', 'warning'); }
         }
     </script>
 </body>
