@@ -25,6 +25,17 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         
+        /* Dashboard Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a1a; color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; justify-content: center; border: 1px solid #333; }
+        .stat-label { font-size: 14px; color: #aaa; margin-bottom: 5px; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        .stat-value span { font-size: 14px; font-weight: normal; color: #888; margin-left: 5px; }
+
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
         /* Product */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
         .product-card { background: var(--card-bg); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative; border: 1px solid #f0f0f0; }
@@ -119,6 +130,25 @@
 
         <div class="container">
             <div id="homePage">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">ผู้ใช้งาน</div>
+                        <div class="stat-value" id="statUsers">218 <span>คน</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ยอดเติมเงิน</div>
+                        <div class="stat-value" id="statTopup">15,155.71 <span>บาท</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">สต็อก</div>
+                        <div class="stat-value" id="statStock">26 <span>ชิ้น</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ยอดขาย</div>
+                        <div class="stat-value" id="statSales">1,089 <span>ครั้ง</span></div>
+                    </div>
+                </div>
+
                 <div class="title-bar"><h2>รายการสินค้าพร้อมส่ง</h2></div>
                 <div id="productList" class="product-grid"></div>
                 
@@ -210,6 +240,14 @@
 
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
+            
+            // อัปเดตสต็อกรวมใน Dashboard
+            let totalStock = 0;
+            for(let id in inventory) {
+                totalStock += inventory[id].length;
+            }
+            document.getElementById('statStock').innerHTML = `${totalStock} <span>ชิ้น</span>`;
+
             const list = document.getElementById('productList');
             if(!list) return;
             list.innerHTML = products.map(p => {
@@ -278,4 +316,3 @@
     </script>
 </body>
 </html>
-
