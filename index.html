@@ -27,12 +27,12 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         
-        /* สไตล์ Stats Grid ตามภาพ */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: #1a1a1a; color: white; padding: 15px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; transition: 0.3s; }
+        /* ปรับสถิติเป็นแถวละ 2 ช่อง */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a1a; color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; transition: 0.3s; text-align: center; }
         .stat-box:hover { border-color: var(--main); }
-        .stat-label { font-size: 12px; color: #aaa; margin-bottom: 5px; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 14px; color: #aaa; margin-bottom: 5px; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
         .stat-value span { color: var(--main); }
 
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
@@ -83,7 +83,7 @@
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าสู่ระบบ</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">แอดมินใช้ชื่อ: admin</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">รบกวนทุกท่านแคปชื่อของท่านเองด้วยนะคะ</p>
         </div>
     </div>
 
@@ -105,12 +105,22 @@
         <div class="container">
             <div id="homePage">
                 <div class="stats-grid">
-                    <div class="stat-box"><div class="stat-label">สต็อกรวม</div><div class="stat-value"><span id="statStock">0</span> ชิ้น</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดขายรวม</div><div class="stat-value"><span id="statSalesTotal">1089</span> รายการ</div></div>
-                    <div class="stat-box"><div class="stat-label">Email นอก (สิท)</div><div class="stat-value"><span id="stat_1">0</span> ชิ้น</div></div>
-                    <div class="stat-box"><div class="stat-label">Email นอก (โน)</div><div class="stat-value"><span id="stat_2">0</span> ชิ้น</div></div>
-                    <div class="stat-box"><div class="stat-label">Email ไทย (สิท)</div><div class="stat-value"><span id="stat_3">0</span> ชิ้น</div></div>
-                    <div class="stat-box"><div class="stat-label">Email ไทย (โน)</div><div class="stat-value"><span id="stat_4">0</span> ชิ้น</div></div>
+                    <div class="stat-box">
+                        <div class="stat-label"><i class="fas fa-box"></i> สต็อกรวม</div>
+                        <div class="stat-value"><span id="statStock">0</span> ชิ้น</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label"><i class="fas fa-users"></i> จำนวนผู้ใช้</div>
+                        <div class="stat-value"><span id="statUsers">124</span> คน</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label"><i class="fas fa-shopping-cart"></i> ยอดขายรวม</div>
+                        <div class="stat-value"><span id="statSalesTotal">1089</span> รายการ</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label"><i class="fas fa-hand-holding-usd"></i> ยอดเติมเงิน</div>
+                        <div class="stat-value"><span id="statTopupTotal">15,400</span> ฿</div>
+                    </div>
                 </div>
                 
                 <div class="title-bar"><h2>สินค้าพร้อมส่ง</h2></div>
@@ -168,13 +178,8 @@
             document.getElementById('statSalesTotal').innerText = salesCount.toLocaleString();
             
             let totalStock = 0;
-            // อัปเดตสถิติรายตัวและคำนวณยอดรวม
             for(let key in inventory) {
-                let count = inventory[key].length;
-                totalStock += count;
-                if(document.getElementById(`stat_${key}`)) {
-                    document.getElementById(`stat_${key}`).innerText = count;
-                }
+                totalStock += inventory[key].length;
             }
             document.getElementById('statStock').innerText = totalStock;
 
@@ -197,7 +202,6 @@
             saveLocal();
         }
 
-        // --- Functions อื่นๆ (Login, Admin, Buy) ---
         function handleLogin() {
             const u = document.getElementById('username').value.trim();
             if(!u) return;
@@ -261,10 +265,9 @@
         }
 
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-        function sendChat() { /* ระบบแชทพื้นฐาน */ }
+        function sendChat() { }
         function handleLogout() { location.reload(); }
 
-        // --- Snow Effect ---
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
