@@ -27,14 +27,12 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         
-        .shop-banner-container { width: 100%; margin-bottom: 25px; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .shop-banner-img { width: 100%; display: block; object-fit: cover; }
-
-        /* สไตล์ระบบสถิติแบบรวม */
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: #1a1a1a; color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; text-align: center; }
-        .stat-label { font-size: 14px; color: #aaa; margin-bottom: 5px; }
-        .stat-value { font-size: 26px; font-weight: bold; color: #fff; }
+        /* สไตล์ Stats Grid ตามภาพ */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a1a; color: white; padding: 15px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid #333; transition: 0.3s; }
+        .stat-box:hover { border-color: var(--main); }
+        .stat-label { font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #fff; }
         .stat-value span { color: var(--main); }
 
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
@@ -85,7 +83,7 @@
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าสู่ระบบ</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">อย่าลืมแคปชื่อผู้ใช้ของท่านนะคะ</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">แอดมินใช้ชื่อ: admin</p>
         </div>
     </div>
 
@@ -107,14 +105,12 @@
         <div class="container">
             <div id="homePage">
                 <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-label"><i class="fas fa-boxes"></i> สต็อกรวมทั้งหมด</div>
-                        <div class="stat-value"><span id="statStock">0</span> ชิ้น</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label"><i class="fas fa-shopping-cart"></i> ยอดขายสะสม</div>
-                        <div class="stat-value"><span id="statSalesTotal">0</span> รายการ</div>
-                    </div>
+                    <div class="stat-box"><div class="stat-label">สต็อกรวม</div><div class="stat-value"><span id="statStock">0</span> ชิ้น</div></div>
+                    <div class="stat-box"><div class="stat-label">ยอดขายรวม</div><div class="stat-value"><span id="statSalesTotal">1089</span> รายการ</div></div>
+                    <div class="stat-box"><div class="stat-label">Email นอก (สิท)</div><div class="stat-value"><span id="stat_1">0</span> ชิ้น</div></div>
+                    <div class="stat-box"><div class="stat-label">Email นอก (โน)</div><div class="stat-value"><span id="stat_2">0</span> ชิ้น</div></div>
+                    <div class="stat-box"><div class="stat-label">Email ไทย (สิท)</div><div class="stat-value"><span id="stat_3">0</span> ชิ้น</div></div>
+                    <div class="stat-box"><div class="stat-label">Email ไทย (โน)</div><div class="stat-value"><span id="stat_4">0</span> ชิ้น</div></div>
                 </div>
                 
                 <div class="title-bar"><h2>สินค้าพร้อมส่ง</h2></div>
@@ -145,28 +141,13 @@
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
-        // --- Snow ---
-        const canvas = document.getElementById('snowCanvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, flakes = [];
-        function initSnow() {
-            width = window.innerWidth; height = window.innerHeight;
-            canvas.width = width; canvas.height = height;
-            flakes = [];
-            for (let i = 0; i < 100; i++) flakes.push({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 });
-        }
-        function drawSnow() {
-            ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath();
-            for (let f of flakes) { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); }
-            ctx.fill();
-            for (let f of flakes) { f.y += Math.pow(f.d, 2) + 1; if (f.y > height) f.y = -10; }
-        }
-        window.addEventListener('resize', initSnow); initSnow(); setInterval(drawSnow, 30);
-
-        // --- Core Data ---
+        // --- Core Data & Functions ---
         let inventory = JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] };
         let topupRequests = JSON.parse(localStorage.getItem('baobei_requests')) || [];
         let salesCount = parseInt(localStorage.getItem('baobei_sales')) || 1089;
+        let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
+        let currentUser = "";
+        let isAdmin = false;
 
         const products = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://cdn-icons-png.flaticon.com/512/281/281769.png" },
@@ -175,10 +156,6 @@
             { id: 4, name: "emailThai โนแพค", price: 18, image: "https://cdn-icons-png.flaticon.com/512/281/281769.png" }
         ];
 
-        let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
-        let currentUser = "";
-        let isAdmin = false;
-
         function saveLocal() {
             localStorage.setItem('baobei_inv', JSON.stringify(inventory));
             localStorage.setItem('baobei_requests', JSON.stringify(topupRequests));
@@ -186,30 +163,20 @@
             localStorage.setItem('baobei_sales', salesCount);
         }
 
-        function handleLogin() {
-            const u = document.getElementById('username').value.trim();
-            if(!u) return;
-            currentUser = u;
-            isAdmin = (u.toLowerCase() === 'admin');
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('shopContent').classList.remove('hidden');
-            
-            if(isAdmin) {
-                document.getElementById('adminBtn').style.display = "block";
-                document.getElementById('chatTitle').innerText = "ระบบจัดการแอดมิน";
-            }
-            updateUI();
-        }
-
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
             document.getElementById('statSalesTotal').innerText = salesCount.toLocaleString();
             
             let totalStock = 0;
+            // อัปเดตสถิติรายตัวและคำนวณยอดรวม
             for(let key in inventory) {
-                totalStock += inventory[key].length;
+                let count = inventory[key].length;
+                totalStock += count;
+                if(document.getElementById(`stat_${key}`)) {
+                    document.getElementById(`stat_${key}`).innerText = count;
+                }
             }
-            document.getElementById('statStock').innerText = totalStock.toLocaleString();
+            document.getElementById('statStock').innerText = totalStock;
 
             const list = document.getElementById('productList');
             list.innerHTML = products.map(p => {
@@ -230,68 +197,16 @@
             saveLocal();
         }
 
-        function openAdminPanel() {
-            const requestsHtml = topupRequests.map((req, index) => `
-                <tr>
-                    <td>${req.user}</td>
-                    <td>${req.amount} ฿</td>
-                    <td>${req.note}</td>
-                    <td><button class="btn-approve" onclick="approveTopup(${index})">อนุมัติ</button></td>
-                </tr>
-            `).join('');
-
-            Swal.fire({
-                title: 'จัดการหลังบ้าน',
-                width: '800px',
-                html: `
-                    <div style="text-align:left;">
-                        <h4 style="margin-bottom:10px; color:var(--main);"><i class="fas fa-money-bill-wave"></i> คำขออนุมัติเงิน</h4>
-                        <table class="admin-table">
-                            <thead><tr><th>ผู้ใช้</th><th>ยอด</th><th>เลขอ้างอิง</th><th>จัดการ</th></tr></thead>
-                            <tbody>${requestsHtml || '<tr><td colspan="4" style="text-align:center;">ไม่มีคำขอใหม่</td></tr>'}</tbody>
-                        </table>
-                        <hr>
-                        <h4 style="margin-top:20px; margin-bottom:10px; color:var(--main);"><i class="fas fa-box-open"></i> เติมสต็อกสินค้า</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:100%; margin: 5px 0;">
-                            ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
-                        </select>
-                        <textarea id="adm_codes" class="swal2-textarea" placeholder="ใส่รหัสสินค้าที่นี่ (1 บรรทัด = 1 ชิ้น)" style="width:100%; height:100px;"></textarea>
-                    </div>
-                `,
-                confirmButtonText: 'อัปเดตสต็อก',
-                showCancelButton: true,
-            }).then((res) => {
-                if(res.isConfirmed) {
-                    const pid = document.getElementById('adm_pid').value;
-                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
-                    if(codes.length > 0) {
-                        inventory[pid].push(...codes);
-                        updateUI();
-                        Swal.fire('สำเร็จ', `เติมสินค้า ${codes.length} ชิ้น เรียบร้อย`, 'success');
-                    }
-                }
-            });
-        }
-
-        function approveTopup(index) {
-            const req = topupRequests[index];
-            wallet += parseFloat(req.amount);
-            topupRequests.splice(index, 1);
+        // --- Functions อื่นๆ (Login, Admin, Buy) ---
+        function handleLogin() {
+            const u = document.getElementById('username').value.trim();
+            if(!u) return;
+            currentUser = u;
+            isAdmin = (u.toLowerCase() === 'admin');
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('shopContent').classList.remove('hidden');
+            if(isAdmin) document.getElementById('adminBtn').style.display = "block";
             updateUI();
-            Swal.close();
-            Swal.fire('สำเร็จ', 'อนุมัติเงินเข้าระบบเรียบร้อย', 'success');
-        }
-
-        function submitTopup() {
-            const amt = document.getElementById('topupAmount').value;
-            const note = document.getElementById('redeemCodeInput').value;
-            if(!amt || isNaN(amt)) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงินให้ถูกต้อง', 'error');
-            
-            topupRequests.push({ user: currentUser, amount: amt, note: note });
-            document.getElementById('topupAmount').value = "";
-            document.getElementById('redeemCodeInput').value = "";
-            saveLocal();
-            Swal.fire('ส่งคำขอแล้ว', 'กรุณารอแอดมินตรวจสอบยอดเงิน', 'success');
         }
 
         function buyProduct(id) {
@@ -299,39 +214,45 @@
             if(wallet >= p.price || isAdmin) {
                 if(inventory[id].length > 0) {
                     const code = inventory[id].pop();
-                    if(!isAdmin) {
-                        wallet -= p.price;
-                        salesCount += 1;
-                    }
+                    if(!isAdmin) { wallet -= p.price; salesCount += 1; }
                     updateUI();
-                    Swal.fire('ซื้อสำเร็จ', `รหัสสินค้า: <br><b style="font-size:20px; color:var(--main);">${code}</b>`, 'success');
-                } else {
-                    Swal.fire('สินค้าหมด', 'กรุณารอแอดมินเติมสต็อก', 'error');
-                }
-            } else { Swal.fire('ยอดเงินไม่พอ', 'กรุณาแจ้งเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup')); }
+                    Swal.fire('ซื้อสำเร็จ', `รหัสสินค้า: <br><b>${code}</b>`, 'success');
+                } else { Swal.fire('สินค้าหมด', '', 'error'); }
+            } else { Swal.fire('ยอดเงินไม่พอ', '', 'warning').then(() => showPage('topup')); }
         }
 
-        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+        function openAdminPanel() {
+            const requestsHtml = topupRequests.map((req, index) => `
+                <tr><td>${req.user}</td><td>${req.amount} ฿</td><td>${req.note}</td>
+                <td><button class="btn-approve" onclick="approveTopup(${index})">อนุมัติ</button></td></tr>`).join('');
 
-        function sendChat() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if(!msg) return;
+            Swal.fire({
+                title: 'จัดการสต็อก',
+                html: `<select id="adm_pid" class="swal2-input">${products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                       <textarea id="adm_codes" class="swal2-textarea" placeholder="ใส่รหัส (1 บรรทัด = 1 ชิ้น)"></textarea>`,
+                confirmButtonText: 'เพิ่มสินค้า',
+                showCancelButton: true
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    const pid = document.getElementById('adm_pid').value;
+                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
+                    inventory[pid].push(...codes);
+                    updateUI();
+                }
+            });
+        }
 
-            const chatBox = document.getElementById('chatMessages');
-            const type = isAdmin ? 'msg-admin' : 'msg-user';
-            const name = isAdmin ? 'แอดมิน' : currentUser;
+        function approveTopup(index) {
+            wallet += parseFloat(topupRequests[index].amount);
+            topupRequests.splice(index, 1);
+            updateUI(); Swal.close();
+        }
 
-            chatBox.innerHTML += `<div class="msg ${type}"><b>${name}:</b> ${msg}</div>`;
-            input.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            if(!isAdmin) {
-                setTimeout(() => {
-                    chatBox.innerHTML += `<div class="msg msg-admin"><b>แอดมิน:</b> รับทราบครับ กำลังตรวจสอบข้อมูลให้ครับ...</div>`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }, 1500);
-            }
+        function submitTopup() {
+            const amt = document.getElementById('topupAmount').value;
+            if(!amt || isNaN(amt)) return;
+            topupRequests.push({ user: currentUser, amount: amt, note: document.getElementById('redeemCodeInput').value });
+            saveLocal(); Swal.fire('ส่งคำขอแล้ว', '', 'success');
         }
 
         function showPage(p) {
@@ -339,7 +260,26 @@
             document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
         }
 
+        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+        function sendChat() { /* ระบบแชทพื้นฐาน */ }
         function handleLogout() { location.reload(); }
+
+        // --- Snow Effect ---
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, flakes = [];
+        function initSnow() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            for (let i = 0; i < 100; i++) flakes.push({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 });
+        }
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath();
+            for (let f of flakes) { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); }
+            ctx.fill();
+            for (let f of flakes) { f.y += Math.pow(f.d, 2) + 1; if (f.y > height) f.y = -10; }
+        }
+        initSnow(); setInterval(drawSnow, 30);
     </script>
 </body>
 </html>
