@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --main: #ff2d55; --bg: #f8f9fa; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
+        :root { --main: #ff2d55; --bg: #f8f9fa; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --truemoney: #ff8c00; }
         body { font-family: 'Kanit', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
         .announcement { background: #222; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
         
@@ -42,6 +42,7 @@
         .bank-box { background: #f8f0ff; border: 2px solid #e0cffc; padding: 20px; border-radius: 20px; margin: 20px 0; }
         .qr-img { width: 220px; height: auto; margin: 15px auto; display: block; border-radius: 10px; border: 1px solid #ddd; background: #fff; }
         .copy-btn { background: var(--bank); color: white; border: none; padding: 5px 15px; border-radius: 50px; font-size: 12px; cursor: pointer; margin-top: 10px; }
+        .tm-box { background: #fff4e6; border: 2px solid #ffd8a8; padding: 20px; border-radius: 20px; margin: 20px 0; }
         
         /* Login UI */
         #loginPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 3000; }
@@ -102,7 +103,7 @@
             <p style="margin-bottom: 20px; color: #666;">กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ร้านค้า</p>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้ของคุณ">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าใช้งานทันที</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">(Admin พิมพ์: ADMIN)</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">(Admin รบกวน: ทักมาถามแอค)</p>
         </div>
     </div>
 
@@ -151,9 +152,18 @@
                 <div class="topup-card">
                     <h3 style="margin-top:0;">ช่องทางการชำระเงิน</h3>
                     <div class="bank-box">
+                        <p style="margin:0; font-weight:bold; color:var(--bank);">โอนผ่านธนาคาร</p>
                         <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
                         <button class="copy-btn" onclick="copyAcc()"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
+                        <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="สแกนจ่าย">
                     </div>
+                    
+                    <div class="tm-box">
+                        <p style="margin:0; font-weight:bold; color:var(--truemoney);">TrueMoney Wallet</p>
+                        <div style="font-size:24px; font-weight:bold; margin:10px 0; color:#444;">080-920-0932</div>
+                        <p style="font-size:13px; color:#666;">หรือส่งลิ้งค์ซองวอเลทในแชทแอดมิน</p>
+                    </div>
+                    
                     <button class="btn-buy" onclick="showPage('home')">กลับหน้าหลัก</button>
                 </div>
             </div>
@@ -163,16 +173,16 @@
     <script>
         const inventory = {
             1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
-            2: Array.from({length: 9}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
-            3: Array.from({length: 9}, (_, i) => `EMAIL-THAI-SIT-${i+1}:PASS777`), 
-            4: Array.from({length: 9}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
+            2: Array.from({length: 0}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
+            3: Array.from({length: 0}, (_, i) => `EMAIL-THAI-SIT-${i+1}:PASS777`), 
+            4: Array.from({length: 0}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
         const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://via.placeholder.com/150" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://via.placeholder.com/150" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://via.placeholder.com/150" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://via.placeholder.com/150" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
@@ -271,6 +281,10 @@
                 Swal.fire('สำเร็จ', `รหัส: ${inventory[id].pop()}`, 'success');
                 updateUI();
             } else { Swal.fire('เงินไม่พอ', '', 'warning'); }
+        }
+        function copyAcc() {
+            navigator.clipboard.writeText("2012019014");
+            Swal.fire({ title: 'คัดลอกสำเร็จ!', icon: 'success', timer: 1000, showConfirmButton: false });
         }
     </script>
 </body>
