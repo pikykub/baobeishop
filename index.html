@@ -75,9 +75,15 @@
         .login-input:focus { border-color: var(--main); }
 
         /* Chat System */
-        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 400px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
+        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
         .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Chat Tabs Style */
+        .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
+        .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
+
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
         .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
         .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
@@ -198,11 +204,17 @@
     </div>
 
     <div class="chat-widget" id="chatBox">
-        <div class="chat-header"><span><i class="fas fa-comments"></i> Global Chat</span><i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i></div>
-        <div class="chat-messages" id="chatMessages">
-            </div>
+        <div class="chat-header">
+            <span><i class="fas fa-comments"></i> <span id="chatTitle">Global Chat</span></span>
+            <i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i>
+        </div>
+        <div class="chat-tabs">
+            <div id="tabGlobal" class="chat-tab active" onclick="setChatMode('global')">แชทรวม</div>
+            <div id="tabPrivate" class="chat-tab" onclick="setChatMode('private')">แอดมิน (ส่วนตัว)</div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
         <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: #fff;">
-            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความคุยกันที่นี่...">
+            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความที่นี่...">
             <button onclick="sendChat()" style="background: var(--main); color:white; border:none; width: 35px; height: 35px; border-radius: 50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
@@ -227,8 +239,10 @@
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
             currentUser: null,
             isAdmin: false,
-            // เพิ่มสถานะแชทกลาง
-            globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || []
+            globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
+            // New: Private Messages State { username: [messages] }
+            privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
+            chatMode: 'global' // 'global' or 'private'
         };
 
         /**
@@ -242,13 +256,13 @@
                 localStorage.setItem('baobei_sales', state.salesCount);
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
+                localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
             } catch (e) {
                 console.error("Storage full or unavailable", e);
             }
         }
 
         function updateUI() {
-            // Stats Update
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
             document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
@@ -256,12 +270,10 @@
             let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
             document.getElementById('statStock').innerText = totalStock;
 
-            // User Profile Update
             if (state.currentUser && state.users[state.currentUser]) {
                 document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
             }
 
-            // Render Products
             const list = document.getElementById('productList');
             list.innerHTML = PRODUCTS.map(p => {
                 const stock = state.inventory[p.id]?.length || 0;
@@ -279,8 +291,7 @@
                 </div>`;
             }).join('');
 
-            // อัปเดตข้อความในแชท
-            renderGlobalChat();
+            renderChat();
         }
 
         /**
@@ -415,16 +426,30 @@
                 </div>
             `).join('') || "<p style='color:#999'>ไม่มีรายการค้าง</p>";
 
+            // Private Chat Admin Check
+            let usersWithChats = Object.keys(state.privateMessages);
+            let privateChatsHtml = usersWithChats.map(u => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px; margin-bottom:5px; border-radius:8px;">
+                    <span style="font-size:13px;"><b>${u}</b> (${state.privateMessages[u].length})</span>
+                    <button onclick="adminOpenPrivate('${u}')" style="background:var(--main); color:#fff; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">คุย</button>
+                </div>
+            `).join('') || "<p style='color:#999'>ยังไม่มีใครทักแชทส่วนตัว</p>";
+
             Swal.fire({
                 title: 'ADMIN PANEL',
                 html: `
-                    <div style="max-height: 400px; overflow-y: auto; background:#f4f4f4; padding:10px; border-radius:10px;">
-                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">คำขอเติมเงิน</h4>
+                    <div style="max-height: 400px; overflow-y: auto; background:#f4f4f4; padding:10px; border-radius:10px; text-align:left;">
+                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">แชทส่วนตัวกับลูกค้า</h4>
+                        <div style="margin-bottom:15px;">${privateChatsHtml}</div>
+
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">คำขอเติมเงิน</h4>
                         ${reqHtml}
+
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">เติมสต็อกสินค้า</h4>
                         <select id="adm_pid" class="swal2-input" style="width:100%; margin:5px 0;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
                         <textarea id="adm_codes" class="swal2-textarea" style="width:100%; margin:5px 0;" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
-                        <button onclick="clearChat()" style="width:100%; margin-top:10px; background:#333; color:#fff; border:none; padding:10px; border-radius:5px;">ล้างแชททั้งหมด</button>
+                        
+                        <button onclick="clearChat()" style="width:100%; margin-top:10px; background:#333; color:#fff; border:none; padding:10px; border-radius:5px; cursor:pointer;">ล้างแชท Global ทั้งหมด</button>
                     </div>
                 `,
                 confirmButtonText: 'บันทึกสต็อก',
@@ -442,6 +467,12 @@
                 }
             });
         }
+
+        window.adminOpenPrivate = (user) => {
+            Swal.close();
+            toggleWebChat();
+            setChatMode('private', user);
+        };
 
         window.approve = (idx) => {
             const req = state.topupRequests[idx];
@@ -462,7 +493,7 @@
         };
 
         /**
-         * 6. NAVIGATION & GLOBAL CHAT
+         * 6. NAVIGATION & CHAT LOGIC
          */
         function showPage(p) {
             document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
@@ -471,14 +502,32 @@
         }
 
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+
+        // New Chat Functions
+        function setChatMode(mode, targetUser = null) {
+            state.chatMode = mode;
+            document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
+            document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
+            
+            if(mode === 'global') {
+                document.getElementById('chatTitle').innerText = "Global Chat";
+            } else {
+                if(state.isAdmin) {
+                    // Admin mode needs a target user
+                    state.activePrivateUser = targetUser || state.activePrivateUser;
+                    document.getElementById('chatTitle').innerText = "แชทกับ: " + (state.activePrivateUser || 'เลือกจากหน้า Admin');
+                } else {
+                    document.getElementById('chatTitle').innerText = "Chat with Admin";
+                }
+            }
+            renderChat();
+        }
         
-        // ฟังก์ชันส่งแชทกลาง
         function sendChat() {
             const inp = document.getElementById('chatInput');
             const text = inp.value.trim();
             if(!text) return;
-            
-            // สร้างข้อมูลข้อความใหม่
+
             const newMessage = {
                 sender: state.currentUser || 'Guest',
                 text: text,
@@ -486,32 +535,54 @@
                 isAdmin: state.isAdmin
             };
 
-            // เพิ่มลงในสถานะและบันทึก
-            state.globalMessages.push(newMessage);
-            // จำกัดจำนวนข้อความไว้ที่ 50 ข้อความล่าสุด
-            if(state.globalMessages.length > 50) state.globalMessages.shift();
+            if(state.chatMode === 'global') {
+                state.globalMessages.push(newMessage);
+                if(state.globalMessages.length > 50) state.globalMessages.shift();
+            } else {
+                // Private Chat Logic
+                let target;
+                if(state.isAdmin) {
+                    target = state.activePrivateUser;
+                    if(!target) return Swal.fire('Error', 'กรุณาเลือกผู้ใช้จาก Admin Panel ก่อน', 'warning');
+                } else {
+                    target = state.currentUser;
+                }
+
+                if(!state.privateMessages[target]) state.privateMessages[target] = [];
+                state.privateMessages[target].push(newMessage);
+            }
             
             persist();
-            renderGlobalChat();
+            renderChat();
             inp.value = "";
         }
 
-        // ฟังก์ชันวาดข้อความแชทกลาง
-        function renderGlobalChat() {
+        function renderChat() {
             const chatBox = document.getElementById('chatMessages');
             chatBox.innerHTML = "";
             
-            if(state.globalMessages.length === 0) {
+            let messages = [];
+            if(state.chatMode === 'global') {
+                messages = state.globalMessages;
+            } else {
+                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
+                messages = state.privateMessages[target] || [];
+                if(messages.length === 0 && !state.isAdmin) {
+                    chatBox.innerHTML = '<div style="text-align:center; color:#ccc; margin-top:20px; font-size:12px;">พิมพ์ข้อความทักหาแอดมินได้เลย!</div>';
+                    return;
+                }
+            }
+
+            if(messages.length === 0 && state.chatMode === 'global') {
                 chatBox.innerHTML = '<div style="text-align:center; color:#ccc; margin-top:20px; font-size:12px;">ยังไม่มีข้อความคุยกัน เริ่มพิมพ์เลย!</div>';
                 return;
             }
 
-            state.globalMessages.forEach(m => {
+            messages.forEach(m => {
                 const msgDiv = document.createElement('div');
                 const isMe = m.sender === state.currentUser;
                 
                 msgDiv.className = `msg ${m.isAdmin ? 'msg-admin' : (isMe ? 'msg-user' : 'msg-admin')}`;
-                // ถ้าไม่ใช่เรา และไม่ใช่แอดมิน ให้ใช้สไตล์สีเทาปกติ (เลียนแบบ msg-admin)
                 if(!isMe && !m.isAdmin) msgDiv.style.background = "#ececec";
 
                 msgDiv.innerHTML = `
@@ -523,10 +594,9 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // ฟังก์ชันล้างแชท (สำหรับ Admin)
         window.clearChat = () => {
             Swal.fire({
-                title: 'ล้างแชท?',
+                title: 'ล้างแชท Global?',
                 text: "ข้อความทั้งหมดจะถูกลบถาวร",
                 icon: 'warning',
                 showCancelButton: true,
@@ -541,16 +611,16 @@
             });
         }
 
-        // ฟังเหตุการณ์การเปลี่ยนแปลง Storage เพื่ออัปเดตแชทจากหน้าต่างอื่น (Real-time Sync)
         window.addEventListener('storage', (e) => {
-            if (e.key === 'baobei_global_chat') {
-                state.globalMessages = JSON.parse(e.newValue) || [];
-                renderGlobalChat();
+            if (e.key === 'baobei_global_chat' || e.key === 'baobei_private_chat') {
+                state.globalMessages = JSON.parse(localStorage.getItem('baobei_global_chat')) || [];
+                state.privateMessages = JSON.parse(localStorage.getItem('baobei_private_chat')) || {};
+                renderChat();
             }
         });
 
         /**
-         * 7. SNOW EFFECT (Optimized)
+         * 7. SNOW EFFECT
          */
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
@@ -593,7 +663,6 @@
         initSnow();
         requestAnimationFrame(drawSnow);
         
-        // รัน UI ครั้งแรก
         updateUI();
     </script>
 </body>
