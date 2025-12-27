@@ -22,7 +22,7 @@
         body { 
             font-family: 'Kanit', sans-serif; 
             margin: 0; 
-            /* ใส่ภาพพื้นหลังจากลิงก์ที่กำหนด */
+            /* เปลี่ยนลิงก์พื้นหลังตามที่กำหนด และนำ Fixed ออกเพื่อให้เลื่อนตามหน้าจอปกติ */
             background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed;
             background-size: cover;
             color: var(--text); 
@@ -30,19 +30,13 @@
             position: relative;
         }
 
-        /* เพิ่ม Overlay เพื่อให้เนื้อหาอ่านง่ายขึ้น และทำให้พื้นหลังดูดุกดิก */
+        /* นำ Animation backgroundMove ออก และปรับ Overlay ให้คงที่ */
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 228, 225, 0.3); /* สีชมพูจางๆ */
+            background: rgba(255, 228, 225, 0.2); 
             z-index: -1;
-            animation: backgroundMove 10s ease-in-out infinite alternate;
-        }
-
-        @keyframes backgroundMove {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
         }
         
         .decoration-snowman {
@@ -54,7 +48,6 @@
             filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1));
             pointer-events: none;
             user-select: none;
-            animation: float 3s ease-in-out infinite;
         }
         
         .decoration-tree {
@@ -65,11 +58,6 @@
             z-index: 5;
             filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1));
             pointer-events: none;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
 
         .announcement { background: #ff4757; color: #fff; padding: 8px; text-align: center; font-size: 13px; font-weight: 300; }
@@ -84,7 +72,6 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; color: #2c3e50; }
         
-        /* เพิ่ม Banner บนสุดของสถิติ */
         .banner-top {
             width: 100%;
             border-radius: 20px;
@@ -280,7 +267,7 @@
                         <div id="accNumber" style="font-size:26px; font-weight:bold; margin:10px 0;">201-201-9014</div>
                         <button class="copy-btn" onclick="copyAcc()" style="padding: 10px; border-radius: 10px; border: 1px solid #ddd; cursor: pointer;"><i class="far fa-copy"></i> คัดลอกเลขบัญชี</button>
                         <br>
-                        <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" class="qr-img" alt="สแกนจ่าย">
+                        <img src="https://lh3.googleusercontent.com/d/1vA5W7fI_9f7f0Z9Vf4lF8_Q5g9e-R6r8" class="qr-img" alt="สแกนจ่าย">
                     </div>
                     <button class="btn-buy" onclick="showPage('home')" style="margin-top: 20px;">กลับหน้าหลัก</button>
                 </div>
@@ -289,7 +276,6 @@
     </div>
 
     <script>
-        // Script ทั้งหมดเหมือนเดิม
         function createSnow() {
             const container = document.getElementById('snowContainer');
             const count = 50;
@@ -315,7 +301,7 @@
             4: Array.from({length: 0}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
-        const productImageUrl = "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7";
+        const productImageUrl = "https://lh3.googleusercontent.com/d/1X5l_Y4w-V9f0Z8Vf4lF8_Q5g9e-R6r8"; // ลิงก์ตัวอย่างสำหรับสินค้า
         const products = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: productImageUrl },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: productImageUrl },
