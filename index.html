@@ -69,6 +69,10 @@
         .user-tab:hover { background: #e2e2e2; }
         .user-tab.active { background: var(--main); color: white; }
         .admin-chat-area { flex: 1; display: flex; flex-direction: column; }
+        
+        /* Stock Editor */
+        .stock-editor { padding: 20px; border-top: 2px solid #eee; background: #fafafa; }
+        .stock-editor select, .stock-editor textarea { width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Kanit'; }
 
         /* Floating Chat Button */
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); cursor: pointer; z-index: 2000; transition: 0.3s; text-decoration: none; }
@@ -88,10 +92,22 @@
         <div class="admin-content">
             <div class="admin-sidebar" id="adminSidebar"></div>
             <div class="admin-chat-area">
-                <div id="adminChatMessages" class="chat-messages" style="background:#fff; height: 100%;"></div>
-                <div class="chat-input-area">
+                <div id="adminChatMessages" class="chat-messages" style="background:#fff; height: 50%;"></div>
+                <div class="chat-input-area" style="border-bottom: 2px solid #eee;">
                     <input type="text" id="adminInput" placeholder="ตอบแชทลูกค้า..." onkeypress="if(event.key==='Enter') adminSendMsg()">
                     <button onclick="adminSendMsg()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                
+                <div class="stock-editor">
+                    <h4 style="margin: 0 0 10px 0;"><i class="fas fa-box-open"></i> ระบบเติมของ (Stock Manager)</h4>
+                    <select id="stockTarget">
+                        <option value="1">email(นอก) ติดสิท</option>
+                        <option value="2">email(นอก) โนเเพค</option>
+                        <option value="3">emailThai ติดสิท</option>
+                        <option value="4">emailThai โนแพค</option>
+                    </select>
+                    <textarea id="stockInput" rows="3" placeholder="วางรายการเมลที่นี่ (1 บรรทัด = 1 เมล)&#10;ตัวอย่าง: user:pass"></textarea>
+                    <button class="btn-buy" onclick="addStock()" style="padding: 8px;">เติมสินค้าเข้าสต็อก</button>
                 </div>
             </div>
         </div>
@@ -103,7 +119,7 @@
             <p style="margin-bottom: 20px; color: #666;">กรุณาระบุชื่อผู้ใช้เพื่อเข้าสู่ร้านค้า</p>
             <input type="text" id="username" class="login-input" placeholder="ระบุชื่อผู้ใช้ของคุณ">
             <button class="btn-buy" onclick="handleLogin()" style="margin-top: 15px;">เข้าใช้งานทันที</button>
-            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">(Admin รบกวน: ทักมาถามแอค)</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: 20px;">(Admin พิมพ์: ADMIN)</p>
         </div>
     </div>
 
@@ -171,11 +187,12 @@
     </div>
 
     <script>
-        const inventory = {
+        // โหลดข้อมูลสต็อกที่บันทึกไว้ หรือใช้ค่าเริ่มต้น
+        let inventory = JSON.parse(localStorage.getItem('baobei_inventory')) || {
             1: Array.from({length: 9}, (_, i) => `EMAIL-OUT-SIT-${i+1}:PASS999`), 
-            2: Array.from({length: 0}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
-            3: Array.from({length: 0}, (_, i) => `EMAIL-THAI-SIT-${i+1}:PASS777`), 
-            4: Array.from({length: 0}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
+            2: Array.from({length: 9}, (_, i) => `EMAIL-OUT-FREE-${i+1}:PASS888`), 
+            3: Array.from({length: 9}, (_, i) => `EMAIL-THAI-SIT-${i+1}:PASS777`), 
+            4: Array.from({length: 9}, (_, i) => `EMAIL-THAI-FREE-${i+1}:PASS666`)
         };
 
         const products = [
@@ -203,6 +220,21 @@
                 updateUI();
                 syncChat();
             }
+        }
+
+        // ระบบเติมสต็อก
+        function addStock() {
+            const id = document.getElementById('stockTarget').value;
+            const input = document.getElementById('stockInput').value.trim();
+            if(!input) return Swal.fire('แจ้งเตือน', 'กรุณาใส่ข้อมูลเมล', 'warning');
+
+            const newItems = input.split('\n').filter(line => line.trim() !== "");
+            inventory[id] = [...inventory[id], ...newItems];
+            localStorage.setItem('baobei_inventory', JSON.stringify(inventory));
+            
+            document.getElementById('stockInput').value = "";
+            Swal.fire('สำเร็จ', `เติมสินค้า ID:${id} จำนวน ${newItems.length} รายการแล้ว`, 'success');
+            updateUI();
         }
 
         // ระบบแชท Real-time
@@ -262,7 +294,11 @@
             renderAdminChat();
         }
 
-        window.addEventListener('storage', syncChat);
+        window.addEventListener('storage', () => {
+            inventory = JSON.parse(localStorage.getItem('baobei_inventory')) || inventory;
+            updateUI();
+            syncChat();
+        });
 
         function handleLogout() { location.reload(); }
         function showPage(page) {
@@ -272,15 +308,19 @@
         function updateUI() {
             document.getElementById('balanceDisplay').innerText = wallet.toLocaleString();
             const list = document.getElementById('productList');
+            if(!list) return;
             list.innerHTML = products.map(p => `<div class="product-card"><div class="stock-tag">คงเหลือ: ${inventory[p.id].length}</div><img src="${p.image}" class="product-img"><div class="product-info"><div class="product-name">${p.name}</div><div class="product-price">${p.price} ฿</div><button class="btn-buy" onclick="buyProduct(${p.id})">ซื้อสินค้า</button></div></div>`).join('');
         }
         function buyProduct(id) {
             const p = products.find(i => i.id === id);
             if(wallet >= p.price && inventory[id].length > 0) {
-                wallet -= p.price; localStorage.setItem('walletBalance', wallet);
-                Swal.fire('สำเร็จ', `รหัส: ${inventory[id].pop()}`, 'success');
+                wallet -= p.price; 
+                localStorage.setItem('walletBalance', wallet);
+                const item = inventory[id].pop();
+                localStorage.setItem('baobei_inventory', JSON.stringify(inventory));
+                Swal.fire('สำเร็จ', `รหัส: ${item}`, 'success');
                 updateUI();
-            } else { Swal.fire('เงินไม่พอ', '', 'warning'); }
+            } else { Swal.fire('เงินไม่พอ หรือ ของหมด', '', 'warning'); }
         }
         function copyAcc() {
             navigator.clipboard.writeText("2012019014");
