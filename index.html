@@ -25,6 +25,9 @@
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; }
         
+        /* Banner Image */
+        .shop-banner { width: 100%; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
         /* Dashboard Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
         .stat-box { background: #1a1a1a; color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; justify-content: center; border: 1px solid #333; }
@@ -130,6 +133,8 @@
 
         <div class="container">
             <div id="homePage">
+                <img src="https://drive.google.com/uc?export=view&id=1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" class="shop-banner" alt="Shop Banner">
+
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label">ผู้ใช้งาน</div>
@@ -173,7 +178,7 @@
                         <img src="https://lh3.googleusercontent.com/d/1AcgoynmgRgq-YWCR0i2GhmHUEeTCO7TK" class="qr-img" alt="Scan QR">
                     </div>
                     <div style="background:#fff7ed; padding:15px; border-radius:15px; border:1px solid #fed7aa; margin-bottom:20px;">
-                        <p style="margin:0; font-size:14px;">ทรูวอลเล็ท: <strong>080-920-0932</strong></p>
+                        <p style="margin:0; font-size:14px;">ทรูวงเล็ท: <strong>080-920-0932</strong></p>
                     </div>
                     <input type="text" id="redeemCodeInput" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; text-align:center; font-size:18px; margin-bottom:15px;" placeholder="กรอกรหัสเติมเงิน">
                     <button class="btn-buy" onclick="redeemCode()">ยืนยันเติมเงิน</button>
@@ -192,10 +197,10 @@
         };
 
         const products = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://drive.google.com/uc?export=view&id=1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://drive.google.com/uc?export=view&id=1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://drive.google.com/uc?export=view&id=1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://drive.google.com/uc?export=view&id=1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" }
         ];
 
         let wallet = parseFloat(localStorage.getItem('walletBalance') || 0);
