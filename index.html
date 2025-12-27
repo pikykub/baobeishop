@@ -79,9 +79,11 @@
         .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
         .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
         .msg-user { background: var(--main); color: white; align-self: flex-end; }
+        /* สไตล์ชื่อผู้ส่งในแชท */
+        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; }
         
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
         .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
@@ -196,12 +198,11 @@
     </div>
 
     <div class="chat-widget" id="chatBox">
-        <div class="chat-header"><span><i class="fas fa-headset"></i> Support</span><i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i></div>
+        <div class="chat-header"><span><i class="fas fa-comments"></i> Global Chat</span><i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i></div>
         <div class="chat-messages" id="chatMessages">
-            <div class="msg msg-admin">สวัสดีค่ะ มีอะไรให้แอดมินช่วยไหมคะ?</div>
-        </div>
+            </div>
         <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: #fff;">
-            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความ...">
+            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความคุยกันที่นี่...">
             <button onclick="sendChat()" style="background: var(--main); color:white; border:none; width: 35px; height: 35px; border-radius: 50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
@@ -225,7 +226,9 @@
             salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
             currentUser: null,
-            isAdmin: false
+            isAdmin: false,
+            // เพิ่มสถานะแชทกลาง
+            globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || []
         };
 
         /**
@@ -238,6 +241,7 @@
                 localStorage.setItem('baobei_requests', JSON.stringify(state.topupRequests));
                 localStorage.setItem('baobei_sales', state.salesCount);
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
+                localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
             } catch (e) {
                 console.error("Storage full or unavailable", e);
             }
@@ -274,6 +278,9 @@
                     </div>
                 </div>`;
             }).join('');
+
+            // อัปเดตข้อความในแชท
+            renderGlobalChat();
         }
 
         /**
@@ -417,6 +424,7 @@
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">เติมสต็อกสินค้า</h4>
                         <select id="adm_pid" class="swal2-input" style="width:100%; margin:5px 0;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
                         <textarea id="adm_codes" class="swal2-textarea" style="width:100%; margin:5px 0;" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
+                        <button onclick="clearChat()" style="width:100%; margin-top:10px; background:#333; color:#fff; border:none; padding:10px; border-radius:5px;">ล้างแชททั้งหมด</button>
                     </div>
                 `,
                 confirmButtonText: 'บันทึกสต็อก',
@@ -454,7 +462,7 @@
         };
 
         /**
-         * 6. NAVIGATION & CHAT
+         * 6. NAVIGATION & GLOBAL CHAT
          */
         function showPage(p) {
             document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
@@ -464,17 +472,82 @@
 
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
         
+        // ฟังก์ชันส่งแชทกลาง
         function sendChat() {
             const inp = document.getElementById('chatInput');
-            if(!inp.value.trim()) return;
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'msg msg-user';
-            msgDiv.innerText = inp.value;
-            document.getElementById('chatMessages').appendChild(msgDiv);
+            const text = inp.value.trim();
+            if(!text) return;
+            
+            // สร้างข้อมูลข้อความใหม่
+            const newMessage = {
+                sender: state.currentUser || 'Guest',
+                text: text,
+                time: Date.now(),
+                isAdmin: state.isAdmin
+            };
+
+            // เพิ่มลงในสถานะและบันทึก
+            state.globalMessages.push(newMessage);
+            // จำกัดจำนวนข้อความไว้ที่ 50 ข้อความล่าสุด
+            if(state.globalMessages.length > 50) state.globalMessages.shift();
+            
+            persist();
+            renderGlobalChat();
             inp.value = "";
-            const box = document.getElementById('chatMessages');
-            box.scrollTop = box.scrollHeight;
         }
+
+        // ฟังก์ชันวาดข้อความแชทกลาง
+        function renderGlobalChat() {
+            const chatBox = document.getElementById('chatMessages');
+            chatBox.innerHTML = "";
+            
+            if(state.globalMessages.length === 0) {
+                chatBox.innerHTML = '<div style="text-align:center; color:#ccc; margin-top:20px; font-size:12px;">ยังไม่มีข้อความคุยกัน เริ่มพิมพ์เลย!</div>';
+                return;
+            }
+
+            state.globalMessages.forEach(m => {
+                const msgDiv = document.createElement('div');
+                const isMe = m.sender === state.currentUser;
+                
+                msgDiv.className = `msg ${m.isAdmin ? 'msg-admin' : (isMe ? 'msg-user' : 'msg-admin')}`;
+                // ถ้าไม่ใช่เรา และไม่ใช่แอดมิน ให้ใช้สไตล์สีเทาปกติ (เลียนแบบ msg-admin)
+                if(!isMe && !m.isAdmin) msgDiv.style.background = "#ececec";
+
+                msgDiv.innerHTML = `
+                    <span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>
+                    ${m.text}
+                `;
+                chatBox.appendChild(msgDiv);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // ฟังก์ชันล้างแชท (สำหรับ Admin)
+        window.clearChat = () => {
+            Swal.fire({
+                title: 'ล้างแชท?',
+                text: "ข้อความทั้งหมดจะถูกลบถาวร",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ลบเลย'
+            }).then(res => {
+                if(res.isConfirmed) {
+                    state.globalMessages = [];
+                    persist();
+                    updateUI();
+                    Swal.fire('ลบแล้ว', '', 'success');
+                }
+            });
+        }
+
+        // ฟังเหตุการณ์การเปลี่ยนแปลง Storage เพื่ออัปเดตแชทจากหน้าต่างอื่น (Real-time Sync)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'baobei_global_chat') {
+                state.globalMessages = JSON.parse(e.newValue) || [];
+                renderGlobalChat();
+            }
+        });
 
         /**
          * 7. SNOW EFFECT (Optimized)
@@ -519,6 +592,9 @@
         window.addEventListener('resize', initSnow);
         initSnow();
         requestAnimationFrame(drawSnow);
+        
+        // รัน UI ครั้งแรก
+        updateUI();
     </script>
 </body>
 </html>
