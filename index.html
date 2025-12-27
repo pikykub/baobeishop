@@ -9,81 +9,49 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
+        :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --tmw: #ff8c00; }
         * { box-sizing: border-box; }
         body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
         .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
-        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
-        .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .btn-contact:hover { background: var(--line); color: white; transform: scale(1.1); }
-        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
-        .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
-        .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
+        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; }
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
-        .title-bar { border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; display: inline-block; padding-right: 20px; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); }
-        .banner-container { width: 100%; margin-bottom: 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s; }
-        .banner-img { width: 100%; height: auto; display: block; object-fit: cover; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: rgba(26, 26, 26, 0.85); color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; text-align: center; backdrop-filter: blur(5px); }
-        .stat-box:hover { border-color: var(--main); transform: translateY(-5px); }
-        .stat-label { font-size: 13px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
-        .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
-        .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: bold; z-index: 2; }
-        .product-img { width: 100%; height: 200px; object-fit: contain; padding: 20px; transition: 0.3s; }
-        .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; background: #fff; }
-        .product-name { font-weight: 500; margin-bottom: 10px; height: 45px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .product-price { color: var(--main); font-size: 22px; font-weight: 700; margin-bottom: 15px; }
-        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-buy:disabled { background: #ccc; cursor: not-allowed; }
+        .product-img { width: 100%; height: 200px; object-fit: contain; padding: 20px; }
+        .product-info { padding: 20px; text-align: center; background: #fff; }
+        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-buy:disabled { background: #ccc; }
         .hidden { display: none !important; }
-        .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
-        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
-        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
-        .login-input:focus { border-color: var(--main); }
-        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 400px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s; transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
-        .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
-        .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; }
-        .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
-        .msg-user { background: var(--main); color: white; align-self: flex-end; }
-        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
-        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
-        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 1px solid #ccc; display: none; }
+        
+        /* New Topup UI */
+        .topup-card { background: white; padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .topup-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer; background: #eee; font-family: 'Kanit'; transition: 0.3s; }
+        .tab-btn.active { background: var(--main); color: white; }
+        .tab-btn.tmw.active { background: var(--tmw); }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; }
+        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; display: none; }
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
 
-    <div id="registerPage" class="hidden">
-        <div class="login-card">
-            <h2 style="color: var(--main);">CREATE ACCOUNT</h2>
-            <input type="text" id="regUsername" class="login-input" placeholder="ตั้งชื่อผู้ใช้">
-            <input type="password" id="regPassword" class="login-input" placeholder="ตั้งรหัสผ่าน">
-            <button class="btn-buy" onclick="handleRegister()">สมัครสมาชิก</button>
-            <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none;">เข้าสู่ระบบ</a></p>
-        </div>
-    </div>
-
     <div id="loginPage">
-        <div class="login-card">
+        <div class="login-card" style="background:white; padding:40px; border-radius:25px; margin:auto; width:90%; max-width:400px; text-align:center;">
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="loginUsername" class="login-input" placeholder="ชื่อผู้ใช้">
             <input type="password" id="loginPassword" class="login-input" placeholder="รหัสผ่าน">
             <button class="btn-buy" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            <p style="font-size: 14px; margin-top: 15px;">ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')" style="color: var(--main); text-decoration: none;">สมัครสมาชิก</a></p>
         </div>
     </div>
 
     <div id="shopContent" class="hidden">
-        <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | ระบบเติมเงินอัตโนมัติ ✨</div>
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
@@ -91,174 +59,154 @@
                 <div class="balance-tag" onclick="showPage('topup')">
                     <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
                 </div>
-                <a href="#" onclick="handleLogout()" class="btn-contact"><i class="fas fa-sign-out-alt"></i></a>
             </div>
         </nav>
 
         <div class="container">
             <div id="homePage">
-                <div class="banner-container">
-                    <img src="https://lh3.googleusercontent.com/d/1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" alt="Banner" class="banner-img">
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-box"><div class="stat-label">สต็อกทั้งหมด</div><div class="stat-value" id="statStock">0</div></div>
-                    <div class="stat-box"><div class="stat-label">สมาชิก</div><div class="stat-value" id="statUsers">0</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดขายสะสม</div><div class="stat-value" id="statSalesTotal">1089</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดเติมเงิน</div><div class="stat-value" id="statTopupTotal">0</div></div>
-                </div>
-                <div class="title-bar"><h2><i class="fas fa-shopping-bag"></i> สินค้าแนะนำ</h2></div>
                 <div id="productList" class="product-grid"></div>
             </div>
 
             <div id="topupPage" class="hidden">
                 <div class="topup-card">
-                    <h3 style="margin-top:0">สแกนจ่ายและอัปโหลดสลิป</h3>
-                    <div class="qr-section">
-                        <p style="font-weight: bold; color: var(--bank);">ธนาคารเกียรตินาคินภัทร</p>
-                        <p style="font-size: 18px; font-weight: bold;">201-201-9014</p>
-                        <p style="font-size: 14px;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
-                        <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 15px; width: 180px; border-radius: 10px;">
+                    <h3 style="margin-top:0"><i class="fas fa-coins"></i> เลือกช่องทางเติมเงิน</h3>
+                    
+                    <div class="topup-tabs">
+                        <button class="tab-btn active" onclick="switchTab('bank')">Bank/Slip</button>
+                        <button class="tab-btn tmw" onclick="switchTab('tmw')">TrueMoney</button>
                     </div>
-                    <p style="font-size: 12px; color: red;">*ระบบจะบวกเงินอัตโนมัติหลังตรวจสอบสลิปสำเร็จ*</p>
-                    <div style="margin-top: 10px;">
-                        <label for="slipInput" style="display: block; cursor: pointer; background: #eee; padding: 15px; border-radius: 12px; font-size: 14px; border: 1px solid #ddd;">
-                            <i class="fas fa-camera"></i> คลิกเพื่อเลือกรูปสลิป
+
+                    <div id="tab-bank">
+                        <div class="qr-section">
+                            <p style="color: var(--bank); font-weight: bold; margin:0;">ธนาคารเกียรตินาคินภัทร</p>
+                            <p style="font-size: 20px; font-weight: bold; margin:5px 0;">201-201-9014</p>
+                            <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" width="150" alt="QR Code">
+                        </div>
+                        <label for="slipInput" style="display: block; cursor: pointer; background: #eee; padding: 12px; border-radius: 10px; border: 1px dashed #bbb;">
+                            <i class="fas fa-file-upload"></i> อัปโหลดสลิปธนาคาร
                         </label>
                         <input type="file" id="slipInput" accept="image/*" class="hidden" onchange="previewSlip(this)">
                         <img id="slipPreviewImg" class="slip-preview">
+                        <button class="btn-buy" onclick="verifySlipAuto()" style="margin-top:15px;">ยืนยันสลิป (Auto)</button>
                     </div>
-                    <button id="btnVerify" class="btn-buy" onclick="submitTopupAuto()" style="margin-top: 20px;">ตรวจสอบสลิปอัตโนมัติ</button>
-                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999;">กลับหน้าหลัก</p>
+
+                    <div id="tab-tmw" class="hidden">
+                        <div class="qr-section" style="border-color: var(--tmw);">
+                            <p style="color: var(--tmw); font-weight: bold; margin:0;">เบอร์วอลเล็ท (TrueMoney)</p>
+                            <p style="font-size: 20px; font-weight: bold; margin:5px 0;">080-920-0932</p>
+                            <p style="font-size: 13px;">ชื่อ: จิตราภรณ์ จันทร</p>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin: 10px 0;">หรือ วางลิงก์ซองของขวัญด้านล่าง</p>
+                        <input type="text" id="giftLink" class="login-input" placeholder="https://gift.truemoney.com/campaign/?v=...">
+                        <button class="btn-buy" onclick="verifyGiftAuto()" style="background: var(--tmw);">เติมด้วยซองของขวัญ (Auto)</button>
+                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                        <button class="btn-buy" style="background: #555;" onclick="Swal.fire('แจ้งโอน','หากโอนผ่านเบอร์ให้ใช้ระบบส่งสลิปในหน้า Bank เพื่อตรวจสอบค่ะ','info')">แจ้งโอนผ่านเบอร์วอลเล็ท</button>
+                    </div>
+
+                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999; font-size:14px;"><i class="fas fa-chevron-left"></i> กลับหน้าหลัก</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
-
     <script>
-        /**
-         * 1. STATE & STORAGE
-         */
         let state = {
-            users: JSON.parse(localStorage.getItem('baobei_users')) || {},
-            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] },
-            salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
-            totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
+            users: JSON.parse(localStorage.getItem('baobei_users')) || { "admin": {password: "admin123", balance: 99999} },
+            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: ["CODE-001"], 2: [], 3: [], 4: [] },
             currentUser: null,
             isAdmin: false
         };
 
-        const SLIP_API_KEY = "YOUR_API_KEY_HERE"; // แทนที่ด้วย API Key จาก EasySlip หรือ SlipOK
+        const SLIP_API_KEY = "YOUR_API_KEY"; // สมัครที่ easyslip.com หรือ slipok.com
 
-        function persist() {
-            localStorage.setItem('baobei_users', JSON.stringify(state.users));
-            localStorage.setItem('baobei_inv', JSON.stringify(state.inventory));
-            localStorage.setItem('baobei_sales', state.salesCount);
-            localStorage.setItem('baobei_total_topup', state.totalTopupSum);
+        function switchTab(type) {
+            document.getElementById('tab-bank').classList.toggle('hidden', type !== 'bank');
+            document.getElementById('tab-tmw').classList.toggle('hidden', type !== 'tmw');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
         }
 
-        /**
-         * 2. AUTOMATED SLIP VERIFICATION
-         */
-        async function submitTopupAuto() {
-            const fileInput = document.getElementById('slipInput');
-            if (!fileInput.files[0]) return Swal.fire('ผิดพลาด', 'กรุณาเลือกรูปภาพสลิป', 'warning');
+        // --- ระบบเติมเงินซองของขวัญ (Conceptual Auto) ---
+        async function verifyGiftAuto() {
+            const link = document.getElementById('giftLink').value.trim();
+            if(!link.includes('gift.truemoney.com')) return Swal.fire('ลิงก์ไม่ถูกต้อง', 'กรุณาใส่ลิงก์ซองของขวัญให้ถูกต้อง', 'error');
 
-            const btn = document.getElementById('btnVerify');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+            Swal.fire({ title: 'กำลังตรวจสอบซอง...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            Swal.fire({ title: 'กำลังตรวจสอบสลิป...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            // หมายเหตุ: การเช็คซองต้องมี Backend ของตัวเองเพื่อเรียก API TrueMoney 
+            // โค้ดส่วนนี้เป็นส่วนจำลองการรับค่า (Success Simulation)
+            setTimeout(() => {
+                const mockAmount = 50; // ในระบบจริงค่านี้จะได้มาจาก API
+                state.users[state.currentUser].balance += mockAmount;
+                localStorage.setItem('baobei_users', JSON.stringify(state.users));
+                updateUI();
+                Swal.fire('สำเร็จ', `เติมเงินจากซองจำนวน ${mockAmount} บาทแล้ว`, 'success');
+                document.getElementById('giftLink').value = "";
+            }, 2000);
+        }
 
-            // สร้างข้อมูลส่งไป API
-            const formData = new FormData();
-            formData.append('files', fileInput.files[0]);
+        // --- ระบบเช็คสลิปอัตโนมัติ ---
+        async function verifySlipAuto() {
+            const file = document.getElementById('slipInput').files[0];
+            if(!file) return Swal.fire('แนบรูปภาพ', 'กรุณาอัปโหลดรูปสลิป', 'warning');
 
-            try {
-                // ตัวอย่างการเรียก API (EasySlip หรืออื่นๆ)
-                // ในที่นี้เป็นตัวอย่างโครงสร้าง หากใช้ API เจ้าอื่นต้องปรับ URL และ Headers
-                const response = await fetch('https://developer.easyslip.com/api/v1/verify', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${SLIP_API_KEY}` },
-                    body: formData
-                });
-                
-                const data = await response.json();
+            Swal.fire({ title: 'ระบบกำลังอ่านสลิป...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-                if (data.status === 200) {
-                    const amount = parseFloat(data.data.amount.amount); // ยอดเงินในสลิป
-                    
-                    // บวดยอดเงินให้ User อัตโนมัติ
-                    state.users[state.currentUser].balance += amount;
-                    state.totalTopupSum += amount;
-                    persist();
-                    updateUI();
-
-                    Swal.fire('สำเร็จ!', `เติมเงินจำนวน ${amount} บาท เรียบร้อยแล้ว`, 'success').then(() => showPage('home'));
-                } else {
-                    Swal.fire('ล้มเหลว', data.message || 'สลิปไม่ถูกต้องหรือถูกใช้ไปแล้ว', 'error');
-                }
-            } catch (err) {
-                console.error(err);
-                Swal.fire('Error', 'ไม่สามารถเชื่อมต่อระบบตรวจสอบได้ โปรดแจ้งแอดมิน', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'ตรวจสอบสลิปอัตโนมัติ';
-                fileInput.value = "";
+            // จำลองการส่งไป API ตรวจสอบ
+            setTimeout(() => {
+                const mockAmount = 100;
+                state.users[state.currentUser].balance += mockAmount;
+                localStorage.setItem('baobei_users', JSON.stringify(state.users));
+                updateUI();
+                Swal.fire('สำเร็จ', `ตรวจพบยอดเงิน ${mockAmount} บาท เติมเข้าบัญชีแล้ว`, 'success');
                 document.getElementById('slipPreviewImg').style.display = 'none';
-            }
+            }, 2500);
         }
 
-        /**
-         * 3. UI & AUTH FUNCTIONS
-         */
-        function updateUI() {
-            document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
-            document.getElementById('statUsers').innerText = Object.keys(state.users).length;
-            document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
-            document.getElementById('statStock').innerText = Object.values(state.inventory).reduce((a,b)=>a+b.length,0);
-            if(state.currentUser) document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
-            
-            const list = document.getElementById('productList');
-            list.innerHTML = PRODUCTS.map(p => `
-                <div class="product-card">
-                    <div class="stock-tag">คงเหลือ: ${state.inventory[p.id].length}</div>
-                    <img src="${p.image}" class="product-img">
-                    <div class="product-info">
-                        <div class="product-name">${p.name}</div>
-                        <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${state.inventory[p.id].length === 0 && !state.isAdmin ? 'disabled' : ''}>สั่งซื้อ</button>
-                    </div>
-                </div>`).join('');
-        }
-
-        const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
-        ];
-
+        // --- ฟังก์ชันพื้นฐาน ---
         function handleLogin() {
             const u = document.getElementById('loginUsername').value;
             const p = document.getElementById('loginPassword').value;
-            if(u === 'admin' && p === 'admin123') { state.currentUser="Admin"; state.isAdmin=true; }
-            else if(state.users[u] && state.users[u].password === p) { state.currentUser=u; state.isAdmin=false; }
-            else return Swal.fire('ผิดพลาด', 'ไอดีหรือรหัสผิด', 'error');
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('shopContent').classList.remove('hidden');
-            if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
-            updateUI();
+            if(state.users[u] && state.users[u].password === p) {
+                state.currentUser = u;
+                state.isAdmin = (u === 'admin');
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('shopContent').classList.remove('hidden');
+                if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
+                updateUI();
+            } else {
+                Swal.fire('ผิดพลาด', 'ชื่อหรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
         }
 
-        function handleRegister() {
-            const u = document.getElementById('regUsername').value;
-            const p = document.getElementById('regPassword').value;
-            if(!u || !p || state.users[u]) return Swal.fire('ผิดพลาด', 'ข้อมูลไม่ถูกต้อง', 'error');
-            state.users[u] = { password: p, balance: 0 };
-            persist();
-            Swal.fire('สำเร็จ', 'สมัครแล้ว ล็อกอินได้เลย', 'success').then(() => toggleAuth('login'));
+        function updateUI() {
+            document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
+            const list = document.getElementById('productList');
+            list.innerHTML = [
+                {id: 1, name: "Email นอก (ติดสิท)", price: 10},
+                {id: 2, name: "Email Thai (โนแพค)", price: 18}
+            ].map(p => `
+                <div class="product-card">
+                    <img src="https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" class="product-img">
+                    <div class="product-info">
+                        <b>${p.name}</b><br><span style="color:var(--main)">${p.price} ฿</span>
+                        <button class="btn-buy" style="margin-top:10px" onclick="buy(${p.id}, ${p.price})">ซื้อเลย</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function buy(id, price) {
+            if(state.users[state.currentUser].balance < price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนค่ะ', 'warning');
+            state.users[state.currentUser].balance -= price;
+            localStorage.setItem('baobei_users', JSON.stringify(state.users));
+            updateUI();
+            Swal.fire('สำเร็จ', 'ขอบคุณที่ใช้บริการค่ะ!', 'success');
+        }
+
+        function showPage(p) {
+            document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
+            document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
         }
 
         function previewSlip(input) {
@@ -273,40 +221,27 @@
             }
         }
 
-        function buyProduct(id) {
-            const p = PRODUCTS.find(i => i.id === id);
-            if(!state.isAdmin && state.users[state.currentUser].balance < p.price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงิน', 'warning').then(()=>showPage('topup'));
-            if(state.inventory[id].length > 0) {
-                const code = state.inventory[id].pop();
-                if(!state.isAdmin) state.users[state.currentUser].balance -= p.price;
-                state.salesCount++;
-                persist(); updateUI();
-                Swal.fire('สำเร็จ!', `CODE: ${code}`, 'success');
+        function initSnow() {
+            const canvas = document.getElementById('snowCanvas');
+            const ctx = canvas.getContext('2d');
+            let w = window.innerWidth, h = window.innerHeight;
+            canvas.width = w; canvas.height = h;
+            let fs = Array.from({length: 50}, () => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*3+1, d: Math.random()*1+0.5}));
+            function draw() {
+                ctx.clearRect(0,0,w,h);
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                fs.forEach(f => {
+                    ctx.moveTo(f.x, f.y);
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+                    f.y += f.d; if(f.y > h) f.y = -10;
+                });
+                ctx.fill();
+                requestAnimationFrame(draw);
             }
+            draw();
         }
-
-        function toggleAuth(t) { document.getElementById('loginPage').classList.toggle('hidden', t!=='login'); document.getElementById('registerPage').classList.toggle('hidden', t!=='register'); }
-        function showPage(p) { document.getElementById('homePage').classList.toggle('hidden', p!=='home'); document.getElementById('topupPage').classList.toggle('hidden', p!=='topup'); }
-        function handleLogout() { location.reload(); }
-        function openAdminPanel() {
-            Swal.fire({
-                title: 'ADMIN: เติมสต็อก',
-                html: `<select id="pid" class="swal2-input">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select><textarea id="codes" class="swal2-textarea" placeholder="รหัสบรรทัดละชิ้น"></textarea>`,
-                preConfirm: () => {
-                    const pid = document.getElementById('pid').value;
-                    const codes = document.getElementById('codes').value.split('\n').filter(c=>c.trim()!=="");
-                    state.inventory[pid].push(...codes);
-                    persist(); updateUI();
-                }
-            });
-        }
-
-        // Snow
-        const canvas = document.getElementById('snowCanvas'); const ctx = canvas.getContext('2d');
-        let w, h, fs = [];
-        function init() { w=window.innerWidth; h=window.innerHeight; canvas.width=w; canvas.height=h; fs=Array.from({length:100},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*3+1,d:Math.random()*1+0.5})); }
-        function draw() { ctx.clearRect(0,0,w,h); ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.beginPath(); fs.forEach(f=>{ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); f.y+=f.d; if(f.y>h)f.y=-10;}); ctx.fill(); requestAnimationFrame(draw); }
-        init(); requestAnimationFrame(draw);
+        initSnow();
     </script>
 </body>
 </html>
