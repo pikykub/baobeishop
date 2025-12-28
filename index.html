@@ -133,10 +133,20 @@
             100% { transform: translate(1px, 1px) rotate(0deg); }
         }
 
+        /* --- LUCKY WHEEL CSS --- */
+        .wheel-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:5000; display:none; align-items:center; justify-content:center; flex-direction:column; color:white; backdrop-filter: blur(5px); }
+        .wheel-container { position: relative; width: 340px; height: 340px; border: 10px solid gold; border-radius: 50%; box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: #fff; }
+        .wheel-canvas { width: 100%; height: 100%; }
+        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid #ff2d55; z-index: 5001; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+        .btn-spin { margin-top: 30px; background: gold; color: black; padding: 15px 50px; border-radius: 50px; font-weight: bold; border: none; cursor: pointer; font-size: 20px; box-shadow: 0 5px 15px rgba(255,215,0,0.4); transition: 0.3s; }
+        .btn-spin:hover { transform: scale(1.1); background: #fff; }
+        .btn-spin:disabled { background: #666; cursor: not-allowed; }
+
         @media (max-width: 600px) { 
             .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
             .stats-grid { gap: 10px; }
             .stat-value { font-size: 18px; }
+            .wheel-container { width: 300px; height: 300px; }
         }
     </style>
 </head>
@@ -146,6 +156,18 @@
     </div>
 
     <canvas id="snowCanvas"></canvas>
+
+    <div id="wheelOverlay" class="wheel-overlay">
+        <h2 style="color:gold; text-shadow: 0 0 15px gold; margin-bottom: 5px;">🎊 BONUS SPIN 🎊</h2>
+        <p style="margin-bottom: 25px;">คุณได้รับสิทธิ์หมุนวงล้อนำโชคจากการเติมเงิน!</p>
+        <div style="position:relative;">
+            <div class="wheel-pointer"></div>
+            <div id="wheelCase" class="wheel-container">
+                <canvas id="wheelCanvas" class="wheel-canvas" width="340" height="340"></canvas>
+            </div>
+        </div>
+        <button id="spinBtn" class="btn-spin" onclick="spinWheel()">หมุนเพื่อลุ้นโชค!</button>
+    </div>
 
     <div id="registerPage" class="hidden">
         <div class="login-card">
@@ -300,7 +322,16 @@
             globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
             chatMode: 'global',
-            cart: [] 
+            cart: [],
+            // สถานะวงล้อ
+            wheelPrizes: JSON.parse(localStorage.getItem('baobei_wheel')) || [
+                { text: "5 ฿", value: 5, color: "#ff2d55" },
+                { text: "10 ฿", value: 10, color: "#333" },
+                { text: "เกลือ", value: 0, color: "#999" },
+                { text: "20 ฿", value: 20, color: "#ff2d55" },
+                { text: "50 ฿", value: 50, color: "#333" },
+                { text: "เกลือ", value: 0, color: "#999" }
+            ]
         };
 
         function persist() {
@@ -313,6 +344,7 @@
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
                 localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
+                localStorage.setItem('baobei_wheel', JSON.stringify(state.wheelPrizes));
             } catch (e) { console.error(e); }
         }
 
@@ -346,6 +378,7 @@
             }).join('');
             renderChat();
             updateCartBadge();
+            drawWheel();
         }
 
         /**
@@ -570,7 +603,7 @@
         }
 
         /**
-         * 4. AUTO TOPUP & SLIP PROTECTION
+         * 4. AUTO TOPUP & SLIP PROTECTION & WHEEL TRIGGER
          */
         function previewSlip(input) {
             if (input.files && input.files[0]) {
@@ -619,9 +652,80 @@
                 persist();
                 updateUI();
                 Swal.fire('สำเร็จ', `เติมเงิน ${amt} ฿ สำเร็จ!`, 'success').then(() => {
-                    showPage('home');
+                    // เงื่อนไข: ถ้าเติมครบ 50 บาท ให้เด้งวงล้อ
+                    if (amt >= 50) {
+                        document.getElementById('wheelOverlay').style.display = 'flex';
+                        drawWheel();
+                    } else {
+                        showPage('home');
+                    }
                 });
             });
+        }
+
+        /**
+         * --- ฟังก์ชันระบบวงล้อ (LUCKY WHEEL LOGIC) ---
+         */
+        function drawWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const prizes = state.wheelPrizes;
+            const arc = (Math.PI * 2) / prizes.length;
+
+            ctx.clearRect(0,0,340,340);
+            prizes.forEach((p, i) => {
+                const angle = i * arc;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(170, 170, 160, angle, angle + arc, false);
+                ctx.lineTo(170, 170);
+                ctx.fill();
+
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.translate(170 + Math.cos(angle + arc/2) * 110, 170 + Math.sin(angle + arc/2) * 110);
+                ctx.rotate(angle + arc/2 + Math.PI/2);
+                ctx.font = "bold 16px Kanit";
+                ctx.fillText(p.text, -ctx.measureText(p.text).width/2, 0);
+                ctx.restore();
+            });
+        }
+
+        let isSpinning = false;
+        function spinWheel() {
+            if(isSpinning) return;
+            isSpinning = true;
+            const wheel = document.getElementById('wheelCase');
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+
+            const randomDegree = Math.floor(Math.random() * 360) + (360 * 7); // หมุนอย่างน้อย 7 รอบ
+            wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+            setTimeout(() => {
+                const actualDegree = randomDegree % 360;
+                const prizes = state.wheelPrizes;
+                const arcDegree = 360 / prizes.length;
+                const index = Math.floor(((360 - actualDegree + 270) % 360) / arcDegree);
+                const prize = prizes[index];
+
+                if(prize.value > 0) {
+                    state.users[state.currentUser].balance += prize.value;
+                    persist();
+                    Swal.fire('ยินดีด้วย!', `คุณได้รับโบนัสเงินคืน ${prize.value} ฿`, 'success');
+                } else {
+                    Swal.fire('เกลือจ้า!', `รอบนี้ไม่ได้รางวัล พยายามใหม่นะ`, 'info');
+                }
+
+                setTimeout(() => {
+                    document.getElementById('wheelOverlay').style.display = 'none';
+                    wheel.style.transform = `rotate(0deg)`;
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    updateUI();
+                    showPage('home');
+                }, 2000);
+            }, 4000);
         }
 
         function buyProduct(id) {
@@ -703,6 +807,9 @@
                 title: 'ADMIN PANEL',
                 html: `
                     <div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;">
+                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                            <button onclick="editWheelAdmin()" style="flex:1; padding:10px; background:gold; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🎡 ตั้งค่าวงล้อ</button>
+                        </div>
                         <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>
                         ${chatUsers}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
@@ -723,6 +830,32 @@
                         persist(); updateUI();
                         Swal.fire('สำเร็จ', `เพิ่มสินค้า ${codes.length} ชิ้นแล้ว`, 'success');
                     }
+                }
+            });
+        }
+
+        function editWheelAdmin() {
+            let wheelInputs = state.wheelPrizes.map((p, i) => `
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <input id="p_text_${i}" class="swal2-input" style="margin:0; flex:2; font-size:14px;" value="${p.text}" placeholder="ชื่อรางวัล">
+                    <input id="p_val_${i}" type="number" class="swal2-input" style="margin:0; flex:1; font-size:14px;" value="${p.value}" placeholder="เงิน">
+                </div>
+            `).join('');
+
+            Swal.fire({
+                title: 'ตั้งค่ารางวัลวงล้อ (6 ช่อง)',
+                html: `<div style="text-align:left">${wheelInputs}</div>`,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก'
+            }).then(res => {
+                if(res.isConfirmed) {
+                    for(let i=0; i<6; i++) {
+                        state.wheelPrizes[i].text = document.getElementById(`p_text_${i}`).value;
+                        state.wheelPrizes[i].value = parseFloat(document.getElementById(`p_val_${i}`).value) || 0;
+                    }
+                    persist();
+                    drawWheel();
+                    Swal.fire('สำเร็จ', 'อัปเดตข้อมูลวงล้อแล้ว', 'success');
                 }
             });
         }
