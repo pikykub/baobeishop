@@ -42,6 +42,12 @@
         .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
         .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
         
+        /* เพิ่ม CSS สำหรับระบบตะกร้า */
+        .cart-tag { background: #333; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; }
+        .cart-count { position: absolute; top: -5px; right: -5px; background: gold; color: black; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; font-weight: bold; }
+        .btn-add-cart { background: #333; color: white; border: none; width: 100%; padding: 10px; border-radius: 12px; font-weight: 500; cursor: pointer; margin-top: 5px; transition: 0.3s; font-size: 13px; }
+        .btn-add-cart:hover { background: #000; }
+
         .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
         .btn-admin:hover { background: #000; color: #fff; }
 
@@ -142,6 +148,10 @@
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
+                <div class="cart-tag" onclick="showCart()">
+                    <i class="fas fa-shopping-cart"></i> 
+                    <span class="cart-count" id="cartCount">0</span>
+                </div>
                 <button id="adminBtn" class="btn-admin" onclick="openAdminPanel()">
                     <i class="fas fa-user-shield"></i>
                 </button>
@@ -255,7 +265,8 @@
             activePrivateUser: null,
             globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
-            chatMode: 'global' 
+            chatMode: 'global',
+            cart: [] // เพิ่มตะกร้าใน state
         };
 
         function persist() {
@@ -291,12 +302,110 @@
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
                         <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin ? 'disabled' : ''}>
-                            ${state.isAdmin ? 'ทดสอบซื้อ' : (stock > 0 ? 'สั่งซื้อสินค้า' : 'สินค้าหมด')}
+                            ${state.isAdmin ? 'ทดสอบซื้อทันที' : (stock > 0 ? 'ซื้อทันที' : 'สินค้าหมด')}
+                        </button>
+                        <button class="btn-add-cart" onclick="addToCart(${p.id})" ${stock === 0 ? 'style="display:none"' : ''}>
+                             <i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า
                         </button>
                     </div>
                 </div>`;
             }).join('');
             renderChat();
+            updateCartBadge();
+        }
+
+        /**
+         * ระบบตะกร้าสินค้า (Cart Logic)
+         */
+        function addToCart(id) {
+            const p = PRODUCTS.find(item => item.id === id);
+            const stock = state.inventory[id]?.length || 0;
+            const itemInCart = state.cart.find(i => i.id === id);
+            const currentQty = itemInCart ? itemInCart.qty : 0;
+
+            if (stock > currentQty) {
+                if (itemInCart) {
+                    itemInCart.qty++;
+                } else {
+                    state.cart.push({ id: id, name: p.name, price: p.price, qty: 1 });
+                }
+                updateCartBadge();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
+            } else {
+                Swal.fire('สินค้าไม่พอ', 'ขออภัย สินค้าในสต็อกไม่พอเติม', 'warning');
+            }
+        }
+
+        function updateCartBadge() {
+            const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartCount').innerText = count;
+        }
+
+        function showCart() {
+            if (state.cart.length === 0) return Swal.fire('ตะกร้าว่าง', 'คุณยังไม่ได้เลือกสินค้า', 'info');
+
+            let total = 0;
+            let html = `<div style="text-align:left; max-height:300px; overflow-y:auto;">`;
+            state.cart.forEach((item, index) => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                        <div><b>${item.name}</b><br><small>${item.price}฿ x ${item.qty}</small></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <b>${subtotal}฿</b>
+                            <button onclick="state.cart.splice(${index},1); updateCartBadge(); Swal.close(); showCart();" style="border:none; background:none; color:red; cursor:pointer;">❌</button>
+                        </div>
+                    </div>`;
+            });
+            html += `</div><h3 style="text-align:right; color:var(--main); margin-top:15px;">รวมยอดชำระ: ${total} ฿</h3>`;
+
+            Swal.fire({
+                title: '<i class="fas fa-shopping-cart"></i> ตะกร้าของคุณ',
+                html: html,
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยันการซื้อทั้งหมด',
+                cancelButtonText: 'เลือกเพิ่ม',
+                confirmButtonColor: '#00c853'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processBulkBuy(total);
+                }
+            });
+        }
+
+        function processBulkBuy(totalPrice) {
+            const user = state.users[state.currentUser];
+            if (!state.isAdmin && user.balance < totalPrice) {
+                return Swal.fire('เงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอ', 'warning').then(() => showPage('topup'));
+            }
+
+            if (!state.isAdmin) user.balance -= totalPrice;
+            
+            let boughtItems = [];
+            state.cart.forEach(item => {
+                for(let i=0; i < item.qty; i++) {
+                    const code = state.inventory[item.id].pop();
+                    boughtItems.push({ name: item.name, code: code });
+                    if (!state.isAdmin) {
+                        if(!user.orders) user.orders = [];
+                        user.orders.unshift({ name: item.name, code: code, date: new Date().toLocaleString() });
+                    }
+                    state.salesCount++;
+                }
+            });
+
+            state.cart = [];
+            updateCartBadge();
+            persist();
+            updateUI();
+
+            Swal.fire({
+                title: 'ซื้อสำเร็จ!',
+                html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + 
+                      boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`,
+                icon: 'success'
+            });
         }
 
         /**
@@ -306,7 +415,6 @@
         function resetLogoutTimer() {
             if (!state.currentUser) return;
             clearTimeout(logoutTimer);
-            // 3. ระบบล็อกเอาต์อัตโนมัติ (15 นาที)
             logoutTimer = setTimeout(() => {
                 if (state.currentUser) {
                     Swal.fire('หมดเวลาเชื่อมต่อ', 'ระบบทำการล็อกเอาต์อัตโนมัติเพื่อความปลอดภัย', 'info').then(() => {
@@ -316,7 +424,6 @@
             }, 15 * 60 * 1000); 
         }
 
-        // จับการเคลื่อนไหวเพื่อรีเซ็ตเวลา
         window.onload = resetLogoutTimer;
         window.onmousemove = resetLogoutTimer;
         window.onkeypress = resetLogoutTimer;
@@ -331,7 +438,7 @@
             const p = document.getElementById('regPassword').value.trim();
             if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
             if(state.users[u]) return Swal.fire('ชื่อนี้มีแล้ว', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
-            state.users[u] = { password: p, balance: 0, orders: [] }; // เพิ่มฟิลด์ orders
+            state.users[u] = { password: p, balance: 0, orders: [] }; 
             persist();
             Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
         }
@@ -430,7 +537,6 @@
                 const code = state.inventory[id].pop();
                 if(!state.isAdmin) {
                     user.balance -= p.price;
-                    // บันทึกลงระบบประวัติการซื้อ
                     if(!user.orders) user.orders = [];
                     user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
                 }
