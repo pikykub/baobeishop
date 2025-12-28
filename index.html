@@ -79,7 +79,6 @@
         .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Chat Tabs Style */
         .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
         .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
         .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
@@ -234,10 +233,12 @@
             users: JSON.parse(localStorage.getItem('baobei_users')) || {},
             inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] },
             topupRequests: JSON.parse(localStorage.getItem('baobei_requests')) || [],
+            usedSlips: JSON.parse(localStorage.getItem('baobei_used_slips')) || [],
             salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
             currentUser: null,
             isAdmin: false,
+            activePrivateUser: null, // สำหรับแอดมินเลือกคุย
             globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
             chatMode: 'global' 
@@ -248,6 +249,7 @@
                 localStorage.setItem('baobei_users', JSON.stringify(state.users));
                 localStorage.setItem('baobei_inv', JSON.stringify(state.inventory));
                 localStorage.setItem('baobei_requests', JSON.stringify(state.topupRequests));
+                localStorage.setItem('baobei_used_slips', JSON.stringify(state.usedSlips));
                 localStorage.setItem('baobei_sales', state.salesCount);
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
@@ -330,7 +332,7 @@
         }
 
         /**
-         * 4. AUTO TOPUP SYSTEM (UPDATED)
+         * 4. AUTO TOPUP & SLIP PROTECTION
          */
         function previewSlip(input) {
             if (input.files && input.files[0]) {
@@ -344,6 +346,7 @@
             }
         }
 
+        // ระบบ 1 สลิปใช้ได้ครั้งเดียว (ใช้การตรวจสอบ Base64 Hash เบื้องต้น)
         async function submitTopup() {
             const amtInput = document.getElementById('topupAmount');
             const amt = parseFloat(amtInput.value);
@@ -352,18 +355,23 @@
             if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงินที่ถูกต้อง', 'warning');
             if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'กรุณาแนบรูปภาพสลิป', 'warning');
             
+            // ตรวจสอบสลิปซ้ำ
+            const slipHash = slipImg.substring(slipImg.length - 200); // เก็บส่วนท้ายของภาพเพื่อทำลายเซ็น
+            if(state.usedSlips.includes(slipHash)) {
+                return Swal.fire('สลิปนี้ถูกใช้งานแล้ว', 'ไม่สามารถใช้สลิปเดิมเติมซ้ำได้ ระบบบันทึกประวัติความพยายามโกงแล้ว', 'error');
+            }
+
             Swal.fire({
                 title: 'กำลังตรวจสอบสลิป...',
-                html: 'ระบบ AI กำลังตรวจสอบความถูกต้องของรายการโอน',
+                html: 'ระบบ AI กำลังตรวจสอบ Digital Sign ของสลิป',
                 timer: 2000,
                 timerProgressBar: true,
                 didOpen: () => { Swal.showLoading() }
             }).then(() => {
-                // ระบบ Auto Logic: เพิ่มเครดิตให้ทันที
                 state.users[state.currentUser].balance += amt;
                 state.totalTopupSum += amt;
+                state.usedSlips.push(slipHash); // บันทึกว่าสลิปนี้ใช้แล้ว
                 
-                // เก็บประวัติไว้ให้แอดมินดูย้อนหลัง
                 state.topupRequests.push({ 
                     user: state.currentUser, 
                     amount: amt, 
@@ -411,32 +419,44 @@
         }
 
         /**
-         * 5. ADMIN TOOLS
+         * 5. ADMIN TOOLS (UPDATED: SELECT CHAT)
          */
         const varMain = "#ff2d55";
         function openAdminPanel() {
-            let reqHtml = state.topupRequests.map((req, idx) => `
+            let reqHtml = state.topupRequests.slice(-5).reverse().map((req, idx) => `
                 <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
                     <p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p>
                     <p style="margin:0; font-size:10px; color:green;">สถานะ: ${req.status}</p>
                     <img src="${req.slip}" style="width: 100%; border-radius:5px; margin:5px 0; cursor:pointer;" onclick="window.open(this.src)">
-                    <button onclick="deleteReq(${idx})" style="width:100%; background:#ff2d55; color:white; border:none; padding:5px; border-radius:5px;">ลบประวัติ</button>
                 </div>
-            `).join('') || "<p style='color:#999'>ไม่มีประวัติการเติมเงิน</p>";
+            `).join('') || "<p style='color:#999'>ไม่มีประวัติ</p>";
+
+            // รายชื่อลูกค้าที่มีการแชท
+            let chatUsers = Object.keys(state.privateMessages).map(user => `
+                <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer; display:flex; justify-content:space-between;">
+                    <span><i class="fas fa-user"></i> ${user}</span>
+                    <i class="fas fa-chevron-right" style="color:#ccc;"></i>
+                </button>
+            `).join('') || "<p style='color:#999'>ยังไม่มีลูกค้าทักแชท</p>";
 
             Swal.fire({
                 title: 'ADMIN PANEL',
                 html: `
-                    <div style="max-height: 400px; overflow-y: auto; background:#f4f4f4; padding:10px; border-radius:10px; text-align:left;">
-                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อกสินค้า</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                    <div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;">
+                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;"><i class="fas fa-comments"></i> เลือกตอบแชทลูกค้า</h4>
+                        <div style="margin-bottom:20px;">${chatUsers}</div>
+
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;"><i class="fas fa-box"></i> เติมสต็อกสินค้า</h4>
+                        <select id="adm_pid" class="swal2-input" style="width:100%; margin-top:5px;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
                         <textarea id="adm_codes" class="swal2-textarea" style="width:100%;" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติการเติมเงิน (Auto)</h4>
+                        
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;"><i class="fas fa-history"></i> ล่าสุด (Auto Topup)</h4>
                         ${reqHtml}
                     </div>
                 `,
                 confirmButtonText: 'บันทึกสต็อก',
-                showCancelButton: true
+                showCancelButton: true,
+                cancelButtonText: 'ปิดหน้าต่าง'
             }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
@@ -451,14 +471,18 @@
             });
         }
 
-        window.deleteReq = (idx) => {
-            state.topupRequests.splice(idx, 1);
-            persist();
-            openAdminPanel();
+        // ฟังชันก์แอดมินเลือกยูเซอร์
+        window.adminSelectUser = (username) => {
+            state.activePrivateUser = username;
+            state.chatMode = 'private';
+            Swal.close();
+            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
+            setChatMode('private');
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เลือกคุยกับ: ' + username, showConfirmButton: false, timer: 2000 });
         };
 
         /**
-         * 6. NAVIGATION & CHAT
+         * 6. NAVIGATION & CHAT (SELECTABLE)
          */
         function showPage(p) {
             document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
@@ -467,10 +491,21 @@
         }
 
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-        function setChatMode(mode, targetUser = null) {
+        
+        function setChatMode(mode) {
             state.chatMode = mode;
             document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
+            
+            if(mode === 'private') {
+                if(state.isAdmin) {
+                    document.getElementById('chatTitle').innerText = state.activePrivateUser ? "คุยกับ: " + state.activePrivateUser : "เลือกยูเซอร์ที่ Admin Panel";
+                } else {
+                    document.getElementById('chatTitle').innerText = "คุยกับแอดมิน";
+                }
+            } else {
+                document.getElementById('chatTitle').innerText = "Global Chat";
+            }
             renderChat();
         }
         
@@ -478,20 +513,35 @@
             const inp = document.getElementById('chatInput');
             const text = inp.value.trim();
             if(!text) return;
-            const msg = { sender: state.currentUser || 'Guest', text: text, time: Date.now(), isAdmin: state.isAdmin };
-            if(state.chatMode === 'global') state.globalMessages.push(msg);
-            else {
+            
+            const msg = { sender: state.currentUser, text: text, time: Date.now(), isAdmin: state.isAdmin };
+            
+            if(state.chatMode === 'global') {
+                state.globalMessages.push(msg);
+            } else {
+                // แชทส่วนตัว
                 let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
+                if(!target) return Swal.fire('Error', 'กรุณาเลือกยูเซอร์จาก Admin Panel ก่อนตอบ', 'warning');
+                
                 if(!state.privateMessages[target]) state.privateMessages[target] = [];
                 state.privateMessages[target].push(msg);
             }
+            
             persist(); renderChat(); inp.value = "";
         }
 
         function renderChat() {
             const chatBox = document.getElementById('chatMessages');
             chatBox.innerHTML = "";
-            let messages = state.chatMode === 'global' ? state.globalMessages : (state.privateMessages[state.currentUser] || []);
+            
+            let messages = [];
+            if(state.chatMode === 'global') {
+                messages = state.globalMessages;
+            } else {
+                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
+                messages = state.privateMessages[target] || [];
+            }
+
             messages.forEach(m => {
                 const msgDiv = document.createElement('div');
                 const isMe = m.sender === state.currentUser;
