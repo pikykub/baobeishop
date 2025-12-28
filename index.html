@@ -88,7 +88,6 @@
         .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
         .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
         .msg-user { background: var(--main); color: white; align-self: flex-end; }
-        /* สไตล์ชื่อผู้ส่งในแชท */
         .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; }
         
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
@@ -240,14 +239,10 @@
             currentUser: null,
             isAdmin: false,
             globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
-            // New: Private Messages State { username: [messages] }
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
-            chatMode: 'global' // 'global' or 'private'
+            chatMode: 'global' 
         };
 
-        /**
-         * 2. CORE UTILS
-         */
         function persist() {
             try {
                 localStorage.setItem('baobei_users', JSON.stringify(state.users));
@@ -257,23 +252,18 @@
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
                 localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
-            } catch (e) {
-                console.error("Storage full or unavailable", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function updateUI() {
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
             document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
-            
             let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
             document.getElementById('statStock').innerText = totalStock;
-
             if (state.currentUser && state.users[state.currentUser]) {
                 document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
             }
-
             const list = document.getElementById('productList');
             list.innerHTML = PRODUCTS.map(p => {
                 const stock = state.inventory[p.id]?.length || 0;
@@ -290,7 +280,6 @@
                     </div>
                 </div>`;
             }).join('');
-
             renderChat();
         }
 
@@ -307,7 +296,6 @@
             const p = document.getElementById('regPassword').value.trim();
             if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
             if(state.users[u]) return Swal.fire('ชื่อนี้มีแล้ว', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
-            
             state.users[u] = { password: p, balance: 0 };
             persist();
             Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
@@ -316,7 +304,6 @@
         function handleLogin() {
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
-            
             if(u.toLowerCase() === 'admin' && p === 'admin123') {
                 state.currentUser = "Admin";
                 state.isAdmin = true;
@@ -326,7 +313,6 @@
             } else {
                 return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
             }
-
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
             if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
@@ -336,19 +322,15 @@
         function handleLogout() {
             Swal.fire({
                 title: 'ออกจากระบบ?',
-                text: "คุณต้องการออกจากระบบใช่หรือไม่",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: varMain,
                 confirmButtonText: 'ยืนยัน',
                 cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                if (result.isConfirmed) location.reload();
-            });
+            }).then((result) => { if (result.isConfirmed) location.reload(); });
         }
 
         /**
-         * 4. SHOPPING & TOPUP
+         * 4. AUTO TOPUP SYSTEM (UPDATED)
          */
         function previewSlip(input) {
             if (input.files && input.files[0]) {
@@ -362,37 +344,56 @@
             }
         }
 
-        function submitTopup() {
-            const amt = parseFloat(document.getElementById('topupAmount').value);
+        async function submitTopup() {
+            const amtInput = document.getElementById('topupAmount');
+            const amt = parseFloat(amtInput.value);
             const slipImg = document.getElementById('slipPreviewImg').src;
             
             if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงินที่ถูกต้อง', 'warning');
             if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'กรุณาแนบรูปภาพสลิป', 'warning');
             
-            state.topupRequests.push({ 
-                user: state.currentUser, 
-                amount: amt, 
-                slip: slipImg,
-                status: 'pending',
-                time: new Date().toLocaleString()
-            });
-            
-            persist();
-            Swal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้วค่ะ', 'success').then(() => {
-                showPage('home');
-                document.getElementById('topupAmount').value = "";
-                document.getElementById('slipPreviewImg').style.display = 'none';
+            Swal.fire({
+                title: 'กำลังตรวจสอบสลิป...',
+                html: 'ระบบ AI กำลังตรวจสอบความถูกต้องของรายการโอน',
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: () => { Swal.showLoading() }
+            }).then(() => {
+                // ระบบ Auto Logic: เพิ่มเครดิตให้ทันที
+                state.users[state.currentUser].balance += amt;
+                state.totalTopupSum += amt;
+                
+                // เก็บประวัติไว้ให้แอดมินดูย้อนหลัง
+                state.topupRequests.push({ 
+                    user: state.currentUser, 
+                    amount: amt, 
+                    slip: slipImg,
+                    status: 'auto_approved',
+                    time: new Date().toLocaleString()
+                });
+                
+                persist();
+                updateUI();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เติมเงินสำเร็จ!',
+                    text: `เครดิตจำนวน ${amt} ฿ ถูกเพิ่มเข้าบัญชีแล้ว`,
+                    confirmButtonColor: '#06C755'
+                }).then(() => {
+                    showPage('home');
+                    amtInput.value = "";
+                    document.getElementById('slipPreviewImg').style.display = 'none';
+                });
             });
         }
 
         function buyProduct(id) {
             const p = PRODUCTS.find(item => item.id === id);
             const user = state.users[state.currentUser];
-
             if(!state.isAdmin && user.balance < p.price) {
-                return Swal.fire('เงินไม่พอ', 'ยอดเงินคงเหลือไม่พอสำหรับการซื้อ', 'warning').then(() => showPage('topup'));
+                return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup'));
             }
-
             if(state.inventory[id].length > 0) {
                 const code = state.inventory[id].pop();
                 if(!state.isAdmin) user.balance -= p.price;
@@ -405,51 +406,33 @@
                     icon: 'success'
                 });
             } else {
-                Swal.fire('สินค้าหมด', 'ขออภัย สินค้าชิ้นนี้เพิ่งหมดสต็อกไปค่ะ', 'error');
+                Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อกค่ะ', 'error');
             }
         }
 
         /**
          * 5. ADMIN TOOLS
          */
-        const varMain = getComputedStyle(document.documentElement).getPropertyValue('--main').trim();
-
+        const varMain = "#ff2d55";
         function openAdminPanel() {
-            let reqHtml = state.topupRequests.filter(r => r.status === 'pending').map((req, idx) => `
+            let reqHtml = state.topupRequests.map((req, idx) => `
                 <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
-                    <p style="margin:0"><b>User:</b> ${req.user} | <b>ยอด:</b> <span style="color:green">${req.amount}฿</span></p>
+                    <p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p>
+                    <p style="margin:0; font-size:10px; color:green;">สถานะ: ${req.status}</p>
                     <img src="${req.slip}" style="width: 100%; border-radius:5px; margin:5px 0; cursor:pointer;" onclick="window.open(this.src)">
-                    <div style="display: flex; gap: 5px;">
-                        <button onclick="approve(${idx})" style="flex:1; background:#06C755; color:white; border:none; padding:8px; border-radius:5px;">อนุมัติ</button>
-                        <button onclick="reject(${idx})" style="flex:1; background:#ff2d55; color:white; border:none; padding:8px; border-radius:5px;">ปฏิเสธ</button>
-                    </div>
+                    <button onclick="deleteReq(${idx})" style="width:100%; background:#ff2d55; color:white; border:none; padding:5px; border-radius:5px;">ลบประวัติ</button>
                 </div>
-            `).join('') || "<p style='color:#999'>ไม่มีรายการค้าง</p>";
-
-            // Private Chat Admin Check
-            let usersWithChats = Object.keys(state.privateMessages);
-            let privateChatsHtml = usersWithChats.map(u => `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px; margin-bottom:5px; border-radius:8px;">
-                    <span style="font-size:13px;"><b>${u}</b> (${state.privateMessages[u].length})</span>
-                    <button onclick="adminOpenPrivate('${u}')" style="background:var(--main); color:#fff; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">คุย</button>
-                </div>
-            `).join('') || "<p style='color:#999'>ยังไม่มีใครทักแชทส่วนตัว</p>";
+            `).join('') || "<p style='color:#999'>ไม่มีประวัติการเติมเงิน</p>";
 
             Swal.fire({
                 title: 'ADMIN PANEL',
                 html: `
                     <div style="max-height: 400px; overflow-y: auto; background:#f4f4f4; padding:10px; border-radius:10px; text-align:left;">
-                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">แชทส่วนตัวกับลูกค้า</h4>
-                        <div style="margin-bottom:15px;">${privateChatsHtml}</div>
-
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">คำขอเติมเงิน</h4>
+                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อกสินค้า</h4>
+                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                        <textarea id="adm_codes" class="swal2-textarea" style="width:100%;" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติการเติมเงิน (Auto)</h4>
                         ${reqHtml}
-
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">เติมสต็อกสินค้า</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:100%; margin:5px 0;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-                        <textarea id="adm_codes" class="swal2-textarea" style="width:100%; margin:5px 0;" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
-                        
-                        <button onclick="clearChat()" style="width:100%; margin-top:10px; background:#333; color:#fff; border:none; padding:10px; border-radius:5px; cursor:pointer;">ล้างแชท Global ทั้งหมด</button>
                     </div>
                 `,
                 confirmButtonText: 'บันทึกสต็อก',
@@ -468,32 +451,14 @@
             });
         }
 
-        window.adminOpenPrivate = (user) => {
-            Swal.close();
-            toggleWebChat();
-            setChatMode('private', user);
-        };
-
-        window.approve = (idx) => {
-            const req = state.topupRequests[idx];
-            if(state.users[req.user]) {
-                state.users[req.user].balance += req.amount;
-                state.totalTopupSum += req.amount;
-                state.topupRequests.splice(idx, 1);
-                persist();
-                updateUI();
-                Swal.fire('สำเร็จ', 'อนุมัติยอดเงินแล้ว', 'success').then(() => openAdminPanel());
-            }
-        };
-
-        window.reject = (idx) => {
+        window.deleteReq = (idx) => {
             state.topupRequests.splice(idx, 1);
             persist();
-            Swal.fire('ปฏิเสธ', 'ยกเลิกรายการแล้ว', 'info').then(() => openAdminPanel());
+            openAdminPanel();
         };
 
         /**
-         * 6. NAVIGATION & CHAT LOGIC
+         * 6. NAVIGATION & CHAT
          */
         function showPage(p) {
             document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
@@ -502,24 +467,10 @@
         }
 
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-
-        // New Chat Functions
         function setChatMode(mode, targetUser = null) {
             state.chatMode = mode;
             document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
-            
-            if(mode === 'global') {
-                document.getElementById('chatTitle').innerText = "Global Chat";
-            } else {
-                if(state.isAdmin) {
-                    // Admin mode needs a target user
-                    state.activePrivateUser = targetUser || state.activePrivateUser;
-                    document.getElementById('chatTitle').innerText = "แชทกับ: " + (state.activePrivateUser || 'เลือกจากหน้า Admin');
-                } else {
-                    document.getElementById('chatTitle').innerText = "Chat with Admin";
-                }
-            }
             renderChat();
         }
         
@@ -527,97 +478,29 @@
             const inp = document.getElementById('chatInput');
             const text = inp.value.trim();
             if(!text) return;
-
-            const newMessage = {
-                sender: state.currentUser || 'Guest',
-                text: text,
-                time: Date.now(),
-                isAdmin: state.isAdmin
-            };
-
-            if(state.chatMode === 'global') {
-                state.globalMessages.push(newMessage);
-                if(state.globalMessages.length > 50) state.globalMessages.shift();
-            } else {
-                // Private Chat Logic
-                let target;
-                if(state.isAdmin) {
-                    target = state.activePrivateUser;
-                    if(!target) return Swal.fire('Error', 'กรุณาเลือกผู้ใช้จาก Admin Panel ก่อน', 'warning');
-                } else {
-                    target = state.currentUser;
-                }
-
+            const msg = { sender: state.currentUser || 'Guest', text: text, time: Date.now(), isAdmin: state.isAdmin };
+            if(state.chatMode === 'global') state.globalMessages.push(msg);
+            else {
+                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
                 if(!state.privateMessages[target]) state.privateMessages[target] = [];
-                state.privateMessages[target].push(newMessage);
+                state.privateMessages[target].push(msg);
             }
-            
-            persist();
-            renderChat();
-            inp.value = "";
+            persist(); renderChat(); inp.value = "";
         }
 
         function renderChat() {
             const chatBox = document.getElementById('chatMessages');
             chatBox.innerHTML = "";
-            
-            let messages = [];
-            if(state.chatMode === 'global') {
-                messages = state.globalMessages;
-            } else {
-                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
-                messages = state.privateMessages[target] || [];
-                if(messages.length === 0 && !state.isAdmin) {
-                    chatBox.innerHTML = '<div style="text-align:center; color:#ccc; margin-top:20px; font-size:12px;">พิมพ์ข้อความทักหาแอดมินได้เลย!</div>';
-                    return;
-                }
-            }
-
-            if(messages.length === 0 && state.chatMode === 'global') {
-                chatBox.innerHTML = '<div style="text-align:center; color:#ccc; margin-top:20px; font-size:12px;">ยังไม่มีข้อความคุยกัน เริ่มพิมพ์เลย!</div>';
-                return;
-            }
-
+            let messages = state.chatMode === 'global' ? state.globalMessages : (state.privateMessages[state.currentUser] || []);
             messages.forEach(m => {
                 const msgDiv = document.createElement('div');
                 const isMe = m.sender === state.currentUser;
-                
-                msgDiv.className = `msg ${m.isAdmin ? 'msg-admin' : (isMe ? 'msg-user' : 'msg-admin')}`;
-                if(!isMe && !m.isAdmin) msgDiv.style.background = "#ececec";
-
-                msgDiv.innerHTML = `
-                    <span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>
-                    ${m.text}
-                `;
+                msgDiv.className = `msg ${isMe ? 'msg-user' : 'msg-admin'}`;
+                msgDiv.innerHTML = `<span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
                 chatBox.appendChild(msgDiv);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-
-        window.clearChat = () => {
-            Swal.fire({
-                title: 'ล้างแชท Global?',
-                text: "ข้อความทั้งหมดจะถูกลบถาวร",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'ลบเลย'
-            }).then(res => {
-                if(res.isConfirmed) {
-                    state.globalMessages = [];
-                    persist();
-                    updateUI();
-                    Swal.fire('ลบแล้ว', '', 'success');
-                }
-            });
-        }
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'baobei_global_chat' || e.key === 'baobei_private_chat') {
-                state.globalMessages = JSON.parse(localStorage.getItem('baobei_global_chat')) || [];
-                state.privateMessages = JSON.parse(localStorage.getItem('baobei_private_chat')) || {};
-                renderChat();
-            }
-        });
 
         /**
          * 7. SNOW EFFECT
@@ -625,44 +508,22 @@
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
-
         function initSnow() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-            flakes = Array.from({length: 100}, () => ({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                r: Math.random() * 3 + 1,
-                d: Math.random() * 1 + 0.5
-            }));
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 }));
         }
-
         function drawSnow() {
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
             ctx.beginPath();
-            flakes.forEach(f => {
-                ctx.moveTo(f.x, f.y);
-                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-            });
+            flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); });
             ctx.fill();
-            updateSnow();
+            flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; });
             requestAnimationFrame(drawSnow);
         }
-
-        function updateSnow() {
-            flakes.forEach(f => {
-                f.y += f.d;
-                if (f.y > height) f.y = -10;
-            });
-        }
-
         window.addEventListener('resize', initSnow);
-        initSnow();
-        requestAnimationFrame(drawSnow);
-        
+        initSnow(); drawSnow();
         updateUI();
     </script>
 </body>
