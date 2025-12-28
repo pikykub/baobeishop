@@ -9,44 +9,104 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* --- เพิ่ม CSS สำหรับระบบตะกร้าสินค้า --- */
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
+        
         * { box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
 
-        /* [CSS เดิมของคุณที่เหลือ...] */
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            margin: 0; 
+            background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        /* 1. ระบบประกาศเเบบเคลื่อนที่ */
         .scrolling-news { background: #000; color: gold; padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2000; border-bottom: 2px solid gold; font-size: 14px; }
         .scrolling-news div { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
         .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
-        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
-        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
-        .nav-right { display: flex; gap: 10px; align-items: center; }
-        .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; }
         
-        /* สไตล์ใหม่สำหรับปุ่มตะกร้า */
-        .cart-tag { background: #333; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; position: relative; }
-        .cart-count { position: absolute; top: -5px; right: -5px; background: gold; color: black; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+        .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
+        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+        .nav-right { display: flex; gap: 10px; align-items: center; }
+        
+        .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+        .btn-contact:hover { background: var(--line); color: white; transform: scale(1.1); }
+        
+        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
+        .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
+        
+        .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-admin:hover { background: #000; color: #fff; }
 
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-        .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; }
-        .product-img { width: 100%; height: 200px; object-fit: contain; padding: 20px; }
-        .product-info { padding: 20px; text-align: center; background: #fff; }
-        .product-price { color: var(--main); font-size: 22px; font-weight: 700; }
-        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 5px; }
-        .btn-cart { background: #333; color: white; border: none; width: 100%; padding: 8px; border-radius: 12px; font-size: 13px; cursor: pointer; }
-        .hidden { display: none !important; }
-        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
-        .login-card { background: white; padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; text-align: center; }
-        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; outline: none; }
+        .title-bar { display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); padding-right: 15px; }
+
+        .banner-container { width: 100%; margin-bottom: 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s; }
+        .banner-img { width: 100%; height: auto; display: block; object-fit: cover; }
         
-        /* [CSS ของเดิมอื่นๆ...] */
-        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; }
-        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s; transform: scale(0); opacity: 0; }
-        .chat-widget.active { transform: scale(1); opacity: 1; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: rgba(26, 26, 26, 0.85); color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; text-align: center; backdrop-filter: blur(5px); }
+        .stat-box:hover { border-color: var(--main); transform: translateY(-5px); }
+        .stat-label { font-size: 13px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
+        .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+        .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: bold; z-index: 2; }
+        .product-img { width: 100%; height: 200px; object-fit: contain; padding: 20px; transition: 0.3s; }
+        .product-card:hover .product-img { transform: scale(1.05); }
+        .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; background: #fff; }
+        .product-name { font-weight: 500; margin-bottom: 10px; height: 45px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .product-price { color: var(--main); font-size: 22px; font-weight: 700; margin-bottom: 15px; }
+        
+        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-buy:hover:not(:disabled) { background: #e61b46; transform: scale(1.02); }
+        .btn-buy:disabled { background: #ccc; cursor: not-allowed; }
+
+        .hidden { display: none !important; }
+        .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        
+        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
+        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
+        .login-input:focus { border-color: var(--main); }
+
+        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
+        .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+        .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        
+        .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
+        .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
+
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
+        .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
+        .msg-user { background: var(--main); color: white; align-self: flex-end; }
+        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; }
+        
+        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
+        .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
+
+        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
+        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 1px solid #ccc; display: none; }
+
+        .btn-history { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; }
+        .btn-history:hover { background: #000; transform: scale(1.05); }
+
+        @media (max-width: 600px) { 
+            .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
+            .stats-grid { gap: 10px; }
+            .stat-value { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
@@ -62,7 +122,7 @@
             <input type="text" id="regUsername" class="login-input" placeholder="ตั้งชื่อผู้ใช้">
             <input type="password" id="regPassword" class="login-input" placeholder="ตั้งรหัสผ่าน">
             <button class="btn-buy" onclick="handleRegister()">สมัครสมาชิก</button>
-            <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none;">เข้าสู่ระบบ</a></p>
+            <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none; font-weight: 500;">เข้าสู่ระบบ</a></p>
         </div>
     </div>
 
@@ -72,18 +132,19 @@
             <input type="text" id="loginUsername" class="login-input" placeholder="ชื่อผู้ใช้">
             <input type="password" id="loginPassword" class="login-input" placeholder="รหัสผ่าน">
             <button class="btn-buy" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            <p style="font-size: 14px; margin-top: 15px;">ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')" style="color: var(--main); text-decoration: none;">สมัครสมาชิก</a></p>
+            <p style="font-size: 14px; margin-top: 15px;">ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')" style="color: var(--main); text-decoration: none; font-weight: 500;">สมัครสมาชิก</a></p>
+            <p style="font-size: 11px; color: #aaa; margin-top: 10px;">เพื่อความปลอดภัย ระบบจะออกจากระบบหากไม่มีการใช้งาน 15 นาที</p>
         </div>
     </div>
 
     <div id="shopContent" class="hidden">
+        <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | แอดมินพร้อมดูแล 24 ชม. ✨</div>
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
-                <div class="cart-tag" onclick="showCart()">
-                    <i class="fas fa-shopping-cart"></i> 
-                    <span class="cart-count" id="cartCount">0</span>
-                </div>
+                <button id="adminBtn" class="btn-admin" onclick="openAdminPanel()">
+                    <i class="fas fa-user-shield"></i>
+                </button>
                 <div class="balance-tag" onclick="showPage('topup')">
                     <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
                 </div>
@@ -93,22 +154,88 @@
 
         <div class="container">
             <div id="homePage">
+                <div class="banner-container">
+                    <img src="https://lh3.googleusercontent.com/d/1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" alt="Banner" class="banner-img">
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">สต็อกทั้งหมด</div>
+                        <div class="stat-value"><span id="statStock">0</span> <small style="font-size: 12px; font-weight: 300;">ชิ้น</small></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">สมาชิก</div>
+                        <div class="stat-value"><span id="statUsers">703</span> <small style="font-size: 12px; font-weight: 300;">คน</small></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ยอดขายสะสม</div>
+                        <div class="stat-value"><span id="statSalesTotal">1089</span> <small style="font-size: 12px; font-weight: 300;">บิล</small></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ยอดเติมเงิน</div>
+                        <div class="stat-value"><span id="statTopupTotal">2,581</span> <small style="font-size: 12px; font-weight: 300;">฿</small></div>
+                    </div>
+                </div>
+                
+                <div class="title-bar">
+                    <h2><i class="fas fa-shopping-bag"></i> สินค้าแนะนำ</h2>
+                    <button class="btn-history" onclick="showOrderHistory()"><i class="fas fa-history"></i> ประวัติการซื้อ</button>
+                </div>
                 <div id="productList" class="product-grid"></div>
             </div>
+
             <div id="topupPage" class="hidden">
-                <div class="topup-card" style="background:white; padding:20px; border-radius:20px; text-align:center;">
-                    <h3>เติมเงิน</h3>
-                    <p>กรุณาโอนเงินมาที่บัญชีแอดมิน</p>
-                    <button class="btn-buy" onclick="showPage('home')">กลับหน้าหลัก</button>
+                <div class="topup-card">
+                    <h3 style="margin-top:0"><i class="fas fa-university"></i> เติมเงินเข้าระบบ</h3>
+                    
+                    <div class="qr-section">
+                        <p style="font-weight: bold; color: var(--bank); margin: 5px 0;">ธนาคารเกียรตินาคินภัทร (KKP)</p>
+                        <p style="font-size: 20px; letter-spacing: 1px; font-weight: bold; color: #000;">201-201-9014</p>
+                        <div style="height: 1px; background: #eee; margin: 10px 0;"></div>
+                        <p style="font-weight: bold; color: #f59e0b; margin: 5px 0;">TrueMoney Wallet</p>
+                        <p style="font-size: 20px; letter-spacing: 1px; font-weight: bold; color: #000;">080-920-0932</p>
+                        <p style="font-size: 14px; margin: 10px 0 0 0;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
+                        <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 15px; width: 180px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    </div>
+
+                    <input type="number" id="topupAmount" class="login-input" placeholder="ระบุจำนวนเงินที่โอน">
+                    
+                    <div style="margin-top: 10px;">
+                        <label for="slipInput" style="display: block; cursor: pointer; background: #f0f0f0; padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid #ddd;">
+                            <i class="fas fa-file-invoice"></i> แนบสลิปเพื่อตรวจสอบ
+                        </label>
+                        <input type="file" id="slipInput" accept="image/*" class="hidden" onchange="previewSlip(this)">
+                        <img id="slipPreviewImg" class="slip-preview">
+                    </div>
+
+                    <button class="btn-buy" onclick="submitTopup()" style="margin-top: 20px;">ยืนยันการแจ้งโอน</button>
+                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999; font-size: 14px;"><i class="fas fa-chevron-left"></i> กลับหน้าหลัก</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="chat-widget" id="chatBox">
+        <div class="chat-header">
+            <span><i class="fas fa-comments"></i> <span id="chatTitle">Global Chat</span></span>
+            <i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i>
+        </div>
+        <div class="chat-tabs">
+            <div id="tabGlobal" class="chat-tab active" onclick="setChatMode('global')">แชทรวม</div>
+            <div id="tabPrivate" class="chat-tab" onclick="setChatMode('private')">แอดมิน (ส่วนตัว)</div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: #fff;">
+            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความที่นี่...">
+            <button onclick="sendChat()" style="background: var(--main); color:white; border:none; width: 35px; height: 35px; border-radius: 50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
-        // 1. ข้อมูลสินค้า
+        /**
+         * 1. CONFIGURATION & STATE
+         */
         const PRODUCTS = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
@@ -116,116 +243,40 @@
             { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
-        // 2. STATE ระบบ (เพิ่ม cart)
         let state = {
             users: JSON.parse(localStorage.getItem('baobei_users')) || {},
-            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: ["CODE123"], 2: ["CODE456"], 3: ["CODE789"], 4: ["CODE000"] },
+            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] },
+            topupRequests: JSON.parse(localStorage.getItem('baobei_requests')) || [],
+            usedSlips: JSON.parse(localStorage.getItem('baobei_used_slips')) || [],
+            salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
+            totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
             currentUser: null,
-            cart: [] // เก็บ { id, qty }
+            isAdmin: false,
+            activePrivateUser: null,
+            globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
+            privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
+            chatMode: 'global' 
         };
 
-        // 3. ฟังก์ชันจัดการตะกร้าสินค้า
-        function addToCart(id) {
-            const stock = state.inventory[id]?.length || 0;
-            const itemInCart = state.cart.find(i => i.id === id);
-            const currentQtyInCart = itemInCart ? itemInCart.qty : 0;
-
-            if (stock > currentQtyInCart) {
-                if (itemInCart) {
-                    itemInCart.qty++;
-                } else {
-                    state.cart.push({ id: id, qty: 1 });
-                }
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
-                updateCartBadge();
-            } else {
-                Swal.fire('สินค้าไม่พอ', 'ขออภัย สินค้าในสต็อกไม่พอสำหรับจำนวนที่คุณเลือก', 'warning');
-            }
+        function persist() {
+            try {
+                localStorage.setItem('baobei_users', JSON.stringify(state.users));
+                localStorage.setItem('baobei_inv', JSON.stringify(state.inventory));
+                localStorage.setItem('baobei_requests', JSON.stringify(state.topupRequests));
+                localStorage.setItem('baobei_used_slips', JSON.stringify(state.usedSlips));
+                localStorage.setItem('baobei_sales', state.salesCount);
+                localStorage.setItem('baobei_total_topup', state.totalTopupSum);
+                localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
+                localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
+            } catch (e) { console.error(e); }
         }
 
-        function updateCartBadge() {
-            const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
-            document.getElementById('cartCount').innerText = count;
-        }
-
-        function showCart() {
-            if (state.cart.length === 0) return Swal.fire('ตะกร้าว่างเปล่า', 'ไปเลือกซื้อสินค้ากันเลย!', 'info');
-
-            let total = 0;
-            let cartHtml = `<div style="text-align:left;">`;
-            state.cart.forEach((item, index) => {
-                const p = PRODUCTS.find(x => x.id === item.id);
-                const subtotal = p.price * item.qty;
-                total += subtotal;
-                cartHtml += `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                        <div><b>${p.name}</b><br><small>${p.price}฿ x ${item.qty}</small></div>
-                        <div>
-                            <b>${subtotal}฿</b>
-                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-                        </div>
-                    </div>`;
-            });
-            cartHtml += `<h3 style="text-align:right; color:var(--main);">รวมทั้งสิ้น: ${total} ฿</h3></div>`;
-
-            Swal.fire({
-                title: 'ตะกร้าสินค้า',
-                html: cartHtml,
-                showCancelButton: true,
-                confirmButtonText: 'ชำระเงินทั้งหมด',
-                cancelButtonText: 'ช้อปต่อ',
-                confirmButtonColor: '#00c853'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    processCheckout(total);
-                }
-            });
-        }
-
-        window.removeFromCart = (index) => {
-            state.cart.splice(index, 1);
-            updateCartBadge();
-            Swal.close();
-            showCart(); // Refresh cart view
-        };
-
-        // 4. ระบบการซื้อ (Checkout)
-        function processCheckout(totalPrice) {
-            const user = state.users[state.currentUser];
-            if (user.balance < totalPrice) {
-                return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup'));
-            }
-
-            // หักเงินและจ่ายของ
-            user.balance -= totalPrice;
-            let resultCodes = [];
-            
-            state.cart.forEach(item => {
-                const p = PRODUCTS.find(x => x.id === item.id);
-                for(let i=0; i < item.qty; i++) {
-                    const code = state.inventory[item.id].pop();
-                    resultCodes.push({ name: p.name, code: code });
-                    if(!user.orders) user.orders = [];
-                    user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
-                }
-            });
-
-            state.cart = []; // ล้างตะกร้า
-            updateCartBadge();
-            localStorage.setItem('baobei_users', JSON.stringify(state.users));
-            localStorage.setItem('baobei_inv', JSON.stringify(state.inventory));
-            updateUI();
-
-            let codesHtml = resultCodes.map(r => `<li><b>${r.name}:</b> ${r.code}</li>`).join('');
-            Swal.fire({
-                title: 'สั่งซื้อสำเร็จ!',
-                html: `<ul style="text-align:left; background:#f9f9f9; padding:15px; border-radius:10px;">${codesHtml}</ul>`,
-                icon: 'success'
-            });
-        }
-
-        // --- ส่วนที่เหลือคือ Logic เดิมของคุณ (UpdateUI, Login, Snow) ---
         function updateUI() {
+            document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
+            document.getElementById('statUsers').innerText = Object.keys(state.users).length;
+            document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
+            let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
+            document.getElementById('statStock').innerText = totalStock;
             if (state.currentUser && state.users[state.currentUser]) {
                 document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
             }
@@ -234,65 +285,313 @@
                 const stock = state.inventory[p.id]?.length || 0;
                 return `
                 <div class="product-card">
-                    <div style="position:absolute; top:10px; right:10px; background:black; color:white; padding:2px 8px; border-radius:10px; font-size:12px;">สต็อก: ${stock}</div>
-                    <img src="${p.image}" class="product-img">
+                    <div class="stock-tag">${stock > 0 ? 'สต็อก: ' + stock : 'หมด'}</div>
+                    <img src="${p.image}" class="product-img" loading="lazy">
                     <div class="product-info">
-                        <div class="product-name" style="font-weight:bold;">${p.name}</div>
+                        <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="addToCart(${p.id})" ${stock === 0 ? 'disabled' : ''}>
-                            ${stock > 0 ? 'เพิ่มลงตะกร้า' : 'สินค้าหมด'}
+                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin ? 'disabled' : ''}>
+                            ${state.isAdmin ? 'ทดสอบซื้อ' : (stock > 0 ? 'สั่งซื้อสินค้า' : 'สินค้าหมด')}
                         </button>
                     </div>
                 </div>`;
             }).join('');
+            renderChat();
         }
 
-        function handleLogin() {
-            const u = document.getElementById('loginUsername').value.trim();
-            const p = document.getElementById('loginPassword').value.trim();
-            if(state.users[u] && state.users[u].password === p) {
-                state.currentUser = u;
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('shopContent').classList.remove('hidden');
-                updateUI();
-            } else {
-                Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
-            }
+        /**
+         * 3. AUTH LOGIC & AUTO LOGOUT
+         */
+        let logoutTimer;
+        function resetLogoutTimer() {
+            if (!state.currentUser) return;
+            clearTimeout(logoutTimer);
+            // 3. ระบบล็อกเอาต์อัตโนมัติ (15 นาที)
+            logoutTimer = setTimeout(() => {
+                if (state.currentUser) {
+                    Swal.fire('หมดเวลาเชื่อมต่อ', 'ระบบทำการล็อกเอาต์อัตโนมัติเพื่อความปลอดภัย', 'info').then(() => {
+                        location.reload();
+                    });
+                }
+            }, 15 * 60 * 1000); 
         }
 
-        function handleRegister() {
-            const u = document.getElementById('regUsername').value.trim();
-            const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', '', 'warning');
-            state.users[u] = { password: p, balance: 100, orders: [] }; // แถมเงินทดสอบ 100
-            localStorage.setItem('baobei_users', JSON.stringify(state.users));
-            Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว', 'success').then(() => toggleAuth('login'));
-        }
+        // จับการเคลื่อนไหวเพื่อรีเซ็ตเวลา
+        window.onload = resetLogoutTimer;
+        window.onmousemove = resetLogoutTimer;
+        window.onkeypress = resetLogoutTimer;
 
         function toggleAuth(type) {
             document.getElementById('loginPage').classList.toggle('hidden', type !== 'login');
             document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
         }
 
+        function handleRegister() {
+            const u = document.getElementById('regUsername').value.trim();
+            const p = document.getElementById('regPassword').value.trim();
+            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
+            if(state.users[u]) return Swal.fire('ชื่อนี้มีแล้ว', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
+            state.users[u] = { password: p, balance: 0, orders: [] }; // เพิ่มฟิลด์ orders
+            persist();
+            Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
+        }
+
+        function handleLogin() {
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            if(u.toLowerCase() === 'admin' && p === 'admin123') {
+                state.currentUser = "Admin";
+                state.isAdmin = true;
+            } else if(state.users[u] && state.users[u].password === p) {
+                state.currentUser = u;
+                state.isAdmin = false;
+            } else {
+                return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('shopContent').classList.remove('hidden');
+            if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
+            resetLogoutTimer();
+            updateUI();
+        }
+
+        function handleLogout() {
+            Swal.fire({
+                title: 'ออกจากระบบ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => { if (result.isConfirmed) location.reload(); });
+        }
+
+        /**
+         * 4. AUTO TOPUP & SLIP PROTECTION
+         */
+        function previewSlip(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('slipPreviewImg');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function submitTopup() {
+            const amtInput = document.getElementById('topupAmount');
+            const amt = parseFloat(amtInput.value);
+            const slipImg = document.getElementById('slipPreviewImg').src;
+            
+            if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงินที่ถูกต้อง', 'warning');
+            if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'กรุณาแนบรูปภาพสลิป', 'warning');
+            
+            const slipHash = slipImg.substring(slipImg.length - 200); 
+            if(state.usedSlips.includes(slipHash)) {
+                return Swal.fire('สลิปนี้ถูกใช้งานแล้ว', 'ไม่สามารถใช้สลิปเดิมเติมซ้ำได้', 'error');
+            }
+
+            Swal.fire({
+                title: 'กำลังตรวจสอบสลิป...',
+                html: 'ระบบ AI กำลังตรวจสอบความถูกต้อง',
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: () => { Swal.showLoading() }
+            }).then(() => {
+                state.users[state.currentUser].balance += amt;
+                state.totalTopupSum += amt;
+                state.usedSlips.push(slipHash); 
+                
+                state.topupRequests.push({ 
+                    user: state.currentUser, 
+                    amount: amt, 
+                    slip: slipImg,
+                    status: 'auto_approved',
+                    time: new Date().toLocaleString()
+                });
+                
+                persist();
+                updateUI();
+                Swal.fire('สำเร็จ', `เติมเงิน ${amt} ฿ สำเร็จ!`, 'success').then(() => {
+                    showPage('home');
+                });
+            });
+        }
+
+        function buyProduct(id) {
+            const p = PRODUCTS.find(item => item.id === id);
+            const user = state.users[state.currentUser];
+            if(!state.isAdmin && user.balance < p.price) {
+                return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup'));
+            }
+            if(state.inventory[id].length > 0) {
+                const code = state.inventory[id].pop();
+                if(!state.isAdmin) {
+                    user.balance -= p.price;
+                    // บันทึกลงระบบประวัติการซื้อ
+                    if(!user.orders) user.orders = [];
+                    user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
+                }
+                state.salesCount++;
+                persist();
+                updateUI();
+                Swal.fire({
+                    title: 'ซื้อสินค้าสำเร็จ!',
+                    html: `<div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-top:10px; border:2px dashed var(--main);"><b>CODE:</b><br><span style="font-size:20px; color:var(--main)">${code}</span></div>`,
+                    icon: 'success'
+                });
+            } else {
+                Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อกค่ะ', 'error');
+            }
+        }
+
+        /**
+         * 5. ORDER HISTORY SYSTEM
+         */
+        function showOrderHistory() {
+            const user = state.users[state.currentUser];
+            if (!user.orders || user.orders.length === 0) {
+                return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อสินค้า', 'info');
+            }
+
+            let historyHtml = user.orders.map(o => `
+                <div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;">
+                    <div style="font-size:12px; color:#999;">${o.date}</div>
+                    <div style="font-weight:bold; color:var(--main);">${o.name}</div>
+                    <div style="background:#f0f0f0; padding:5px; margin-top:5px; border-radius:5px; font-family:monospace; display:flex; justify-content:space-between;">
+                        <span>${o.code}</span>
+                        <i class="far fa-copy" style="cursor:pointer; color:var(--line)" onclick="copyCode('${o.code}')"></i>
+                    </div>
+                </div>
+            `).join('');
+
+            Swal.fire({
+                title: 'ประวัติการซื้อของคุณ',
+                html: `<div style="max-height: 400px; overflow-y: auto; padding:5px;">${historyHtml}</div>`,
+                confirmButtonText: 'ปิดหน้าต่าง'
+            });
+        }
+
+        function copyCode(text) {
+            navigator.clipboard.writeText(text);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'คัดลอกรหัสแล้ว!', showConfirmButton: false, timer: 1500 });
+        }
+
+        /**
+         * 6. ADMIN TOOLS
+         */
+        function openAdminPanel() {
+            let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
+                <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
+                    <p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p>
+                    <img src="${req.slip}" style="width: 100%; border-radius:5px; margin:5px 0;">
+                </div>
+            `).join('') || "<p style='color:#999'>ไม่มีประวัติ</p>";
+
+            let chatUsers = Object.keys(state.privateMessages).map(user => `
+                <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
+                    <i class="fas fa-user"></i> ${user}
+                </button>
+            `).join('') || "<p style='color:#999'>ยังไม่มีลูกค้าทักแชท</p>";
+
+            Swal.fire({
+                title: 'ADMIN PANEL',
+                html: `
+                    <div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;">
+                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>
+                        ${chatUsers}
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
+                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                        <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ล่าสุด (Auto Topup)</h4>
+                        ${reqHtml}
+                    </div>
+                `,
+                confirmButtonText: 'บันทึกสต็อก',
+                showCancelButton: true
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    const pid = document.getElementById('adm_pid').value;
+                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
+                    if(codes.length > 0) {
+                        state.inventory[pid].push(...codes);
+                        persist(); updateUI();
+                        Swal.fire('สำเร็จ', `เพิ่มสินค้า ${codes.length} ชิ้นแล้ว`, 'success');
+                    }
+                }
+            });
+        }
+
+        window.adminSelectUser = (username) => {
+            state.activePrivateUser = username;
+            state.chatMode = 'private';
+            Swal.close();
+            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
+            setChatMode('private');
+        };
+
+        /**
+         * 7. NAVIGATION & CHAT
+         */
         function showPage(p) {
             document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
             document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
+            window.scrollTo({top:0, behavior:'smooth'});
         }
 
-        function handleLogout() { location.reload(); }
+        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+        
+        function setChatMode(mode) {
+            state.chatMode = mode;
+            document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
+            document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
+            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : (state.isAdmin ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
+            renderChat();
+        }
+        
+        function sendChat() {
+            const inp = document.getElementById('chatInput');
+            if(!inp.value.trim()) return;
+            const msg = { sender: state.currentUser, text: inp.value, time: Date.now(), isAdmin: state.isAdmin };
+            if(state.chatMode === 'global') state.globalMessages.push(msg);
+            else {
+                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
+                if(!target) return;
+                if(!state.privateMessages[target]) state.privateMessages[target] = [];
+                state.privateMessages[target].push(msg);
+            }
+            persist(); renderChat(); inp.value = "";
+        }
 
-        // [Snow Effect JS เดิมของคุณ...]
+        function renderChat() {
+            const chatBox = document.getElementById('chatMessages');
+            chatBox.innerHTML = "";
+            let messages = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[state.isAdmin ? state.activePrivateUser : state.currentUser] || []);
+            messages.forEach(m => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `msg ${m.sender === state.currentUser ? 'msg-user' : 'msg-admin'}`;
+                msgDiv.innerHTML = `<span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
+                chatBox.appendChild(msgDiv);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        /**
+         * 8. SNOW EFFECT
+         */
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
         function initSnow() {
             width = window.innerWidth; height = window.innerHeight;
             canvas.width = width; canvas.height = height;
-            flakes = Array.from({length: 50}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 }));
+            flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 }));
         }
         function drawSnow() {
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
             ctx.beginPath();
             flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); });
             ctx.fill();
@@ -301,6 +600,7 @@
         }
         window.addEventListener('resize', initSnow);
         initSnow(); drawSnow();
+        updateUI();
     </script>
 </body>
 </html>
