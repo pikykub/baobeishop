@@ -109,10 +109,17 @@
         .btn-history { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; }
         .btn-history:hover { background: #000; transform: scale(1.05); }
 
+        /* เพิ่ม CSS สำหรับระบบ Profile */
+        .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; transition: 0.3s; }
+        .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
+        .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
+
         @media (max-width: 600px) { 
             .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
             .stats-grid { gap: 10px; }
             .stat-value { font-size: 18px; }
+            .nav-nickname { display: none; }
         }
     </style>
 </head>
@@ -149,6 +156,11 @@
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
+                <div class="user-profile-btn" onclick="openEditProfile()">
+                    <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
+                    <span id="navNickname" class="nav-nickname">ผู้ใช้</span>
+                </div>
+                
                 <div class="cart-tag" onclick="showCart()">
                     <i class="fas fa-shopping-cart"></i> 
                     <span class="cart-count" id="cartCount">0</span>
@@ -248,10 +260,10 @@
          * 1. CONFIGURATION & STATE
          */
         const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 9, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 11, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let state = {
@@ -289,9 +301,18 @@
             document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
             let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
             document.getElementById('statStock').innerText = totalStock;
+            
             if (state.currentUser && state.users[state.currentUser]) {
-                document.getElementById('balanceDisplay').innerText = state.users[state.currentUser].balance.toLocaleString();
+                const user = state.users[state.currentUser];
+                document.getElementById('balanceDisplay').innerText = user.balance.toLocaleString();
+                
+                // อัปเดตข้อมูลโปรไฟล์บน Navbar
+                document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
+                if(user.avatar) {
+                    document.getElementById('navAvatarImg').src = user.avatar;
+                }
             }
+            
             const list = document.getElementById('productList');
             list.innerHTML = PRODUCTS.map(p => {
                 const stock = state.inventory[p.id]?.length || 0;
@@ -313,6 +334,58 @@
             }).join('');
             renderChat();
             updateCartBadge();
+        }
+
+        /**
+         * ระบบแก้ไขโปรไฟล์ (เพิ่มใหม่)
+         */
+        function openEditProfile() {
+            const user = state.users[state.currentUser];
+            if(!user) return;
+
+            Swal.fire({
+                title: 'แก้ไขข้อมูลส่วนตัว',
+                html: `
+                    <div style="text-align:center;">
+                        <img id="editProfilePreview" src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:15px; border:3px solid var(--main);">
+                        <br>
+                        <label class="btn-history" style="display:inline-block; margin-bottom:15px; cursor:pointer;">
+                            เปลี่ยนรูปโปรไฟล์ <input type="file" id="profilePicInput" hidden accept="image/*" onchange="previewProfileEdit(this)">
+                        </label>
+                        <div style="text-align:left; font-size:14px; margin-bottom:5px;">ชื่อผู้ใช้ (แก้ไขไม่ได้)</div>
+                        <input type="text" value="${state.currentUser}" class="login-input" disabled style="background:#f0f0f0; color:#888;">
+                        <div style="text-align:left; font-size:14px; margin-bottom:5px; margin-top:10px;">ชื่อเล่น</div>
+                        <input type="text" id="editNickname" class="login-input" value="${user.nickname || ''}" placeholder="ตั้งชื่อเล่นของคุณ">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกการเปลี่ยนแปลง',
+                cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    return {
+                        nickname: document.getElementById('editNickname').value,
+                        avatar: document.getElementById('editProfilePreview').src
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    state.users[state.currentUser].nickname = result.value.nickname;
+                    state.users[state.currentUser].avatar = result.value.avatar;
+                    persist();
+                    updateUI();
+                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์เรียบร้อยแล้ว', 'success');
+                }
+            });
+        }
+
+        function previewProfileEdit(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('editProfilePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
         /**
@@ -439,7 +512,7 @@
             const p = document.getElementById('regPassword').value.trim();
             if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
             if(state.users[u]) return Swal.fire('ชื่อนี้มีแล้ว', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
-            state.users[u] = { password: p, balance: 0, orders: [] }; 
+            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
             persist();
             Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
         }
@@ -450,6 +523,7 @@
             if(u.toLowerCase() === 'admin' && p === 'admin123') {
                 state.currentUser = "Admin";
                 state.isAdmin = true;
+                if(!state.users["Admin"]) state.users["Admin"] = { nickname: "ผู้ดูแลระบบ", balance: 99999 };
             } else if(state.users[u] && state.users[u].password === p) {
                 state.currentUser = u;
                 state.isAdmin = false;
@@ -474,7 +548,7 @@
         }
 
         /**
-         * 4. AUTO TOPUP & SLIP PROTECTION (เพิ่มการตรวจสอบคิวอาร์โค้ด)
+         * 4. AUTO TOPUP & SLIP PROTECTION
          */
         function previewSlip(input) {
             if (input.files && input.files[0]) {
@@ -488,7 +562,6 @@
             }
         }
 
-        // ฟังก์ชันถอดรหัสและตรวจสอบข้อมูลสลิป
         async function verifySlipData(imgSrc) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -500,19 +573,10 @@
                     ctx.drawImage(img, 0, 0);
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    
-                    if (code) {
-                        // รูปแบบ Payload ของสลิปธนาคาร (Thai QR Payment)
-                        // โดยปกติชื่อบัญชีจะถูกเข้ารหัสอยู่ในนี้ แต่เราจะตรวจหา Keyword เบื้องต้น
-                        const payload = code.data;
-                        // สำหรับระบบจริงต้องใช้ API ตรวจสอบสลิปกับธนาคาร แต่เบื้องต้นเราเช็คความถูกต้องของ QR
-                        if (payload.includes("000201")) { 
-                            resolve({ success: true, payload: payload });
-                        } else {
-                            resolve({ success: false, error: "QR Code ไม่ใช่รูปแบบสลิปธนาคาร" });
-                        }
+                    if (code && code.data.includes("000201")) { 
+                        resolve({ success: true, payload: code.data });
                     } else {
-                        resolve({ success: false, error: "ไม่พบ QR Code ในรูปภาพสลิป" });
+                        resolve({ success: false, error: "QR Code ไม่ถูกต้อง" });
                     }
                 };
                 img.src = imgSrc;
@@ -532,39 +596,20 @@
                 return Swal.fire('สลิปนี้ถูกใช้งานแล้ว', 'ไม่สามารถใช้สลิปเดิมเติมซ้ำได้', 'error');
             }
 
-            Swal.fire({
-                title: 'กำลังตรวจสอบสลิป...',
-                html: 'ระบบ AI กำลังตรวจสอบความถูกต้องและชื่อผู้รับ',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
-            });
-
-            // ตรวจสอบ QR Code ในสลิป
+            Swal.fire({ title: 'กำลังตรวจสอบสลิป...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             const qrResult = await verifySlipData(slipImg);
             
             if(!qrResult.success) {
                 return Swal.fire('ตรวจสอบล้มเหลว', qrResult.error, 'error');
             }
 
-            // จำลองการตรวจสอบชื่อบัญชีปลายทาง (ในระบบจริงต้องต่อ API ธนาคาร)
-            // สำหรับสคริปต์หน้าเว็บ เราจะแจ้งเตือนว่าระบบตรวจสอบ "จิตราภรณ์ จันทร" เรียบร้อยแล้ว
             setTimeout(() => {
                 state.users[state.currentUser].balance += amt;
                 state.totalTopupSum += amt;
                 state.usedSlips.push(slipHash); 
-                
-                state.topupRequests.push({ 
-                    user: state.currentUser, 
-                    amount: amt, 
-                    slip: slipImg,
-                    status: 'verified_approved',
-                    receiver: 'จิตราภรณ์ จันทร',
-                    time: new Date().toLocaleString()
-                });
-                
-                persist();
-                updateUI();
-                Swal.fire('เติมเงินสำเร็จ', `โอนเข้าบัญชี: จิตราภรณ์ จันทร<br>จำนวนเงิน: ${amt} ฿`, 'success').then(() => {
+                state.topupRequests.push({ user: state.currentUser, amount: amt, slip: slipImg, time: new Date().toLocaleString() });
+                persist(); updateUI();
+                Swal.fire('เติมเงินสำเร็จ', `จำนวนเงิน: ${amt} ฿`, 'success').then(() => {
                     showPage('home');
                     document.getElementById('topupAmount').value = "";
                     document.getElementById('slipPreviewImg').style.display = "none";
@@ -586,16 +631,13 @@
                     user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
                 }
                 state.salesCount++;
-                persist();
-                updateUI();
+                persist(); updateUI();
                 Swal.fire({
                     title: 'ซื้อสินค้าสำเร็จ!',
                     html: `<div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-top:10px; border:2px dashed var(--main);"><b>CODE:</b><br><span style="font-size:20px; color:var(--main)">${code}</span></div>`,
                     icon: 'success'
                 });
-            } else {
-                Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อกค่ะ', 'error');
-            }
+            } else { Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อกค่ะ', 'error'); }
         }
 
         /**
@@ -606,7 +648,6 @@
             if (!user.orders || user.orders.length === 0) {
                 return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อสินค้า', 'info');
             }
-
             let historyHtml = user.orders.map(o => `
                 <div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;">
                     <div style="font-size:12px; color:#999;">${o.date}</div>
@@ -617,12 +658,7 @@
                     </div>
                 </div>
             `).join('');
-
-            Swal.fire({
-                title: 'ประวัติการซื้อของคุณ',
-                html: `<div style="max-height: 400px; overflow-y: auto; padding:5px;">${historyHtml}</div>`,
-                confirmButtonText: 'ปิดหน้าต่าง'
-            });
+            Swal.fire({ title: 'ประวัติการซื้อของคุณ', html: `<div style="max-height: 400px; overflow-y: auto; padding:5px;">${historyHtml}</div>` });
         }
 
         function copyCode(text) {
@@ -637,27 +673,18 @@
             let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
                 <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
                     <p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p>
-                    <p style="margin:0; font-size:10px; color:green;"><b>ชื่อปลายทาง:</b> ${req.receiver || 'จิตราภรณ์ จันทร'}</p>
                     <img src="${req.slip}" style="width: 100%; border-radius:5px; margin:5px 0;">
                 </div>
             `).join('') || "<p style='color:#999'>ไม่มีประวัติ</p>";
-
-            let chatUsers = Object.keys(state.privateMessages).map(user => `
-                <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
-                    <i class="fas fa-user"></i> ${user}
-                </button>
-            `).join('') || "<p style='color:#999'>ยังไม่มีลูกค้าทักแชท</p>";
 
             Swal.fire({
                 title: 'ADMIN PANEL',
                 html: `
                     <div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;">
-                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>
-                        ${chatUsers}
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
+                        <h4 style="margin:0 0 10px 0;">เติมสต็อก</h4>
                         <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
                         <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">รายการเติมเงินล่าสุด</h4>
+                        <h4 style="margin:15px 0 10px 0;">รายการเติมเงินล่าสุด</h4>
                         ${reqHtml}
                     </div>
                 `,
@@ -676,14 +703,6 @@
             });
         }
 
-        window.adminSelectUser = (username) => {
-            state.activePrivateUser = username;
-            state.chatMode = 'private';
-            Swal.close();
-            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
-            setChatMode('private');
-        };
-
         /**
          * 7. NAVIGATION & CHAT
          */
@@ -699,14 +718,14 @@
             state.chatMode = mode;
             document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
-            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : (state.isAdmin ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
+            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : "แชทกับแอดมิน";
             renderChat();
         }
         
         function sendChat() {
             const inp = document.getElementById('chatInput');
             if(!inp.value.trim()) return;
-            const msg = { sender: state.currentUser, text: inp.value, time: Date.now(), isAdmin: state.isAdmin };
+            const msg = { sender: state.users[state.currentUser].nickname || state.currentUser, text: inp.value, time: Date.now(), isAdmin: state.isAdmin };
             if(state.chatMode === 'global') state.globalMessages.push(msg);
             else {
                 let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
@@ -723,7 +742,7 @@
             let messages = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[state.isAdmin ? state.activePrivateUser : state.currentUser] || []);
             messages.forEach(m => {
                 const msgDiv = document.createElement('div');
-                msgDiv.className = `msg ${m.sender === state.currentUser ? 'msg-user' : 'msg-admin'}`;
+                msgDiv.className = `msg ${m.sender === (state.users[state.currentUser].nickname || state.currentUser) ? 'msg-user' : 'msg-admin'}`;
                 msgDiv.innerHTML = `<span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
                 chatBox.appendChild(msgDiv);
             });
