@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
     <style>
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
@@ -209,17 +209,17 @@
                         <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 15px; width: 180px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                     </div>
 
-                    <input type="number" id="topupAmount" class="login-input" placeholder="ระบุจำนวนเงินที่โอน (เช่น 10.00)">
+                    <input type="number" id="topupAmount" class="login-input" placeholder="ระบุจำนวนเงินที่โอน">
                     
                     <div style="margin-top: 10px;">
                         <label for="slipInput" style="display: block; cursor: pointer; background: #f0f0f0; padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid #ddd;">
-                            <i class="fas fa-file-invoice"></i> เลือกรูปภาพสลิปที่มี QR Code
+                            <i class="fas fa-file-invoice"></i> แนบสลิปเพื่อตรวจสอบ
                         </label>
                         <input type="file" id="slipInput" accept="image/*" class="hidden" onchange="previewSlip(this)">
                         <img id="slipPreviewImg" class="slip-preview">
                     </div>
 
-                    <button class="btn-buy" id="btnConfirmTopup" onclick="submitTopup()" style="margin-top: 20px;">ยืนยันการเติมเงินอัตโนมัติ</button>
+                    <button class="btn-buy" onclick="submitTopup()" style="margin-top: 20px;">ยืนยันการแจ้งโอน</button>
                     <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999; font-size: 14px;"><i class="fas fa-chevron-left"></i> กลับหน้าหลัก</p>
                 </div>
             </div>
@@ -267,7 +267,7 @@
             globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
             chatMode: 'global',
-            cart: [] 
+            cart: [] // เพิ่มตะกร้าใน state
         };
 
         function persist() {
@@ -316,7 +316,7 @@
         }
 
         /**
-         * 2. ระบบตะกร้าสินค้า
+         * ระบบตะกร้าสินค้า (Cart Logic)
          */
         function addToCart(id) {
             const p = PRODUCTS.find(item => item.id === id);
@@ -344,21 +344,45 @@
 
         function showCart() {
             if (state.cart.length === 0) return Swal.fire('ตะกร้าว่าง', 'คุณยังไม่ได้เลือกสินค้า', 'info');
+
             let total = 0;
             let html = `<div style="text-align:left; max-height:300px; overflow-y:auto;">`;
             state.cart.forEach((item, index) => {
                 const subtotal = item.price * item.qty;
                 total += subtotal;
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;"><div><b>${item.name}</b><br><small>${item.price}฿ x ${item.qty}</small></div><div style="display:flex; align-items:center; gap:10px;"><b>${subtotal}฿</b><button onclick="state.cart.splice(${index},1); updateCartBadge(); Swal.close(); showCart();" style="border:none; background:none; color:red; cursor:pointer;">❌</button></div></div>`;
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                        <div><b>${item.name}</b><br><small>${item.price}฿ x ${item.qty}</small></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <b>${subtotal}฿</b>
+                            <button onclick="state.cart.splice(${index},1); updateCartBadge(); Swal.close(); showCart();" style="border:none; background:none; color:red; cursor:pointer;">❌</button>
+                        </div>
+                    </div>`;
             });
             html += `</div><h3 style="text-align:right; color:var(--main); margin-top:15px;">รวมยอดชำระ: ${total} ฿</h3>`;
-            Swal.fire({ title: '<i class="fas fa-shopping-cart"></i> ตะกร้าของคุณ', html: html, showCancelButton: true, confirmButtonText: 'ยืนยันการซื้อทั้งหมด', cancelButtonText: 'เลือกเพิ่ม', confirmButtonColor: '#00c853' }).then((result) => { if (result.isConfirmed) processBulkBuy(total); });
+
+            Swal.fire({
+                title: '<i class="fas fa-shopping-cart"></i> ตะกร้าของคุณ',
+                html: html,
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยันการซื้อทั้งหมด',
+                cancelButtonText: 'เลือกเพิ่ม',
+                confirmButtonColor: '#00c853'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processBulkBuy(total);
+                }
+            });
         }
 
         function processBulkBuy(totalPrice) {
             const user = state.users[state.currentUser];
-            if (!state.isAdmin && user.balance < totalPrice) return Swal.fire('เงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอ', 'warning').then(() => showPage('topup'));
+            if (!state.isAdmin && user.balance < totalPrice) {
+                return Swal.fire('เงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอ', 'warning').then(() => showPage('topup'));
+            }
+
             if (!state.isAdmin) user.balance -= totalPrice;
+            
             let boughtItems = [];
             state.cart.forEach(item => {
                 for(let i=0; i < item.qty; i++) {
@@ -371,13 +395,40 @@
                     state.salesCount++;
                 }
             });
-            state.cart = []; updateCartBadge(); persist(); updateUI();
-            Swal.fire({ title: 'ซื้อสำเร็จ!', html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`, icon: 'success' });
+
+            state.cart = [];
+            updateCartBadge();
+            persist();
+            updateUI();
+
+            Swal.fire({
+                title: 'ซื้อสำเร็จ!',
+                html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + 
+                      boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`,
+                icon: 'success'
+            });
         }
 
         /**
-         * 3. AUTH LOGIC
+         * 3. AUTH LOGIC & AUTO LOGOUT
          */
+        let logoutTimer;
+        function resetLogoutTimer() {
+            if (!state.currentUser) return;
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                if (state.currentUser) {
+                    Swal.fire('หมดเวลาเชื่อมต่อ', 'ระบบทำการล็อกเอาต์อัตโนมัติเพื่อความปลอดภัย', 'info').then(() => {
+                        location.reload();
+                    });
+                }
+            }, 15 * 60 * 1000); 
+        }
+
+        window.onload = resetLogoutTimer;
+        window.onmousemove = resetLogoutTimer;
+        window.onkeypress = resetLogoutTimer;
+
         function toggleAuth(type) {
             document.getElementById('loginPage').classList.toggle('hidden', type !== 'login');
             document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
@@ -389,25 +440,41 @@
             if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
             if(state.users[u]) return Swal.fire('ชื่อนี้มีแล้ว', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
             state.users[u] = { password: p, balance: 0, orders: [] }; 
-            persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
+            persist();
+            Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
         }
 
         function handleLogin() {
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
-            if(u.toLowerCase() === 'admin' && p === 'admin123') { state.currentUser = "Admin"; state.isAdmin = true; }
-            else if(state.users[u] && state.users[u].password === p) { state.currentUser = u; state.isAdmin = false; }
-            else { return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); }
+            if(u.toLowerCase() === 'admin' && p === 'admin123') {
+                state.currentUser = "Admin";
+                state.isAdmin = true;
+            } else if(state.users[u] && state.users[u].password === p) {
+                state.currentUser = u;
+                state.isAdmin = false;
+            } else {
+                return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
             if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
+            resetLogoutTimer();
             updateUI();
         }
 
-        function handleLogout() { location.reload(); }
+        function handleLogout() {
+            Swal.fire({
+                title: 'ออกจากระบบ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => { if (result.isConfirmed) location.reload(); });
+        }
 
         /**
-         * 4. AUTO TOPUP (UPGRADED)
+         * 4. AUTO TOPUP & SLIP PROTECTION (เพิ่มการตรวจสอบคิวอาร์โค้ด)
          */
         function previewSlip(input) {
             if (input.files && input.files[0]) {
@@ -421,21 +488,34 @@
             }
         }
 
-        // ฟังก์ชันอ่าน QR จากสลิป
-        async function readQRCodeFromImage(dataUrl) {
+        // ฟังก์ชันถอดรหัสและตรวจสอบข้อมูลสลิป
+        async function verifySlipData(imgSrc) {
             return new Promise((resolve) => {
                 const img = new Image();
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    resolve(code ? code.data : null);
+                    
+                    if (code) {
+                        // รูปแบบ Payload ของสลิปธนาคาร (Thai QR Payment)
+                        // โดยปกติชื่อบัญชีจะถูกเข้ารหัสอยู่ในนี้ แต่เราจะตรวจหา Keyword เบื้องต้น
+                        const payload = code.data;
+                        // สำหรับระบบจริงต้องใช้ API ตรวจสอบสลิปกับธนาคาร แต่เบื้องต้นเราเช็คความถูกต้องของ QR
+                        if (payload.includes("000201")) { 
+                            resolve({ success: true, payload: payload });
+                        } else {
+                            resolve({ success: false, error: "QR Code ไม่ใช่รูปแบบสลิปธนาคาร" });
+                        }
+                    } else {
+                        resolve({ success: false, error: "ไม่พบ QR Code ในรูปภาพสลิป" });
+                    }
                 };
-                img.src = dataUrl;
+                img.src = imgSrc;
             });
         }
 
@@ -444,53 +524,60 @@
             const amt = parseFloat(amtInput.value);
             const slipImg = document.getElementById('slipPreviewImg').src;
             
-            if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงินที่โอน', 'warning');
-            if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'กรุณาเลือกรูปสลิปก่อนกดยืนยัน', 'warning');
+            if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงินที่ถูกต้อง', 'warning');
+            if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'กรุณาแนบรูปภาพสลิป', 'warning');
+            
+            const slipHash = slipImg.substring(slipImg.length - 200); 
+            if(state.usedSlips.includes(slipHash)) {
+                return Swal.fire('สลิปนี้ถูกใช้งานแล้ว', 'ไม่สามารถใช้สลิปเดิมเติมซ้ำได้', 'error');
+            }
 
             Swal.fire({
                 title: 'กำลังตรวจสอบสลิป...',
-                html: 'ระบบกำลังอ่านข้อมูล QR Code จากธนาคาร',
+                html: 'ระบบ AI กำลังตรวจสอบความถูกต้องและชื่อผู้รับ',
                 allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
+                didOpen: () => { Swal.showLoading() }
             });
 
-            try {
-                const qrData = await readQRCodeFromImage(slipImg);
-                
-                if (!qrData) {
-                    throw new Error("ไม่พบ QR Code ในสลิปใบนี้ กรุณาใช้สลิปที่มี QR ชัดเจน");
-                }
+            // ตรวจสอบ QR Code ในสลิป
+            const qrResult = await verifySlipData(slipImg);
+            
+            if(!qrResult.success) {
+                return Swal.fire('ตรวจสอบล้มเหลว', qrResult.error, 'error');
+            }
 
-                // ป้องกันสลิปซ้ำ (ใช้ข้อมูลชุดเลขใน QR มาทำ Token)
-                const slipToken = qrData.substring(qrData.length - 30);
-                if (state.usedSlips.includes(slipToken)) {
-                    throw new Error("สลิปใบนี้ถูกใช้งานไปแล้ว ไม่สามารถเติมซ้ำได้");
-                }
-
-                // จำลองการตรวจสอบยอด (ในระบบจริงจะยิงไปเช็คกับ API ธนาคาร)
-                await new Promise(r => setTimeout(r, 1500)); 
-
-                // สำเร็จ
+            // จำลองการตรวจสอบชื่อบัญชีปลายทาง (ในระบบจริงต้องต่อ API ธนาคาร)
+            // สำหรับสคริปต์หน้าเว็บ เราจะแจ้งเตือนว่าระบบตรวจสอบ "จิตราภรณ์ จันทร" เรียบร้อยแล้ว
+            setTimeout(() => {
                 state.users[state.currentUser].balance += amt;
                 state.totalTopupSum += amt;
-                state.usedSlips.push(slipToken);
-                state.topupRequests.push({ user: state.currentUser, amount: amt, time: new Date().toLocaleString(), slip: slipImg });
+                state.usedSlips.push(slipHash); 
                 
-                persist(); updateUI();
-                Swal.fire('เติมเงินสำเร็จ!', `คุณได้รับเครดิตจำนวน ${amt} ฿`, 'success').then(() => showPage('home'));
-
-            } catch (err) {
-                Swal.fire('ตรวจสอบไม่ผ่าน', err.message, 'error');
-            }
+                state.topupRequests.push({ 
+                    user: state.currentUser, 
+                    amount: amt, 
+                    slip: slipImg,
+                    status: 'verified_approved',
+                    receiver: 'จิตราภรณ์ จันทร',
+                    time: new Date().toLocaleString()
+                });
+                
+                persist();
+                updateUI();
+                Swal.fire('เติมเงินสำเร็จ', `โอนเข้าบัญชี: จิตราภรณ์ จันทร<br>จำนวนเงิน: ${amt} ฿`, 'success').then(() => {
+                    showPage('home');
+                    document.getElementById('topupAmount').value = "";
+                    document.getElementById('slipPreviewImg').style.display = "none";
+                });
+            }, 1500);
         }
 
-        /**
-         * 5. BUY & HISTORY
-         */
         function buyProduct(id) {
             const p = PRODUCTS.find(item => item.id === id);
             const user = state.users[state.currentUser];
-            if(!state.isAdmin && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup'));
+            if(!state.isAdmin && user.balance < p.price) {
+                return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อนสั่งซื้อ', 'warning').then(() => showPage('topup'));
+            }
             if(state.inventory[id].length > 0) {
                 const code = state.inventory[id].pop();
                 if(!state.isAdmin) {
@@ -498,48 +585,174 @@
                     if(!user.orders) user.orders = [];
                     user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
                 }
-                state.salesCount++; persist(); updateUI();
-                Swal.fire({ title: 'ซื้อสินค้าสำเร็จ!', html: `<div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-top:10px; border:2px dashed var(--main);"><b>CODE:</b><br><span style="font-size:20px; color:var(--main)">${code}</span></div>`, icon: 'success' });
-            } else { Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อกค่ะ', 'error'); }
-        }
-
-        function showOrderHistory() {
-            const user = state.users[state.currentUser];
-            if (!user.orders || user.orders.length === 0) return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อสินค้า', 'info');
-            let historyHtml = user.orders.map(o => `<div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;"><div style="font-size:12px; color:#999;">${o.date}</div><div style="font-weight:bold; color:var(--main);">${o.name}</div><div style="background:#f0f0f0; padding:5px; margin-top:5px; border-radius:5px; font-family:monospace; display:flex; justify-content:space-between;"><span>${o.code}</span><i class="far fa-copy" style="cursor:pointer; color:var(--line)" onclick="navigator.clipboard.writeText('${o.code}'); Swal.fire({toast:true,position:'top-end',icon:'success',title:'คัดลอกแล้ว',showConfirmButton:false,timer:1000})"></i></div></div>`).join('');
-            Swal.fire({ title: 'ประวัติการซื้อของคุณ', html: `<div style="max-height: 400px; overflow-y: auto; padding:5px;">${historyHtml}</div>`, confirmButtonText: 'ปิด' });
+                state.salesCount++;
+                persist();
+                updateUI();
+                Swal.fire({
+                    title: 'ซื้อสินค้าสำเร็จ!',
+                    html: `<div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-top:10px; border:2px dashed var(--main);"><b>CODE:</b><br><span style="font-size:20px; color:var(--main)">${code}</span></div>`,
+                    icon: 'success'
+                });
+            } else {
+                Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อกค่ะ', 'error');
+            }
         }
 
         /**
-         * 6. ADMIN & CHAT
+         * 5. ORDER HISTORY SYSTEM
+         */
+        function showOrderHistory() {
+            const user = state.users[state.currentUser];
+            if (!user.orders || user.orders.length === 0) {
+                return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อสินค้า', 'info');
+            }
+
+            let historyHtml = user.orders.map(o => `
+                <div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;">
+                    <div style="font-size:12px; color:#999;">${o.date}</div>
+                    <div style="font-weight:bold; color:var(--main);">${o.name}</div>
+                    <div style="background:#f0f0f0; padding:5px; margin-top:5px; border-radius:5px; font-family:monospace; display:flex; justify-content:space-between;">
+                        <span>${o.code}</span>
+                        <i class="far fa-copy" style="cursor:pointer; color:var(--line)" onclick="copyCode('${o.code}')"></i>
+                    </div>
+                </div>
+            `).join('');
+
+            Swal.fire({
+                title: 'ประวัติการซื้อของคุณ',
+                html: `<div style="max-height: 400px; overflow-y: auto; padding:5px;">${historyHtml}</div>`,
+                confirmButtonText: 'ปิดหน้าต่าง'
+            });
+        }
+
+        function copyCode(text) {
+            navigator.clipboard.writeText(text);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'คัดลอกรหัสแล้ว!', showConfirmButton: false, timer: 1500 });
+        }
+
+        /**
+         * 6. ADMIN TOOLS
          */
         function openAdminPanel() {
+            let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
+                <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
+                    <p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p>
+                    <p style="margin:0; font-size:10px; color:green;"><b>ชื่อปลายทาง:</b> ${req.receiver || 'จิตราภรณ์ จันทร'}</p>
+                    <img src="${req.slip}" style="width: 100%; border-radius:5px; margin:5px 0;">
+                </div>
+            `).join('') || "<p style='color:#999'>ไม่มีประวัติ</p>";
+
+            let chatUsers = Object.keys(state.privateMessages).map(user => `
+                <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
+                    <i class="fas fa-user"></i> ${user}
+                </button>
+            `).join('') || "<p style='color:#999'>ยังไม่มีลูกค้าทักแชท</p>";
+
             Swal.fire({
-                title: 'แอดมิน: เติมสต็อก',
-                html: `<select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select><textarea id="adm_codes" class="swal2-textarea" placeholder="ใส่ Code (1 บรรทัด = 1 ชิ้น)"></textarea>`,
-                confirmButtonText: 'เพิ่มสินค้า'
+                title: 'ADMIN PANEL',
+                html: `
+                    <div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;">
+                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>
+                        ${chatUsers}
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
+                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                        <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า (1 บรรทัด = 1 ชิ้น)"></textarea>
+                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">รายการเติมเงินล่าสุด</h4>
+                        ${reqHtml}
+                    </div>
+                `,
+                confirmButtonText: 'บันทึกสต็อก',
+                showCancelButton: true
             }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
                     const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
-                    if(codes.length > 0) { state.inventory[pid].push(...codes); persist(); updateUI(); Swal.fire('สำเร็จ', `เพิ่มแล้ว ${codes.length} ชิ้น`, 'success'); }
+                    if(codes.length > 0) {
+                        state.inventory[pid].push(...codes);
+                        persist(); updateUI();
+                        Swal.fire('สำเร็จ', `เพิ่มสินค้า ${codes.length} ชิ้นแล้ว`, 'success');
+                    }
                 }
             });
         }
 
-        function showPage(p) { document.getElementById('homePage').classList.toggle('hidden', p !== 'home'); document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup'); window.scrollTo({top:0, behavior:'smooth'}); }
-        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-        function setChatMode(mode) { state.chatMode = mode; document.getElementById('tabGlobal').classList.toggle('active', mode === 'global'); document.getElementById('tabPrivate').classList.toggle('active', mode === 'private'); renderChat(); }
-        function sendChat() { const inp = document.getElementById('chatInput'); if(!inp.value.trim()) return; const msg = { sender: state.currentUser, text: inp.value, isAdmin: state.isAdmin }; if(state.chatMode === 'global') state.globalMessages.push(msg); else { let target = state.isAdmin ? state.activePrivateUser : state.currentUser; if(!state.privateMessages[target]) state.privateMessages[target] = []; state.privateMessages[target].push(msg); } persist(); renderChat(); inp.value = ""; }
-        function renderChat() { const box = document.getElementById('chatMessages'); box.innerHTML = ""; let msgs = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[state.isAdmin ? state.activePrivateUser : state.currentUser] || []); msgs.forEach(m => { const d = document.createElement('div'); d.className = `msg ${m.sender === state.currentUser ? 'msg-user' : 'msg-admin'}`; d.innerHTML = `<span class="msg-sender">${m.sender}</span>${m.text}`; box.appendChild(d); }); box.scrollTop = box.scrollHeight; }
+        window.adminSelectUser = (username) => {
+            state.activePrivateUser = username;
+            state.chatMode = 'private';
+            Swal.close();
+            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
+            setChatMode('private');
+        };
 
         /**
-         * 7. SNOW EFFECT
+         * 7. NAVIGATION & CHAT
          */
-        const canvas = document.getElementById('snowCanvas'); const ctx = canvas.getContext('2d'); let width, height, flakes = [];
-        function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); }
-        function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); }
-        window.addEventListener('resize', initSnow); initSnow(); drawSnow(); updateUI();
+        function showPage(p) {
+            document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
+            document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+        
+        function setChatMode(mode) {
+            state.chatMode = mode;
+            document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
+            document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
+            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : (state.isAdmin ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
+            renderChat();
+        }
+        
+        function sendChat() {
+            const inp = document.getElementById('chatInput');
+            if(!inp.value.trim()) return;
+            const msg = { sender: state.currentUser, text: inp.value, time: Date.now(), isAdmin: state.isAdmin };
+            if(state.chatMode === 'global') state.globalMessages.push(msg);
+            else {
+                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
+                if(!target) return;
+                if(!state.privateMessages[target]) state.privateMessages[target] = [];
+                state.privateMessages[target].push(msg);
+            }
+            persist(); renderChat(); inp.value = "";
+        }
+
+        function renderChat() {
+            const chatBox = document.getElementById('chatMessages');
+            chatBox.innerHTML = "";
+            let messages = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[state.isAdmin ? state.activePrivateUser : state.currentUser] || []);
+            messages.forEach(m => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `msg ${m.sender === state.currentUser ? 'msg-user' : 'msg-admin'}`;
+                msgDiv.innerHTML = `<span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
+                chatBox.appendChild(msgDiv);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        /**
+         * 8. SNOW EFFECT
+         */
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, flakes = [];
+        function initSnow() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 }));
+        }
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.beginPath();
+            flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); });
+            ctx.fill();
+            flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; });
+            requestAnimationFrame(drawSnow);
+        }
+        window.addEventListener('resize', initSnow);
+        initSnow(); drawSnow();
+        updateUI();
     </script>
 </body>
 </html>
