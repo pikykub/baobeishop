@@ -7,163 +7,106 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    
+
     <style>
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
         * { box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
-        .scrolling-news { background: #000; color: gold; padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2000; border-bottom: 2px solid gold; font-size: 14px; }
-        .scrolling-news div { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
-        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-        .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
-        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
-        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+        body { font-family: 'Kanit', sans-serif; margin: 0; background-color: #f8f9fa; color: var(--text); overflow-x: hidden; min-height: 100vh; }
+        
+        /* Navbar */
+        .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
-        .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .btn-contact:hover { background: var(--line); color: white; transform: scale(1.1); }
-        .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
-        .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
-        .cart-tag { background: #333; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; }
-        .cart-count { position: absolute; top: -5px; right: -5px; background: gold; color: black; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; font-weight: bold; }
-        .btn-add-cart { background: #333; color: white; border: none; width: 100%; padding: 10px; border-radius: 12px; font-weight: 500; cursor: pointer; margin-top: 5px; transition: 0.3s; font-size: 13px; }
-        .btn-add-cart:hover { background: #000; }
-        .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
-        .btn-admin:hover { background: #000; color: #fff; }
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
-        .title-bar { display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); padding-right: 15px; }
-        .banner-container { width: 100%; margin-bottom: 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s; }
-        .banner-img { width: 100%; height: auto; display: block; object-fit: cover; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: rgba(26, 26, 26, 0.85); color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; text-align: center; backdrop-filter: blur(5px); }
-        .stat-box:hover { border-color: var(--main); transform: translateY(-5px); }
-        .stat-label { font-size: 13px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-        .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
-        .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
-        .stock-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: bold; z-index: 2; }
-        .product-img { width: 100%; height: 200px; object-fit: contain; padding: 20px; transition: 0.3s; }
-        .product-card:hover .product-img { transform: scale(1.05); }
-        .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; background: #fff; }
-        .product-name { font-weight: 500; margin-bottom: 10px; height: 45px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .product-price { color: var(--main); font-size: 22px; font-weight: 700; margin-bottom: 15px; }
-        .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-buy:hover:not(:disabled) { background: #e61b46; transform: scale(1.02); }
-        .btn-buy:disabled { background: #ccc; cursor: not-allowed; }
-        .hidden { display: none !important; }
-        .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
-        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
-        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
-        .login-input:focus { border-color: var(--main); }
-        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
-        .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+        
+        .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; }
+        .nav-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
+
+        /* Content */
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 20px; padding: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-img { width: 100%; height: 160px; object-fit: contain; margin-bottom: 10px; }
+        
+        /* Chat Widget */
+        .chat-widget { position: fixed; bottom: 100px; right: 20px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; display: none; }
+        .chat-widget.active { display: flex; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
-        .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
-        .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
-        .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
-        .msg-user { background: var(--main); color: white; align-self: flex-end; }
-        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
-        .msg-sender:hover { text-decoration: underline; color: #000; }
-        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
-        .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
-        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
-        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 1px solid #ccc; display: none; }
-        .btn-history { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; }
-        .btn-history:hover { background: #000; transform: scale(1.05); }
-        .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; transition: 0.3s; }
-        .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
-        .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
-        @media (max-width: 600px) { .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; } .stats-grid { gap: 10px; } .stat-value { font-size: 18px; } .nav-nickname { display: none; } }
+        .chat-tabs { display: flex; background: #f1f1f1; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; }
+        .chat-tab.active { background: white; font-weight: bold; color: var(--main); }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
+        
+        .msg { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; position: relative; }
+        .msg-user { background: var(--main); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-admin { background: #eee; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg-name { font-size: 10px; margin-bottom: 2px; display: block; opacity: 0.7; }
+
+        .floating-chat { position: fixed; bottom: 25px; right: 25px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 5px 15px rgba(6,199,85,0.4); }
+
+        .btn-buy { background: var(--main); color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-buy:hover { opacity: 0.9; }
+        .hidden { display: none !important; }
+
+        /* Login */
+        #loginPage { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:5000; display:flex; align-items:center; justify-content:center; }
+        .login-card { width: 90%; max-width: 400px; padding: 40px; text-align: center; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; outline: none; }
     </style>
 </head>
 <body>
-    <div class="scrolling-news">
-        <div>✨ BAOBEI SHOP ยินดีต้อนรับ! สินค้าใหม่ลงเพียบ! | 🔥 โปรโมชั่นเดือนนี้: เติมเงินลุ้นรับรางวัลใหญ่! | ⚠️ ระวังมิจฉาชีพ แอดมินใช้บัญชีชื่อ จิตราภรณ์ จันทร เท่านั้น! ✨</div>
-    </div>
-    <canvas id="snowCanvas"></canvas>
 
-    <div id="registerPage" class="hidden">
-        <div class="login-card">
-            <h2 style="color: var(--main);">CREATE ACCOUNT</h2>
-            <input type="text" id="regUsername" class="login-input" placeholder="ตั้งชื่อผู้ใช้">
-            <input type="password" id="regPassword" class="login-input" placeholder="ตั้งรหัสผ่าน">
-            <button class="btn-buy" onclick="handleRegister()">สมัครสมาชิก</button>
-            <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none; font-weight: 500;">เข้าสู่ระบบ</a></p>
-        </div>
-    </div>
     <div id="loginPage">
         <div class="login-card">
-            <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
+            <h2 style="color: var(--main);">BAOBEI SHOP</h2>
             <input type="text" id="loginUsername" class="login-input" placeholder="ชื่อผู้ใช้">
             <input type="password" id="loginPassword" class="login-input" placeholder="รหัสผ่าน">
             <button class="btn-buy" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            <p style="font-size: 14px; margin-top: 15px;">ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')" style="color: var(--main); text-decoration: none; font-weight: 500;">สมัครสมาชิก</a></p>
+            <p style="font-size: 12px; color: #999; margin-top: 15px;">Admin: admin / yongchai07</p>
         </div>
     </div>
 
     <div id="shopContent" class="hidden">
-        <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | แอดมินพร้อมดูแล 24 ชม. ✨</div>
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
                 <div class="user-profile-btn" onclick="openEditProfile()">
                     <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
-                    <span id="navNickname" class="nav-nickname">ผู้ใช้</span>
+                    <span id="navNickname">User</span>
                 </div>
-                <div class="cart-tag" onclick="showCart()">
-                    <i class="fas fa-shopping-cart"></i> 
-                    <span class="cart-count" id="cartCount">0</span>
-                </div>
-                <button id="adminBtn" class="btn-admin" onclick="openAdminPanel()">
-                    <i class="fas fa-user-shield"></i>
-                </button>
-                <div class="balance-tag" onclick="showPage('topup')">
-                    <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
-                </div>
-                <a href="#" onclick="handleLogout()" class="btn-contact"><i class="fas fa-sign-out-alt"></i></a>
+                <div style="font-weight: bold; color: var(--main);"><i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿</div>
+                <button onclick="openAdminPanel()" id="adminBtn" class="hidden" style="background:#333; color:gold; border:none; padding:5px 10px; border-radius:8px; cursor:pointer;">Admin</button>
             </div>
         </nav>
 
         <div class="container">
             <div id="homePage">
-                <div class="banner-container"><img src="https://lh3.googleusercontent.com/d/1ALVIB9eXw_BXz1By7UBemWyY_0Gp-YoF" class="banner-img"></div>
-                <div class="stats-grid">
-                    <div class="stat-box"><div class="stat-label">สต็อกทั้งหมด</div><div class="stat-value" id="statStock">0</div></div>
-                    <div class="stat-box"><div class="stat-label">สมาชิก</div><div class="stat-value" id="statUsers">0</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดขายสะสม</div><div class="stat-value" id="statSalesTotal">0</div></div>
-                    <div class="stat-box"><div class="stat-label">ยอดเติมเงิน</div><div class="stat-value" id="statTopupTotal">0</div></div>
-                </div>
-                <div class="title-bar">
-                    <h2><i class="fas fa-shopping-bag"></i> สินค้าแนะนำ</h2>
-                    <button class="btn-history" onclick="showOrderHistory()"><i class="fas fa-history"></i> ประวัติการซื้อ</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3>สินค้าทั้งหมด</h3>
+                    <button onclick="showPage('topup')" class="btn-buy" style="width:auto; padding:8px 20px;">เติมเงิน</button>
                 </div>
                 <div id="productList" class="product-grid"></div>
             </div>
 
             <div id="topupPage" class="hidden">
-                <div class="topup-card">
-                    <div class="qr-section">
-                        <p style="font-weight: bold; color: var(--bank);">KKP: 201-201-9014</p>
-                        <p style="font-weight: bold; color: #f59e0b;">Wallet: 080-920-0932</p>
-                        <p>จิตราภรณ์ จันทร</p>
-                        <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" style="width: 180px;">
+                <div class="login-card" style="margin: 0 auto; box-shadow: none; border: 1px solid #eee;">
+                    <h3>แจ้งเติมเงิน</h3>
+                    <div style="background:#f4f7ff; padding:15px; border-radius:15px; margin-bottom:15px; text-align:left;">
+                        <p style="margin:5px 0; font-size:14px;"><b>ธนาคาร:</b> เกียรตินาคินภัทร (KKP)</p>
+                        <p style="margin:5px 0; font-size:14px;"><b>เลขบัญชี:</b> 201-201-9014</p>
+                        <p style="margin:5px 0; font-size:14px;"><b>ชื่อ:</b> จิตราภรณ์ จันทร</p>
                     </div>
-                    <input type="number" id="topupAmount" class="login-input" placeholder="ระบุจำนวนเงิน">
-                    <input type="file" id="slipInput" class="hidden" onchange="previewSlip(this)">
-                    <label for="slipInput" class="btn-buy" style="display:block; margin: 10px 0;">แนบสลิป</label>
-                    <img id="slipPreviewImg" class="slip-preview">
-                    <button class="btn-buy" onclick="submitTopup()">ยืนยันการแจ้งโอน</button>
-                    <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999;"><i class="fas fa-chevron-left"></i> กลับ</p>
+                    <input type="number" id="topupAmount" class="login-input" placeholder="จำนวนเงิน">
+                    <input type="file" id="slipInput" accept="image/*" class="hidden" onchange="previewSlip(this)">
+                    <label for="slipInput" style="display:block; background:#eee; padding:15px; border-radius:12px; cursor:pointer; margin-bottom:10px;">
+                        <i class="fas fa-image"></i> เลือกรูปสลิปจากมือถือ
+                    </label>
+                    <img id="slipPreviewImg" style="width:100%; border-radius:10px; margin-bottom:10px; display:none;">
+                    <button class="btn-buy" onclick="submitTopup()">ยืนยันแจ้งโอน</button>
+                    <button onclick="showPage('home')" style="background:none; border:none; color:#999; margin-top:10px; cursor:pointer;">ย้อนกลับ</button>
                 </div>
             </div>
         </div>
@@ -171,189 +114,189 @@
 
     <div class="chat-widget" id="chatBox">
         <div class="chat-header">
-            <span><i class="fas fa-comments"></i> <span id="chatTitle">Global Chat</span></span>
-            <i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i>
+            <span id="chatTitle">Global Chat</span>
+            <i class="fas fa-times" onclick="toggleWebChat()" style="cursor:pointer;"></i>
         </div>
         <div class="chat-tabs">
             <div id="tabGlobal" class="chat-tab active" onclick="setChatMode('global')">แชทรวม</div>
-            <div id="tabPrivate" class="chat-tab" onclick="setChatMode('private')">ส่วนตัว</div>
+            <div id="tabPrivate" class="chat-tab" onclick="setChatMode('private')">แชทส่วนตัว</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
-        <div style="padding: 10px; display: flex; gap: 5px;">
-            <input type="text" id="chatInput" style="flex:1; padding: 8px; border-radius: 20px; border:1px solid #ddd;" placeholder="พิมพ์...">
-            <button onclick="sendChat()" style="background: var(--main); color:white; border:none; width: 35px; height: 35px; border-radius: 50%;"><i class="fas fa-paper-plane"></i></button>
+        <div style="padding:10px; display:flex; gap:5px; border-top:1px solid #eee;">
+            <input type="text" id="chatInput" style="flex:1; padding:10px; border-radius:20px; border:1px solid #ddd; outline:none;" placeholder="พิมพ์ข้อความ...">
+            <button onclick="sendChat()" style="background:var(--main); color:white; border:none; border-radius:50%; width:40px; height:40px;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
-        // FIREBASE CONFIG (ใช้ค่าเดิมของคุณ)
+        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyA_LlV9fGkchscbzFmxqNMrKvK_Nznk0mM",
             authDomain: "baobei-shop-chat.firebaseapp.com",
             databaseURL: "https://baobei-shop-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "baobei-shop-chat",
-            storageBucket: "baobei-shop-chat.firebasestorage.app",
+            storageBucket: "baobei-shop-chat.appspot.com",
             messagingSenderId: "878710791654",
             appId: "1:878710791654:web:818c275893b85042e70a27"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
-        ];
-
         let state = {
-            users: JSON.parse(localStorage.getItem('baobei_users')) || {},
-            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] },
-            salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
-            totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
             currentUser: null,
             isAdmin: false,
-            activePrivateUser: null, // สำหรับ Admin เลือกคุยกับลูกค้าคนไหน
+            activePrivateUser: null, // สำหรับแอดมินเลือกคุย
             chatMode: 'global',
-            cart: []
+            users: JSON.parse(localStorage.getItem('bb_users')) || {}
         };
 
-        // --- CORE FUNCTIONS ---
-        function persist() {
-            localStorage.setItem('baobei_users', JSON.stringify(state.users));
-            localStorage.setItem('baobei_inv', JSON.stringify(state.inventory));
-            localStorage.setItem('baobei_sales', state.salesCount);
-            localStorage.setItem('baobei_total_topup', state.totalTopupSum);
-        }
+        const PRODUCTS = [
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, img: "https://cdn-icons-png.flaticon.com/512/281/281769.png" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, img: "https://cdn-icons-png.flaticon.com/512/281/281769.png" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, img: "https://cdn-icons-png.flaticon.com/512/732/732200.png" },
+            { id: 4, name: "emailThai โนแพค", price: 18, img: "https://cdn-icons-png.flaticon.com/512/732/732200.png" }
+        ];
 
-        function updateUI() {
-            document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
-            document.getElementById('statUsers').innerText = Object.keys(state.users).length;
-            document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
-            let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
-            document.getElementById('statStock').innerText = totalStock;
-            
-            if (state.currentUser && state.users[state.currentUser]) {
-                const user = state.users[state.currentUser];
-                document.getElementById('balanceDisplay').innerText = user.balance.toLocaleString();
-                document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
-                if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
-                if (state.isAdmin) document.getElementById('adminBtn').style.display = "block";
-            }
-            
-            const list = document.getElementById('productList');
-            list.innerHTML = PRODUCTS.map(p => {
-                const stock = state.inventory[p.id]?.length || 0;
-                return `
-                <div class="product-card">
-                    <div class="stock-tag">สต็อก: ${stock}</div>
-                    <img src="${p.image}" class="product-img">
-                    <div class="product-info">
-                        <div class="product-name">${p.name}</div>
-                        <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin ? 'disabled' : ''}>ซื้อ</button>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        // --- AUTH ---
+        // --- Auth ---
         function handleLogin() {
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
-            if(u.toLowerCase() === 'admin' && p === 'yongchai07') {
-                state.currentUser = "Admin"; state.isAdmin = true;
-            } else if(state.users[u] && state.users[u].password === p) {
+            if(u === 'admin' && p === 'yongchai07') {
+                state.currentUser = 'Admin'; state.isAdmin = true;
+            } else if(u && p) {
+                if(!state.users[u]) state.users[u] = { password: p, balance: 0, nickname: u, avatar: "" };
+                if(state.users[u].password !== p) return Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error');
                 state.currentUser = u; state.isAdmin = false;
-            } else { return Swal.fire('Error', 'Wrong Password', 'error'); }
+            } else { return; }
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
-            updateUI();
+            if(state.isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
+            initUI();
             setChatMode('global');
         }
 
-        function handleRegister() {
-            const u = document.getElementById('regUsername').value.trim();
-            const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p || state.users[u]) return Swal.fire('Error', 'Invalid User', 'error');
-            state.users[u] = { password: p, balance: 0, orders: [], nickname: u };
-            persist(); toggleAuth('login');
+        function initUI() {
+            const user = state.isAdmin ? { nickname: "Admin", balance: 9999, avatar: "" } : state.users[state.currentUser];
+            document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
+            document.getElementById('balanceDisplay').innerText = (user.balance || 0).toLocaleString();
+            if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
+
+            document.getElementById('productList').innerHTML = PRODUCTS.map(p => `
+                <div class="product-card">
+                    <img src="${p.img}" class="product-img">
+                    <h4 style="margin:10px 0;">${p.name}</h4>
+                    <p style="color:var(--main); font-weight:bold; font-size:18px; margin-bottom:10px;">${p.price} ฿</p>
+                    <button class="btn-buy" onclick="Swal.fire('สำเร็จ','ซื้อสินค้าเรียบร้อย','success')">ซื้อสินค้า</button>
+                </div>
+            `).join('');
         }
 
-        // --- ADMIN PANEL ---
-        function openAdminPanel() {
-            // ดึงรายชื่อคนที่มีประวัติแชทส่วนตัวมาจาก Firebase
-            db.ref('private_chats').once('value', snapshot => {
-                const chats = snapshot.val() || {};
-                const chatUsers = Object.keys(chats).map(userId => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                        <span><i class="fas fa-user"></i> ${userId}</span>
-                        <button onclick="adminSelectUser('${userId}')" style="background:var(--line); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">เลือกตอบ</button>
+        // --- โปรไฟล์ & อัลบั้มมือถือ (Base64) ---
+        async function openEditProfile() {
+            if(state.isAdmin) return;
+            const user = state.users[state.currentUser];
+            const { value: formValues } = await Swal.fire({
+                title: 'แก้ไขโปรไฟล์',
+                html: `
+                    <div style="margin-bottom:15px;">
+                        <img id="swal-prev" src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--main);">
                     </div>
-                `).join('') || "ไม่มีแชทส่วนตัว";
-
-                Swal.fire({
-                    title: 'ADMIN: จัดการแชทส่วนตัว',
-                    html: `
-                        <div style="text-align:left; max-height:300px; overflow-y:auto; border:1px solid #ddd; padding:10px; border-radius:10px; background:#f9f9f9;">
-                            ${chatUsers}
-                        </div>
-                        <hr>
-                        <h4>เพิ่มสต็อก</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:80%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-                        <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัส..."></textarea>
-                    `,
-                    confirmButtonText: 'บันทึกสต็อก',
-                    showCancelButton: true
-                }).then(res => {
-                    if(res.isConfirmed) {
-                        const pid = document.getElementById('adm_pid').value;
-                        const codes = document.getElementById('adm_codes').value.split('\n').filter(c => c.trim() !== "");
-                        state.inventory[pid].push(...codes); persist(); updateUI();
+                    <input type="file" id="swal-file" accept="image/*" class="swal2-file">
+                    <input id="swal-nick" class="swal2-input" placeholder="ชื่อเล่น" value="${user.nickname || ''}">
+                `,
+                showCancelButton: true,
+                preConfirm: async () => {
+                    const file = document.getElementById('swal-file').files[0];
+                    let avatarBase64 = user.avatar;
+                    if(file) {
+                        avatarBase64 = await new Promise(r => {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            reader.onload = () => r(reader.result);
+                        });
                     }
-                });
+                    return { nickname: document.getElementById('swal-nick').value, avatar: avatarBase64 };
+                }
             });
+
+            if(formValues) {
+                state.users[state.currentUser].nickname = formValues.nickname;
+                state.users[state.currentUser].avatar = formValues.avatar;
+                localStorage.setItem('bb_users', JSON.stringify(state.users));
+                initUI();
+                Swal.fire('สำเร็จ', 'อัปเดตข้อมูลแล้ว', 'success');
+            }
         }
 
-        // ฟังก์ชันเมื่อ Admin กดปุ่ม "เลือกตอบ"
-        window.adminSelectUser = (userId) => {
-            state.activePrivateUser = userId;
-            state.chatMode = 'private';
-            Swal.close();
-            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
-            setChatMode('private');
-        };
+        // --- ระบบเติมเงิน & ตรวจสลิป ---
+        function previewSlip(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('slipPreviewImg');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
-        // --- CHAT SYSTEM ---
+        async function submitTopup() {
+            const amt = parseFloat(document.getElementById('topupAmount').value);
+            const file = document.getElementById('slipInput').files[0];
+            if(!amt || !file) return Swal.fire('แจ้งเตือน', 'กรุณากรอกเงินและแนบสลิป', 'warning');
+
+            Swal.fire({ title: 'กำลังตรวจสอบสลิป...', didOpen: () => Swal.showLoading() });
+            
+            const slipBase64 = await new Promise(r => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => r(reader.result);
+            });
+
+            // ส่งข้อมูลแจ้งโอนไปที่ Firebase ให้แอดมินดู
+            db.ref('topup_requests').push({
+                user: state.currentUser,
+                amount: amt,
+                slip: slipBase64,
+                time: Date.now()
+            });
+
+            setTimeout(() => {
+                if(!state.isAdmin) {
+                    state.users[state.currentUser].balance += amt;
+                    localStorage.setItem('bb_users', JSON.stringify(state.users));
+                }
+                initUI();
+                showPage('home');
+                Swal.fire('สำเร็จ', 'ระบบได้รับข้อมูลการแจ้งโอนแล้ว', 'success');
+            }, 1500);
+        }
+
+        // --- ระบบแชทส่วนตัว (แอดมินเลือกตอบ) ---
         function setChatMode(mode) {
             state.chatMode = mode;
             document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
             
-            // ปรับชื่อหัวข้อแชท
-            if(mode === 'global') {
-                document.getElementById('chatTitle').innerText = "Global Chat";
-            } else {
-                document.getElementById('chatTitle').innerText = state.isAdmin ? `คุยกับ: ${state.activePrivateUser || '...'}` : "แชทกับแอดมิน";
-            }
-
             const chatMessages = document.getElementById('chatMessages');
             chatMessages.innerHTML = "";
-
-            // เปลี่ยน Path การดึงข้อมูล
+            
             let path = (mode === 'global') ? 'global_chat' : `private_chats/${state.isAdmin ? state.activePrivateUser : state.currentUser}`;
             
-            // ปิด Listener เก่าก่อนเปิดอันใหม่
-            db.ref('global_chat').off();
-            db.ref(`private_chats`).off();
+            if(mode === 'private' && state.isAdmin && !state.activePrivateUser) {
+                chatMessages.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>กรุณาเลือกชื่อลูกค้าจากเมนู Admin</p>";
+                return;
+            }
 
-            db.ref(path).on('child_added', snapshot => {
-                const m = snapshot.val();
+            db.ref(path).off();
+            db.ref(path).limitToLast(20).on('child_added', (snap) => {
+                const m = snap.val();
                 const isMe = m.senderId === state.currentUser;
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `msg ${isMe ? 'msg-user' : 'msg-admin'}`;
-                msgDiv.innerHTML = `<span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
+                msgDiv.innerHTML = `<span class="msg-name">${m.sender}</span>${m.text}`;
                 chatMessages.appendChild(msgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
@@ -363,38 +306,48 @@
             const inp = document.getElementById('chatInput');
             if(!inp.value.trim()) return;
             
-            const path = (state.chatMode === 'global') ? 'global_chat' : `private_chats/${state.isAdmin ? state.activePrivateUser : state.currentUser}`;
+            let path = (state.chatMode === 'global') ? 'global_chat' : `private_chats/${state.isAdmin ? state.activePrivateUser : state.currentUser}`;
             
-            if(state.chatMode === 'private' && state.isAdmin && !state.activePrivateUser) {
-                return Swal.fire('แอดมินลืมเลือกคน!', 'กรุณาไปที่ Admin Panel แล้วกด "เลือกตอบ" ลูกค้าก่อนครับ', 'warning');
-            }
-
             db.ref(path).push({
                 sender: state.isAdmin ? "Admin" : (state.users[state.currentUser].nickname || state.currentUser),
                 senderId: state.currentUser,
                 text: inp.value,
-                isAdmin: state.isAdmin,
                 time: Date.now()
             });
             inp.value = "";
         }
 
-        // --- OTHER UI FUNCTIONS ---
-        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-        function showPage(p) { document.getElementById('homePage').classList.toggle('hidden', p !== 'home'); document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup'); }
-        function toggleAuth(t) { document.getElementById('loginPage').classList.toggle('hidden', t !== 'login'); document.getElementById('registerPage').classList.toggle('hidden', t !== 'register'); }
-        function handleLogout() { location.reload(); }
-        function buyProduct(id) { /* logic ซื้อของปกติของคุณ */ }
-        function submitTopup() { /* logic เติมเงินปกติของคุณ */ }
-        function previewSlip(input) { if (input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { const img = document.getElementById('slipPreviewImg'); img.src = e.target.result; img.style.display = 'block'; }; reader.readAsDataURL(input.files[0]); } }
+        function openAdminPanel() {
+            // ดึงรายชื่อคนทักแชท
+            db.ref('private_chats').once('value', (snap) => {
+                const chats = snap.val() || {};
+                const usersHtml = Object.keys(chats).map(uid => `
+                    <button onclick="adminReplyTo('${uid}')" style="width:100%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:10px; background:white; cursor:pointer; text-align:left;">
+                        <i class="fas fa-user"></i> ${uid} (มีข้อความใหม่)
+                    </button>
+                `).join('') || "ไม่มีแชทใหม่";
 
-        // SNOW EFFECT
-        const canvas = document.getElementById('snowCanvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, flakes = [];
-        function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); }
-        function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); }
-        window.addEventListener('resize', initSnow); initSnow(); drawSnow();
+                Swal.fire({
+                    title: 'แผงควบคุมแอดมิน',
+                    html: `<div style="text-align:left;"><h4>แชทส่วนตัวของลูกค้า:</h4>${usersHtml}</div>`,
+                    showConfirmButton: false
+                });
+            });
+        }
+
+        window.adminReplyTo = (uid) => {
+            state.activePrivateUser = uid;
+            state.chatMode = 'private';
+            Swal.close();
+            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
+            setChatMode('private');
+        };
+
+        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+        function showPage(p) {
+            document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
+            document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
+        }
     </script>
 </body>
 </html>
