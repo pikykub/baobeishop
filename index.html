@@ -13,7 +13,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     
     <style>
-        /* ... (CSS เดิมของคุณคงไว้ทั้งหมด) ... */
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
         * { box-sizing: border-box; }
         body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
@@ -62,6 +61,8 @@
         .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
         .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
         .login-input:focus { border-color: var(--main); }
+        
+        /* Chat Design */
         .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
         .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -69,11 +70,17 @@
         .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
         .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
-        .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
-        .msg-user { background: var(--main); color: white; align-self: flex-end; }
-        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
-        .msg-sender:hover { text-decoration: underline; color: #000; }
+        
+        .chat-row { display: flex; align-items: flex-start; margin-bottom: 12px; gap: 8px; }
+        .chat-row.me { flex-direction: row-reverse; }
+        .chat-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; flex-shrink: 0; }
+        .chat-content { display: flex; flex-direction: column; max-width: 75%; }
+        .chat-row.me .chat-content { align-items: flex-end; }
+        .chat-bubble { padding: 8px 12px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+        .chat-row.me .chat-bubble { background: var(--main); color: white; border-top-right-radius: 2px; }
+        .chat-row.other .chat-bubble { background: #e9e9eb; color: #333; border-top-left-radius: 2px; }
+        .chat-name { font-size: 10px; color: #888; margin-bottom: 2px; font-weight: bold; }
+
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
         .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
         .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
@@ -84,17 +91,6 @@
         .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
         .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
-
-        /* เพิ่ม CSS สำหรับรูปในแชท */
-        .chat-row { display: flex; align-items: flex-start; margin-bottom: 12px; gap: 8px; }
-        .chat-row.me { flex-direction: row-reverse; }
-        .chat-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; flex-shrink: 0; }
-        .chat-content { display: flex; flex-direction: column; max-width: 75%; }
-        .chat-row.me .chat-content { align-items: flex-end; }
-        .chat-bubble { padding: 8px 12px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-word; }
-        .chat-row.me .chat-bubble { background: var(--main); color: white; border-top-right-radius: 2px; }
-        .chat-row.other .chat-bubble { background: #e9e9eb; color: #333; border-top-left-radius: 2px; }
-        .chat-name { font-size: 10px; color: #888; margin-bottom: 2px; font-weight: bold; }
 
         @media (max-width: 600px) { 
             .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
@@ -109,6 +105,7 @@
         <div>✨ BAOBEI SHOP ยินดีต้อนรับ! สินค้าใหม่ลงเพียบ! | 🔥 โปรโมชั่นเดือนนี้: เติมเงินลุ้นรับรางวัลใหญ่! | ⚠️ ระวังมิจฉาชีพ แอดมินใช้บัญชีชื่อ จิตราภรณ์ จันทร เท่านั้น! ✨</div>
     </div>
     <canvas id="snowCanvas"></canvas>
+    
     <div id="registerPage" class="hidden">
         <div class="login-card">
             <h2 style="color: var(--main);">CREATE ACCOUNT</h2>
@@ -118,6 +115,7 @@
             <p style="font-size: 14px; margin-top: 15px;">มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')" style="color: var(--main); text-decoration: none; font-weight: 500;">เข้าสู่ระบบ</a></p>
         </div>
     </div>
+
     <div id="loginPage">
         <div class="login-card">
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
@@ -128,6 +126,7 @@
             <p style="font-size: 11px; color: #aaa; margin-top: 10px;">เพื่อความปลอดภัย ระบบจะออกจากระบบหากไม่มีการใช้งาน 15 นาที</p>
         </div>
     </div>
+
     <div id="shopContent" class="hidden">
         <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | แอดมินพร้อมดูแล 24 ชม. ✨</div>
         <nav class="navbar">
@@ -150,6 +149,7 @@
                 <a href="#" onclick="handleLogout()" class="btn-contact"><i class="fas fa-sign-out-alt"></i></a>
             </div>
         </nav>
+        
         <div class="container">
             <div id="homePage">
                 <div class="banner-container">
@@ -179,6 +179,7 @@
                 </div>
                 <div id="productList" class="product-grid"></div>
             </div>
+
             <div id="topupPage" class="hidden">
                 <div class="topup-card">
                     <h3 style="margin-top:0"><i class="fas fa-university"></i> เติมเงินเข้าระบบ</h3>
@@ -205,6 +206,7 @@
             </div>
         </div>
     </div>
+
     <div class="chat-widget" id="chatBox">
         <div class="chat-header">
             <span><i class="fas fa-comments"></i> <span id="chatTitle">Global Chat</span></span>
@@ -223,7 +225,7 @@
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
-        // 2. ตั้งค่า Firebase (จากข้อมูลที่คุณให้มา)
+        // 1. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA_LlV9fGkchscbzFmxqNMrKvK_Nznk0mM",
             authDomain: "baobei-shop-chat.firebaseapp.com",
@@ -237,6 +239,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // 2. Initial Data
         const PRODUCTS = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
@@ -272,12 +275,12 @@
             } catch (e) { console.error(e); }
         }
 
-        // 3. ฟังก์ชันระบบแชท (ปรับปรุงใหม่เพื่อโชว์รูป)
+        // 3. Chat System Functions
         function sendChat() {
             const inp = document.getElementById('chatInput');
-            if(!inp.value.trim()) return;
+            if(!inp.value.trim() || !state.currentUser) return;
             
-            const user = state.users[state.currentUser] || { nickname: state.currentUser, avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+            const user = state.users[state.currentUser] || {};
             const senderName = state.isAdmin ? "Admin" : (user.nickname || state.currentUser);
             const senderAvatar = state.isAdmin ? "https://cdn-icons-png.flaticon.com/512/149/149071.png" : (user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png");
 
@@ -286,7 +289,7 @@
                 userId: state.currentUser,
                 avatar: senderAvatar,
                 text: inp.value, 
-                time: Date.now(), 
+                time: firebase.database.ServerValue.TIMESTAMP, 
                 isAdmin: (state.isAdmin || state.isModerator) 
             };
 
@@ -294,19 +297,20 @@
                 db.ref("global_chat").push(msg);
             } else {
                 let target = (state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser;
-                if(!target) return Swal.fire('แจ้งเตือน','กรุณาเลือกชื่อลูกค้าจาก Admin Panel ก่อน','info');
+                if(!target) return Swal.fire('แจ้งเตือน','กรุณาเลือกเป้าหมายใน Admin Panel ก่อน','info');
                 db.ref("private_chats/" + target).push(msg);
             }
             inp.value = "";
         }
 
-        // 4. ฟังข้อมูลจาก Firebase Real-time
-        db.ref("global_chat").on("child_added", (snapshot) => {
+        // Listen for new messages
+        db.ref("global_chat").limitToLast(1).on("child_added", (snapshot) => {
             if (state.chatMode === 'global') renderMessage(snapshot.val());
         });
 
         function renderMessage(m) {
             const chatBox = document.getElementById('chatMessages');
+            if(!chatBox) return;
             const isMe = m.userId === state.currentUser;
             
             const msgRow = `
@@ -322,23 +326,25 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // เมื่อเปลี่ยนโหมดแชท ให้โหลดข้อมูลใหม่
         function setChatMode(mode) {
             state.chatMode = mode;
             document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
-            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
+            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+(state.activePrivateUser || 'ลูกค้า') : "แชทกับแอดมิน");
             
-            document.getElementById('chatMessages').innerHTML = "";
+            const chatBox = document.getElementById('chatMessages');
+            chatBox.innerHTML = "";
             const path = (mode === 'global') ? "global_chat" : "private_chats/" + ((state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser);
             
+            if(path.includes('undefined') || path.includes('null')) return;
+
             db.ref(path).limitToLast(50).once('value', (snapshot) => {
                 const data = snapshot.val();
                 if(data) Object.values(data).forEach(m => renderMessage(m));
             });
         }
 
-        // --- (ฟังก์ชันอื่นๆ ของคุณคงไว้เหมือนเดิมด้านล่างนี้) ---
+        // 4. Shop UI & Functions
         function updateUI() {
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
@@ -503,7 +509,8 @@
             } else { return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); }
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
-            updateUI(); setChatMode('global');
+            updateUI(); 
+            setChatMode('global');
         }
 
         function handleLogout() { location.reload(); }
@@ -590,12 +597,14 @@
 
         function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
         
+        // Snow Effect
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
         function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); }
         function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); }
-        window.addEventListener('resize', initSnow); initSnow(); drawSnow(); updateUI();
+        window.addEventListener('resize', initSnow); 
+        initSnow(); drawSnow(); updateUI();
     </script>
 </body>
 </html>
