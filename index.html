@@ -11,57 +11,91 @@
     
     <style>
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
+        
         * { box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            margin: 0; 
+            background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        /* 1. ระบบประกาศเเบบเคลื่อนที่ */
         .scrolling-news { background: #000; color: gold; padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2000; border-bottom: 2px solid gold; font-size: 14px; }
         .scrolling-news div { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
         .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
+        
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
         .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
         .nav-right { display: flex; gap: 10px; align-items: center; }
+        
         .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .btn-contact:hover { background: var(--line); color: white; transform: scale(1.1); }
+        
         .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
         .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
+        
         .cart-tag { background: #333; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; }
         .cart-count { position: absolute; top: -5px; right: -5px; background: gold; color: black; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; font-weight: bold; }
         .btn-add-cart { background: #333; color: white; border: none; width: 100%; padding: 10px; border-radius: 12px; font-weight: 500; cursor: pointer; margin-top: 5px; transition: 0.3s; font-size: 13px; }
         .btn-add-cart:hover { background: #000; }
+
         .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
         .btn-admin:hover { background: #000; color: #fff; }
+
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
         .title-bar { display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); padding-right: 15px; }
+
+        /* ระบบ Profile Settings */
         .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; transition: 0.3s; }
         .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
         .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
+
         .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 340px; height: 500px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
         .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        
         .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
         .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
         .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
+
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f2f3f5; font-size: 14px; display: flex; flex-direction: column; gap: 15px; }
+        
         .chat-row { display: flex; gap: 8px; max-width: 85%; }
         .chat-row.me { align-self: flex-end; flex-direction: row-reverse; }
         .chat-row.other { align-self: flex-start; }
+
         .chat-msg-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; cursor: pointer; }
+        
         .chat-msg-body { display: flex; flex-direction: column; gap: 2px; }
         .me .chat-msg-body { align-items: flex-end; }
+        
         .chat-msg-name { font-size: 11px; color: #777; font-weight: 600; padding: 0 5px; cursor: pointer; }
         .chat-msg-text { padding: 8px 12px; border-radius: 15px; position: relative; word-break: break-all; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        
         .me .chat-msg-text { background: var(--main); color: white; border-bottom-right-radius: 2px; }
         .other .chat-msg-text { background: white; color: #333; border-bottom-left-radius: 2px; border: 1px solid #e0e0e0; }
+
         .badge-crown { color: #f59e0b; margin-right: 3px; font-size: 10px; }
+
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
         .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
+
         #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
         .hidden { display: none !important; }
         .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
         .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
         .login-input:focus { border-color: var(--main); }
+
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
         .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; background: #fff; }
@@ -72,7 +106,12 @@
         .stat-box { background: white; padding: 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .stat-label { font-size: 12px; color: #888; }
         .stat-value { font-size: 18px; font-weight: bold; color: var(--main); }
-        @media (max-width: 600px) { .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; } .nav-nickname { display: none; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        @media (max-width: 600px) { 
+            .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
+            .nav-nickname { display: none; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -111,6 +150,7 @@
                     <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
                     <span id="navNickname" class="nav-nickname">ผู้ใช้</span>
                 </div>
+                
                 <div class="cart-tag" onclick="showCart()">
                     <i class="fas fa-shopping-cart"></i> 
                     <span class="cart-count" id="cartCount">0</span>
@@ -216,7 +256,7 @@
         }
 
         function updateUI() {
-            // ป้องกันการค้างโดยการใส่ Default Value
+            // แก้ไข: เพิ่มการเช็คเพื่อป้องกัน Error
             document.getElementById('statSalesTotal').innerText = (state.salesCount || 0).toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
             document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum || 0).toLocaleString();
@@ -258,10 +298,10 @@
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
             
+            // แก้ไข: เพิ่มการสร้างข้อมูล Admin หากยังไม่มี เพื่อป้องกันการค้าง
             if(u.toLowerCase() === 'admin' && p === 'yongchai07') {
                 state.currentUser = "Admin"; 
                 state.isAdmin = true;
-                // สร้างข้อมูล Admin ใน Users หากยังไม่มีเพื่อไม่ให้ updateUI ค้าง
                 if(!state.users["Admin"]) {
                     state.users["Admin"] = { password: p, balance: 99999, nickname: "Admin Manager", avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png", orders: [] };
                 }
@@ -278,6 +318,110 @@
             updateUI();
         }
 
+        /* ระบบ Profile */
+        function openEditProfile() {
+            const user = state.users[state.currentUser];
+            if(!user) return;
+            Swal.fire({
+                title: 'โปรไฟล์ของฉัน',
+                html: `
+                    <div style="text-align:center;">
+                        <img id="editProfilePreview" src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:15px; border:3px solid var(--main);">
+                        <br>
+                        <label class="btn-buy" style="cursor:pointer; padding: 5px 10px; width:auto; display:inline-block;">เปลี่ยนรูป <input type="file" id="profilePicInput" hidden onchange="previewProfileEdit(this)"></label>
+                        <input type="text" id="editNickname" class="login-input" value="${user.nickname || ''}" placeholder="ชื่อเล่น">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    state.users[state.currentUser].nickname = document.getElementById('editNickname').value;
+                    state.users[state.currentUser].avatar = document.getElementById('editProfilePreview').src;
+                    persist(); updateUI();
+                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success');
+                }
+            });
+        }
+
+        function previewProfileEdit(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { document.getElementById('editProfilePreview').src = e.target.result; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function showPublicProfile(uid) {
+            const user = (uid === "Admin") ? { nickname: "Admin", avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png", orders: [] } : state.users[uid];
+            if (!user) return;
+            Swal.fire({
+                title: user.nickname || uid,
+                html: `<img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--main);">
+                       <p style="margin-top:10px; color:#888;">สถานะ: ${state.moderators.includes(uid) ? 'ผู้ดูแล' : (uid === 'Admin' ? 'เจ้าของร้าน' : 'สมาชิก')}</p>`,
+                showConfirmButton: false
+            });
+        }
+
+        /* ระบบ Chat */
+        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
+        
+        function setChatMode(mode) {
+            state.chatMode = mode;
+            document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
+            document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
+            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : "Private Chat";
+            renderChat();
+        }
+
+        function sendChat() {
+            const inp = document.getElementById('chatInput');
+            if(!inp.value.trim() || !state.currentUser) return;
+            
+            const msg = { 
+                userId: state.currentUser,
+                text: inp.value, 
+                time: Date.now(), 
+                isAdmin: (state.isAdmin || state.isModerator) 
+            };
+
+            if(state.chatMode === 'global') state.globalMessages.push(msg);
+            else {
+                let target = (state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser;
+                if(!target) return Swal.fire('แจ้งเตือน','ไม่มีคู่สนทนา','info');
+                if(!state.privateMessages[target]) state.privateMessages[target] = [];
+                state.privateMessages[target].push(msg);
+            }
+            persist(); renderChat(); inp.value = "";
+        }
+
+        function renderChat() {
+            const chatBox = document.getElementById('chatMessages');
+            if(!chatBox) return;
+            chatBox.innerHTML = "";
+            let messages = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[(state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser] || []);
+            
+            messages.forEach(m => {
+                const isMe = m.userId === state.currentUser;
+                const senderData = (m.userId === 'Admin') ? { nickname: 'Admin', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' } : (state.users[m.userId] || { nickname: m.userId, avatar: null });
+                
+                const row = document.createElement('div');
+                row.className = `chat-row ${isMe ? 'me' : 'other'}`;
+                
+                row.innerHTML = `
+                    <img src="${senderData.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="chat-msg-avatar" onclick="showPublicProfile('${m.userId}')">
+                    <div class="chat-msg-body">
+                        <span class="chat-msg-name" onclick="showPublicProfile('${m.userId}')">
+                            ${m.isAdmin ? '<i class="fas fa-crown badge-crown"></i>' : ''}${senderData.nickname || m.userId}
+                        </span>
+                        <div class="chat-msg-text">${m.text}</div>
+                    </div>
+                `;
+                chatBox.appendChild(row);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         function toggleAuth(type) {
             document.getElementById('loginPage').classList.toggle('hidden', type !== 'login');
             document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
@@ -290,64 +434,24 @@
             if(state.users[u]) return Swal.fire('ผิดพลาด','ชื่อผู้ใช้นี้มีคนใช้แล้ว','error');
             
             state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
-            persist();
+            persist(); 
             Swal.fire('สำเร็จ','สมัครสมาชิกเรียบร้อย','success');
             toggleAuth('login');
         }
 
-        function handleLogout() { localStorage.removeItem('baobei_current'); location.reload(); }
+        function handleLogout() { location.reload(); }
         function showPage(p) {
             document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
             document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
         }
 
-        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-        function setChatMode(mode) {
-            state.chatMode = mode;
-            document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
-            document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
-            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : "Private Chat";
-            renderChat();
-        }
-
-        function sendChat() {
-            const inp = document.getElementById('chatInput');
-            if(!inp.value.trim() || !state.currentUser) return;
-            const msg = { userId: state.currentUser, text: inp.value, time: Date.now(), isAdmin: (state.isAdmin || state.isModerator) };
-            if(state.chatMode === 'global') state.globalMessages.push(msg);
-            persist(); renderChat(); inp.value = "";
-        }
-
-        function renderChat() {
-            const chatBox = document.getElementById('chatMessages');
-            if(!chatBox) return;
-            chatBox.innerHTML = "";
-            let messages = (state.chatMode === 'global') ? state.globalMessages : [];
-            messages.forEach(m => {
-                const isMe = m.userId === state.currentUser;
-                const user = state.users[m.userId] || { nickname: m.userId };
-                const row = document.createElement('div');
-                row.className = `chat-row ${isMe ? 'me' : 'other'}`;
-                row.innerHTML = `
-                    <img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="chat-msg-avatar">
-                    <div class="chat-msg-body">
-                        <span class="chat-msg-name">${m.isAdmin ? '👑 ' : ''}${user.nickname || m.userId}</span>
-                        <div class="chat-msg-text">${m.text}</div>
-                    </div>`;
-                chatBox.appendChild(row);
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
+        /* 8. SNOW EFFECT */
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
         function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 50}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); }
         function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "white"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); }
-        window.addEventListener('resize', initSnow); 
-        initSnow(); 
-        drawSnow(); 
-        updateUI();
+        window.addEventListener('resize', initSnow); initSnow(); drawSnow(); updateUI();
     </script>
 </body>
 </html>
