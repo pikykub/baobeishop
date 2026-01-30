@@ -98,7 +98,8 @@
         .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.4; word-break: break-all; position: relative; }
         .msg-admin { background: #e0e0e0; align-self: flex-start; color: #333; }
         .msg-user { background: var(--main); color: white; align-self: flex-end; }
-        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; }
+        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
+        .msg-sender:hover { text-decoration: underline; color: #000; }
         
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
         .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
@@ -275,11 +276,13 @@
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
             currentUser: null,
             isAdmin: false,
+            isModerator: false, // เพิ่มสถานะผู้ดูแล
             activePrivateUser: null,
             globalMessages: JSON.parse(localStorage.getItem('baobei_global_chat')) || [],
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
             chatMode: 'global',
-            cart: [] 
+            cart: [],
+            moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [] // เก็บรายชื่อผู้ดูแล
         };
 
         function persist() {
@@ -292,6 +295,7 @@
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
                 localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
+                localStorage.setItem('baobei_mods', JSON.stringify(state.moderators));
             } catch (e) { console.error(e); }
         }
 
@@ -305,9 +309,14 @@
             if (state.currentUser && state.users[state.currentUser]) {
                 const user = state.users[state.currentUser];
                 document.getElementById('balanceDisplay').innerText = user.balance.toLocaleString();
-                // อัปเดตข้อมูลโปรไฟล์บน Navbar
                 document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
                 if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
+                
+                // สิทธิ์ผู้ดูแล
+                if (state.isAdmin || state.moderators.includes(state.currentUser)) {
+                    document.getElementById('adminBtn').style.display = "block";
+                    state.isModerator = !state.isAdmin;
+                }
             }
             
             const list = document.getElementById('productList');
@@ -320,8 +329,8 @@
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin ? 'disabled' : ''}>
-                            ${state.isAdmin ? 'ทดสอบซื้อทันที' : (stock > 0 ? 'ซื้อทันที' : 'สินค้าหมด')}
+                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin && !state.isModerator ? 'disabled' : ''}>
+                            ${(state.isAdmin || state.isModerator) ? 'ทดสอบซื้อทันที' : (stock > 0 ? 'ซื้อทันที' : 'สินค้าหมด')}
                         </button>
                         <button class="btn-add-cart" onclick="addToCart(${p.id})" ${stock === 0 ? 'style="display:none"' : ''}>
                              <i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า
@@ -378,6 +387,33 @@
         }
 
         /**
+         * 1.2 ระบบดูโปรไฟล์คนอื่น (Public Profile)
+         */
+        function showPublicProfile(username) {
+            const user = (username === "Admin") ? { nickname: "Admin", avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png", orders: [] } : state.users[username];
+            if (!user) return;
+            const orderCount = user.orders ? user.orders.length : 0;
+            const isMod = state.moderators.includes(username);
+            
+            Swal.fire({
+                title: 'โปรไฟล์ผู้ใช้',
+                html: `
+                    <div style="text-align:center;">
+                        <img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit:cover;">
+                        <h3 style="margin:10px 0 5px 0;">${user.nickname || username}</h3>
+                        <p style="margin:0; color:#888;">ID: ${username}</p>
+                        ${isMod ? '<p style="color:var(--line); font-weight:bold;"><i class="fas fa-shield-alt"></i> ผู้ดูแลร่วม</p>' : ''}
+                        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+                        <div style="display:flex; justify-content:space-around;">
+                            <div><small>ยอดซื้อทั้งหมด</small><br><b>${orderCount}</b> รายการ</div>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false
+            });
+        }
+
+        /**
          * 2. ระบบตะกร้าสินค้า
          */
         function addToCart(id) {
@@ -420,14 +456,15 @@
 
         function processBulkBuy(totalPrice) {
             const user = state.users[state.currentUser];
-            if (!state.isAdmin && user.balance < totalPrice) return Swal.fire('เงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอ', 'warning').then(() => showPage('topup'));
-            if (!state.isAdmin) user.balance -= totalPrice;
+            const hasPrivilege = (state.isAdmin || state.isModerator);
+            if (!hasPrivilege && user.balance < totalPrice) return Swal.fire('เงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอ', 'warning').then(() => showPage('topup'));
+            if (!hasPrivilege) user.balance -= totalPrice;
             let boughtItems = [];
             state.cart.forEach(item => {
                 for(let i=0; i < item.qty; i++) {
                     const code = state.inventory[item.id].pop();
                     boughtItems.push({ name: item.name, code: code });
-                    if (!state.isAdmin) { if(!user.orders) user.orders = []; user.orders.unshift({ name: item.name, code: code, date: new Date().toLocaleString() }); }
+                    if (!hasPrivilege) { if(!user.orders) user.orders = []; user.orders.unshift({ name: item.name, code: code, date: new Date().toLocaleString() }); }
                     state.salesCount++;
                 }
             });
@@ -447,7 +484,7 @@
             const u = document.getElementById('regUsername').value.trim();
             const p = document.getElementById('regPassword').value.trim();
             if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
-            if(state.users[u]) return Swal.fire('ชื่อนี้มีแล้ว', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
+            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
             state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
             persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
         }
@@ -462,7 +499,6 @@
             } else { return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); }
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
-            if(state.isAdmin) document.getElementById('adminBtn').style.display = "block";
             updateUI();
         }
 
@@ -500,10 +536,11 @@
         function buyProduct(id) {
             const p = PRODUCTS.find(item => item.id === id);
             const user = state.users[state.currentUser];
-            if(!state.isAdmin && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
+            const hasPrivilege = (state.isAdmin || state.isModerator);
+            if(!hasPrivilege && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
             if(state.inventory[id].length > 0) {
                 const code = state.inventory[id].pop();
-                if(!state.isAdmin) {
+                if(!hasPrivilege) {
                     user.balance -= p.price;
                     if(!user.orders) user.orders = [];
                     user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
@@ -521,7 +558,7 @@
         }
 
         /**
-         * 6. ADMIN TOOLS (ระบบเลือกตอบแชทกลับมาแล้ว)
+         * 6. ADMIN TOOLS
          */
         function openAdminPanel() {
             let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
@@ -531,12 +568,21 @@
                 </div>
             `).join('') || "<p>ไม่มีประวัติ</p>";
 
-            // ส่วนเลือกรายชื่อลูกค้าเพื่อตอบแชท
             let chatUsers = Object.keys(state.privateMessages).map(user => `
                 <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
                     <i class="fas fa-user"></i> ${user}
                 </button>
             `).join('') || "<p style='color:#999; font-size:12px;'>ยังไม่มีลูกค้าทักแชทส่วนตัว</p>";
+
+            // ส่วนจัดการผู้ดูแล (เฉพาะ Admin หลัก)
+            let modManagerHtml = state.isAdmin ? `
+                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการทีมงาน (ผู้ดูแลร่วม)</h4>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="modTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User">
+                    <button onclick="toggleModerator()" class="btn-buy" style="width:auto; padding:0 15px;">เพิ่ม/ลบ</button>
+                </div>
+                <div style="font-size:12px; margin-top:5px; color:#666;">ผู้ดูแลปัจจุบัน: ${state.moderators.join(', ') || 'ไม่มี'}</div>
+            ` : '';
 
             Swal.fire({
                 title: 'ADMIN PANEL',
@@ -547,6 +593,7 @@
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
                         <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
                         <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า"></textarea>
+                        ${modManagerHtml}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>
                         ${reqHtml}
                     </div>
@@ -562,7 +609,24 @@
             });
         }
 
-        // ฟังก์ชันสำคัญ: แอดมินเลือกคุยกับลูกค้าคนนั้นๆ
+        // ระบบเพิ่ม/ถอด Moderator
+        window.toggleModerator = () => {
+            const target = document.getElementById('modTarget').value.trim();
+            if(!state.users[target]) return Swal.fire('ไม่พบผู้ใช้', 'ไม่พบชื่อผู้ใช้นี้ในระบบ', 'error');
+            if(target === 'Admin') return;
+
+            const index = state.moderators.indexOf(target);
+            if(index > -1) {
+                state.moderators.splice(index, 1);
+                Swal.fire('ถอดถอนแล้ว', `ถอด ${target} ออกจากตำแหน่งผู้ดูแล`, 'success');
+            } else {
+                state.moderators.push(target);
+                Swal.fire('แต่งตั้งแล้ว', `ตั้ง ${target} เป็นผู้ดูแลร่วม`, 'success');
+            }
+            persist();
+            openAdminPanel(); // รีเฟรชหน้าต่าง
+        };
+
         window.adminSelectUser = (username) => {
             state.activePrivateUser = username;
             state.chatMode = 'private';
@@ -586,22 +650,24 @@
             state.chatMode = mode;
             document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
-            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : (state.isAdmin ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
+            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
             renderChat();
         }
         
         function sendChat() {
             const inp = document.getElementById('chatInput');
             if(!inp.value.trim()) return;
+            const senderName = state.isAdmin ? "Admin" : (state.users[state.currentUser].nickname || state.currentUser);
             const msg = { 
-                sender: (state.isAdmin ? "แอดมิน" : (state.users[state.currentUser].nickname || state.currentUser)), 
+                sender: senderName,
+                userId: state.currentUser, // เก็บ ID จริงไว้ใช้ดูโปรไฟล์
                 text: inp.value, 
                 time: Date.now(), 
-                isAdmin: state.isAdmin 
+                isAdmin: (state.isAdmin || state.isModerator) 
             };
             if(state.chatMode === 'global') state.globalMessages.push(msg);
             else {
-                let target = state.isAdmin ? state.activePrivateUser : state.currentUser;
+                let target = (state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser;
                 if(!target) return Swal.fire('แจ้งเตือน','กรุณาเลือกชื่อลูกค้าจาก Admin Panel ก่อน','info');
                 if(!state.privateMessages[target]) state.privateMessages[target] = [];
                 state.privateMessages[target].push(msg);
@@ -612,12 +678,14 @@
         function renderChat() {
             const chatBox = document.getElementById('chatMessages');
             chatBox.innerHTML = "";
-            let currentSenderName = (state.isAdmin ? "แอดมิน" : (state.users[state.currentUser].nickname || state.currentUser));
-            let messages = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[state.isAdmin ? state.activePrivateUser : state.currentUser] || []);
+            let currentSenderName = state.isAdmin ? "Admin" : (state.users[state.currentUser].nickname || state.currentUser);
+            let messages = (state.chatMode === 'global') ? state.globalMessages : (state.privateMessages[(state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser] || []);
+            
             messages.forEach(m => {
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `msg ${m.sender === currentSenderName ? 'msg-user' : 'msg-admin'}`;
-                msgDiv.innerHTML = `<span class="msg-sender">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
+                // เพิ่ม onclick ที่ชื่อผู้ส่งเพื่อดูโปรไฟล์
+                msgDiv.innerHTML = `<span class="msg-sender" onclick="showPublicProfile('${m.userId || 'Admin'}')">${m.isAdmin ? '👑 ' : ''}${m.sender}</span>${m.text}`;
                 chatBox.appendChild(msgDiv);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
