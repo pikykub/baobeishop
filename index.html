@@ -480,7 +480,8 @@
         function handleLogin() {
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
-            if(u.toLowerCase() === 'admin' && p === 'admin123') {
+            // --- แก้ไขรหัสผ่าน Admin ตรงนี้ ---
+            if(u.toLowerCase() === 'admin' && p === 'yongchai07') {
                 state.currentUser = "Admin"; state.isAdmin = true;
             } else if(state.users[u] && state.users[u].password === p) {
                 state.currentUser = u; state.isAdmin = false;
