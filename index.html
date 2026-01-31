@@ -514,7 +514,7 @@
                         </div>
                     </div>`;
             });
-            html += `</div><h3 style="text-align:right; color:var(--main); margin-top:15px;">รวมยอดชำระ: ${total} ฿</h3>`;
+            html += `</div><h3 style="text-align:right; color:var(--main); margin-top:15px;">รวมยอดชำระ: ${total} ฿ </h3>`;
             Swal.fire({ title: 'ตะกร้าของคุณ', html: html, showCancelButton: true, confirmButtonText: 'ยืนยันการซื้อทั้งหมด' }).then((result) => { if (result.isConfirmed) processBulkBuy(total); });
         }
 
@@ -640,11 +640,18 @@
                 </div>
             `).join('') || "<p>ไม่มีประวัติ</p>";
 
+            // --- Updated: Chat Users with Delete Button ---
             let chatUsers = Object.keys(state.privateMessages).map(user => `
-                <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
-                    <i class="fas fa-user"></i> ${user}
-                </button>
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <button onclick="adminSelectUser('${user}')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
+                        <i class="fas fa-user"></i> ${user}
+                    </button>
+                    <button onclick="deletePrivateChat('${user}')" style="width:45px; border-radius:8px; border:none; background:var(--danger); color:white; cursor:pointer;">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
             `).join('') || "<p style='color:#999; font-size:12px;'>ยังไม่มีลูกค้าทักแชทส่วนตัว</p>";
+            // ---------------------------------------------
 
             let modManagerHtml = state.isAdmin ? `
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการทีมงาน (ผู้ดูแลร่วม)</h4>
@@ -685,6 +692,30 @@
                 }
             });
         }
+
+        // --- NEW: Delete Single Chat ---
+        window.deletePrivateChat = (targetUser) => {
+            Swal.fire({
+                title: 'ลบแชทนี้?',
+                text: `ต้องการลบประวัติการคุยกับ ${targetUser} ใช่หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'ลบเลย'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    delete state.privateMessages[targetUser];
+                    if(state.chatMode === 'private' && state.activePrivateUser === targetUser) {
+                        state.activePrivateUser = null;
+                        document.getElementById('chatMessages').innerHTML = '';
+                    }
+                    persist();
+                    openAdminPanel(); 
+                    Swal.fire('เรียบร้อย', 'ลบแชทแล้ว', 'success');
+                }
+            });
+        }
+        // ------------------------------
 
         window.resetChat = (type) => {
             if (!state.isAdmin) return;
