@@ -438,8 +438,48 @@
         function buyProduct(id) { if(!checkAuth()) return; const p = PRODUCTS.find(item => item.id === id); const user = state.users[state.currentUser]; const hasPriv = (state.isAdmin || state.isModerator); if(!hasPriv && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'เติมเงินก่อน', 'warning').then(() => showPage('topup')); if(state.inventory[id].length > 0) { const code = state.inventory[id].pop(); if(!hasPriv) { user.balance -= p.price; if(!user.orders) user.orders = []; user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() }); } state.salesCount++; persist(); updateUI(); Swal.fire({ title: 'สำเร็จ', html: `CODE: <b>${code}</b>`, icon: 'success' }); } else { Swal.fire('หมด', 'สินค้าหมด', 'error'); } }
         function showOrderHistory() { if(!checkAuth()) return; const user = state.users[state.currentUser]; if (!user.orders || user.orders.length === 0) return Swal.fire('ว่าง', 'ไม่มีประวัติ', 'info'); let h = user.orders.map(o => `<div style="background:#fff; border:1px solid #eee; padding:10px; margin-bottom:5px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code>${o.code}</code></div>`).join(''); Swal.fire({ title: 'ประวัติ', html: `<div style="max-height:400px; overflow-y:auto;">${h}</div>` }); }
 
+        /* --- ฟังก์ชันใหม่: กรองรายชื่อ (Search) --- */
+        window.filterUserList = (text) => {
+            const rows = document.querySelectorAll('.user-list-item');
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name').toLowerCase();
+                if (name.includes(text.toLowerCase())) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        };
+
         /* ADMIN TOOLS */
         function openAdminPanel() {
+            // 1. สร้าง HTML รายชื่อผู้ใช้งาน (Loop ข้อมูลจาก state.users)
+            let userListHTML = Object.entries(state.users).map(([username, u]) => {
+                let isBan = u.isBanned;
+                let avatar = u.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                return `
+                <div class="user-list-item" data-name="${username}" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:white; margin-bottom:8px; border-radius:8px; border:1px solid ${isBan ? '#dc3545' : '#eee'}; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid ${isBan ? '#dc3545' : '#eee'};">
+                        <div style="text-align:left;">
+                            <div style="font-weight:bold; font-size:14px; ${isBan ? 'color:#dc3545' : 'color:#333'}">
+                                ${username} ${isBan ? '<i class="fas fa-ban"></i>' : ''}
+                            </div>
+                            <div style="font-size:11px; color:#666;">
+                                <i class="fas fa-coins" style="color:#ffc107"></i> ${u.balance.toLocaleString()}฿ | 
+                                <span style="color:#888;">${u.nickname || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="document.getElementById('banTarget').value = '${username}'; toggleBan();" 
+                                style="background:${isBan ? '#28a745' : '#dc3545'}; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; font-size:11px; transition:0.3s;">
+                            ${isBan ? 'ปลดแบน' : 'แบน'}
+                        </button>
+                    </div>
+                </div>`;
+            }).join('') || '<div style="text-align:center; padding:20px; color:#999;">ไม่มีสมาชิก</div>';
+
             let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `<div style="background:#fff; border:1px solid #ddd; padding:10px; margin-bottom:5px; text-align:left;"><p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p><img src="${req.slip}" style="width:100%; border-radius:5px; margin:5px 0;"></div>`).join('') || "<p>ไม่มีประวัติ</p>";
             let chatUsers = Object.keys(state.privateMessages).map(user => `<div style="display:flex; gap:5px; margin-bottom:5px;"><button onclick="adminSelectUser('${user}')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left;"><i class="fas fa-user"></i> ${user}</button><button onclick="deletePrivateChat('${user}')" style="width:45px; border-radius:8px; border:none; background:var(--danger); color:white;"><i class="fas fa-trash-alt"></i></button></div>`).join('') || "<p>ไม่มีแชท</p>";
             let botImgHtml = state.botConfig.image ? `<div style="margin:5px 0;"><img src="${state.botConfig.image}" style="height:60px; border-radius:5px; border:1px solid #ccc;"> <br> <button onclick="deleteBotImage()" style="background:#dc3545; color:white; border:none; padding:2px 8px; border-radius:4px; font-size:10px; cursor:pointer; margin-top:3px;">ลบรูป</button></div>` : '';
@@ -451,9 +491,16 @@
                 <div style="display:flex; gap:5px;"><input type="text" id="modTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User"><button onclick="toggleModerator()" class="btn-buy" style="width:auto; padding:0 15px;">เพิ่ม/ลบ</button></div>
                 <div style="font-size:12px; margin-top:5px; color:#666;">ผู้ดูแล: ${state.moderators.join(', ') || 'ไม่มี'}</div>
                 
+                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:#007bff;">👥 รายชื่อสมาชิกทั้งหมด (${Object.keys(state.users).length})</h4>
+                <div style="background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                    <input type="text" onkeyup="filterUserList(this.value)" class="login-input" placeholder="🔍 ค้นหาชื่อสมาชิก..." style="margin-bottom:10px; font-size:13px;">
+                    <div style="max-height:250px; overflow-y:auto; padding-right:5px;">
+                        ${userListHTML}
+                    </div>
+                </div>
+                
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--danger);">จัดการผู้ใช้ (Ban User)</h4>
                 <div style="display:flex; gap:5px;"><input type="text" id="banTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User"><button onclick="toggleBan()" class="btn-buy" style="width:auto; padding:0 15px; background:var(--danger);">Ban/Unban</button></div>
-                <div style="font-size:12px; margin-top:5px; color:#666;">รายชื่อคนโดนแบนดูใน Console หรือลองแบนดูครับ</div>
 
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--coupon);">จัดการคูปองส่วนลด</h4>
                 <div style="background:#fff3cd; padding:10px; border-radius:8px;"><div style="display:flex; gap:5px;"><input type="text" id="newCouponCode" class="login-input" style="flex:2; margin:0;" placeholder="ชื่อโค้ด"><input type="number" id="newCouponVal" class="login-input" style="flex:1; margin:0;" placeholder="ลดกี่บาท"><button onclick="addCoupon()" class="btn-buy" style="width:auto;">สร้าง</button></div><div style="margin-top:10px; max-height:100px; overflow-y:auto; border:1px solid #eee; border-radius:5px;">${couponList}</div></div>
