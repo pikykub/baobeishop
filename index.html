@@ -302,7 +302,6 @@
             chatMode: 'global',
             cart: [],
             moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [],
-            // NEW: Bot Config now has 'avatar' property
             botConfig: JSON.parse(localStorage.getItem('baobei_bot')) || { active: false, interval: 60, text: "ยินดีต้อนรับสู่ร้าน BAOBEI SHOP! สินค้าเติมตลอด 24 ชม.", image: null, avatar: null, lastRun: 0 }
         };
 
@@ -722,6 +721,9 @@
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
                         <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
                         <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า"></textarea>
+                        <div style="margin-top:5px; text-align:left;">
+                            <input type="checkbox" id="adm_2lines"> <label for="adm_2lines">โหมด 2 บรรทัด = 1 สินค้า (สำหรับ Data ที่แยกบรรทัด)</label>
+                        </div>
                         ${modManagerHtml}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>
                         ${reqHtml}
@@ -732,7 +734,20 @@
             }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
-                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
+                    const isTwoLine = document.getElementById('adm_2lines').checked;
+                    const rawLines = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
+                    let codes = [];
+
+                    if (isTwoLine) {
+                        for(let i=0; i < rawLines.length; i+=2) {
+                            let item = rawLines[i];
+                            if(rawLines[i+1]) item += " | " + rawLines[i+1];
+                            codes.push(item);
+                        }
+                    } else {
+                        codes = rawLines;
+                    }
+
                     if(codes.length > 0) { state.inventory[pid].push(...codes); persist(); updateUI(); Swal.fire('สำเร็จ', 'เพิ่มสต็อกเรียบร้อย', 'success'); }
                 }
             });
