@@ -268,6 +268,10 @@
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
+        // --- ส่วนที่แก้ไข: เพิ่มลิงก์รูปภาพแอดมินแบบถาวร ---
+        const ADMIN_AVATAR_URL = "https://lh3.googleusercontent.com/d/12RhOdgaJigGJCiIBURsppbEyBPmBhBT7";
+        // ------------------------------------------
+
         const PRODUCTS = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
             { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
@@ -318,7 +322,13 @@
                 const user = state.users[state.currentUser];
                 document.getElementById('balanceDisplay').innerText = user.balance.toLocaleString();
                 document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
-                if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
+                
+                // แก้ไข: ถ้าเป็น Admin ให้ดึงรูป Admin มาโชว์ที่ Nav
+                if(state.isAdmin) {
+                    document.getElementById('navAvatarImg').src = ADMIN_AVATAR_URL;
+                } else if(user.avatar) {
+                    document.getElementById('navAvatarImg').src = user.avatar;
+                }
                 
                 if (state.isAdmin || state.moderators.includes(state.currentUser)) {
                     document.getElementById('adminBtn').style.display = "block";
@@ -351,6 +361,7 @@
 
         /* 1.1 ระบบแก้ไขโปรไฟล์ */
         function openEditProfile() {
+            if(state.isAdmin) return Swal.fire('Admin', 'แอดมินแก้ไขโปรไฟล์จากหน้านี้ไม่ได้ครับ', 'info');
             const user = state.users[state.currentUser];
             if(!user) return;
             Swal.fire({
@@ -393,15 +404,15 @@
 
         /* 1.2 ระบบดูโปรไฟล์คนอื่น */
         function showPublicProfile(username) {
-            // Check if username is object or string to prevent error
             if(typeof username !== 'string') return;
             
             let user = state.users[username];
             let isMod = state.moderators.includes(username);
             let isAdmin = (username === "Admin");
 
+            // แก้ไข: ใส่รูปที่คุณให้มาในหน้าโปรไฟล์ของ Admin
             if (isAdmin) {
-                user = { nickname: "Admin", avatar: "https://cdn-icons-png.flaticon.com/512/295/295128.png", orders: [] };
+                user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
             }
 
             if (!user) return;
@@ -489,19 +500,9 @@
             document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
         }
 
-        function handleRegister() {
-            const u = document.getElementById('regUsername').value.trim();
-            const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
-            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
-            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
-            persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
-        }
-
         function handleLogin() {
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
-            // --- แก้ไขรหัสผ่าน Admin ตรงนี้ ---
             if(u.toLowerCase() === 'admin' && p === 'yongchai07') {
                 state.currentUser = "Admin"; state.isAdmin = true;
             } else if(state.users[u] && state.users[u].password === p) {
@@ -510,6 +511,15 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
             updateUI();
+        }
+
+        function handleRegister() {
+            const u = document.getElementById('regUsername').value.trim();
+            const p = document.getElementById('regPassword').value.trim();
+            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
+            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
+            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
+            persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
         }
 
         function handleLogout() { location.reload(); }
@@ -680,31 +690,25 @@
             chatBox.innerHTML = "";
             let currentUserId = state.currentUser;
             
-            // Determine messages based on mode
             let messages = (state.chatMode === 'global') 
                 ? state.globalMessages 
                 : (state.privateMessages[(state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser] || []);
             
             messages.forEach(m => {
-                // Determine if this message belongs to the current viewer (Me)
                 const isMe = (m.userId === currentUserId) || (state.isAdmin && m.sender === 'Admin');
                 
-                // --- Find Avatar ---
-                let avatarUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; // Default
+                // --- ส่วนที่แก้ไข: ใส่รูปแอดมินจากลิงก์ที่คุณให้มา ---
+                let avatarUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
                 if (m.userId === 'Admin' || m.sender === 'Admin') {
-                    avatarUrl = 'https://cdn-icons-png.flaticon.com/512/295/295128.png'; // Admin specific icon
+                    avatarUrl = ADMIN_AVATAR_URL; // ใช้รูปที่คุณให้มา
                 } else if (state.users[m.userId]) {
                     avatarUrl = state.users[m.userId].avatar || avatarUrl;
                 }
                 
-                // --- Create Structure ---
                 const row = document.createElement('div');
                 row.className = `chat-row ${isMe ? 'right' : 'left'}`;
                 
-                // Avatar Element (clickable)
                 const imgHTML = `<img src="${avatarUrl}" class="chat-avatar" onclick="showPublicProfile('${m.userId || 'Admin'}')">`;
-                
-                // Message Bubble
                 const bubbleHTML = `
                     <div class="msg ${isMe ? 'msg-user' : 'msg-admin'}">
                         <span class="msg-sender" onclick="showPublicProfile('${m.userId || 'Admin'}')">
@@ -713,15 +717,6 @@
                         ${m.text}
                     </div>
                 `;
-
-                // If 'Right' (Me) -> Bubble then Avatar (visual reverse handled by CSS row-reverse, so DOM order is Bubble then Avatar)
-                // Actually easier to keep DOM order uniform and let CSS reverse.
-                // Let's standard: Avatar + Bubble. CSS flex-direction:row-reverse for 'right' handles visual.
-                // NOTE: For 'right' logic in CSS above, flex-direction:row-reverse puts first child on right.
-                // So if we put [Bubble, Avatar], row-reverse makes it [Avatar, Bubble] visually? No.
-                // Standard Flex: [Avatar, Bubble] -> Left: Avatar | Bubble.
-                // Row Reverse: [Avatar, Bubble] -> Right: Bubble | Avatar.
-                // So we always append Avatar then Bubble to the row container.
                 
                 row.innerHTML = imgHTML + bubbleHTML;
                 chatBox.appendChild(row);
