@@ -51,12 +51,6 @@
         .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
         .btn-admin:hover { background: #000; color: #fff; }
 
-        /* Music Button */
-        .btn-music { background: #ff9f43; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .btn-music:hover { transform: rotate(15deg) scale(1.1); }
-        .btn-music.playing { background: var(--line); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(6, 199, 85, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(6, 199, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(6, 199, 85, 0); } }
-
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
         .title-bar { display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); padding-right: 15px; }
 
@@ -143,10 +137,6 @@
     </style>
 </head>
 <body>
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
-
     <div class="scrolling-news">
         <div>✨ BAOBEI SHOP ยินดีต้อนรับ! สินค้าใหม่ลงเพียบ! | 🔥 โปรโมชั่นเดือนนี้: เติมเงินลุ้นรับรางวัลใหญ่! | ⚠️ ระวังมิจฉาชีพ แอดมินใช้บัญชีชื่อ จิตราภรณ์ จันทร เท่านั้น! ✨</div>
     </div>
@@ -181,10 +171,6 @@
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
-                <button id="musicBtn" class="btn-music" onclick="toggleMusic()">
-                    <i class="fas fa-music"></i>
-                </button>
-
                 <div class="user-profile-btn" onclick="openEditProfile()">
                     <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
                     <span id="navNickname" class="nav-nickname">ผู้เยี่ยมชม</span>
@@ -370,30 +356,6 @@
             Swal.fire('ยินดีต้อนรับ', `สวัสดีคุณ ${u}`, 'success'); 
         }
 
-        // --- MUSIC SYSTEM ---
-        let isMusicPlaying = false;
-        function initAudio() {
-            const audio = document.getElementById('bgMusic');
-            audio.volume = 0.2; // Set low volume
-        }
-        
-        function toggleMusic() {
-            const audio = document.getElementById('bgMusic');
-            const btn = document.getElementById('musicBtn');
-            
-            if (isMusicPlaying) {
-                audio.pause();
-                btn.classList.remove('playing');
-                btn.innerHTML = '<i class="fas fa-music"></i>';
-            } else {
-                audio.play().catch(e => Swal.fire('Auto-play Blocked', 'กรุณากดเล่นอีกครั้ง', 'info'));
-                btn.classList.add('playing');
-                btn.innerHTML = '<i class="fas fa-pause"></i>';
-            }
-            isMusicPlaying = !isMusicPlaying;
-        }
-
-        // --- UI & CORE ---
         function updateUI() {
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
@@ -442,9 +404,9 @@
             renderChat(); updateCartBadge();
         }
 
-        // --- Standard Functions (Same as before) ---
+        // ... [Standard Functions (Same as before)] ...
         function openEditProfile() { if(!checkAuth()) return; if(state.isAdmin) return Swal.fire('Admin', 'แอดมินแก้ไขโปรไฟล์ไม่ได้', 'info'); const user = state.users[state.currentUser]; Swal.fire({ title: 'แก้ไขข้อมูลส่วนตัว', html: `<div style="text-align:center;"><img id="editProfilePreview" src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:15px; border:3px solid var(--main);"><br><label class="btn-history" style="display:inline-block; margin-bottom:15px; cursor:pointer;">เปลี่ยนรูปโปรไฟล์ <input type="file" id="profilePicInput" hidden accept="image/*" onchange="previewProfileEdit(this)"></label><div style="text-align:left; font-size:14px; margin-bottom:5px;">ชื่อผู้ใช้ (แก้ไขไม่ได้)</div><input type="text" value="${state.currentUser}" class="login-input" disabled style="background:#f0f0f0; color:#888;"><div style="text-align:left; font-size:14px; margin-bottom:5px; margin-top:10px;">ชื่อเล่น</div><input type="text" id="editNickname" class="login-input" value="${user.nickname || ''}" placeholder="ตั้งชื่อเล่นของคุณ"></div>`, showCancelButton: true, confirmButtonText: 'บันทึก', preConfirm: () => { return { nickname: document.getElementById('editNickname').value, avatar: document.getElementById('editProfilePreview').src } } }).then((result) => { if (result.isConfirmed) { state.users[state.currentUser].nickname = result.value.nickname; state.users[state.currentUser].avatar = result.value.avatar; persist(); updateUI(); Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success'); } }); }
-        function showPublicProfile(username) { /* Same */ if(typeof username !== 'string') return; let user = state.users[username]; let isMod = state.moderators.includes(username); let isAdmin = (username === "Admin"); let isBot = (username === "Admin Bot"); if (isAdmin) { user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] }; } else if (isBot) { user = { nickname: "Admin Bot", avatar: state.botConfig.avatar || BOT_AVATAR_URL, orders: [] }; } if (!user) return; const orderCount = user.orders ? user.orders.length : 0; Swal.fire({ title: 'โปรไฟล์ผู้ใช้', html: `<div style="text-align:center;"><img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit:cover;"><h3 style="margin:10px 0 5px 0;">${user.nickname || username}</h3>${isBot ? '<p style="color:var(--bot); font-weight:bold;">🤖 ระบบตอบกลับอัตโนมัติ</p>' : `<p style="margin:0; color:#888;">ID: ${username}</p>`}${isAdmin ? '<p style="color:var(--main); font-weight:bold;">👑 Administrator</p>' : ''}${isMod ? '<p style="color:var(--line); font-weight:bold;"><i class="fas fa-shield-alt"></i> ผู้ดูแลร่วม</p>' : ''}<hr style="margin:15px 0; border:0; border-top:1px solid #eee;"><div style="display:flex; justify-content:space-around;"><div><small>ยอดซื้อทั้งหมด</small><br><b>${(isAdmin||isBot) ? 'N/A' : orderCount}</b> รายการ</div></div></div>`, showConfirmButton: false }); }
+        function showPublicProfile(username) { if(typeof username !== 'string') return; let user = state.users[username]; let isMod = state.moderators.includes(username); let isAdmin = (username === "Admin"); let isBot = (username === "Admin Bot"); if (isAdmin) { user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] }; } else if (isBot) { user = { nickname: "Admin Bot", avatar: state.botConfig.avatar || BOT_AVATAR_URL, orders: [] }; } if (!user) return; const orderCount = user.orders ? user.orders.length : 0; Swal.fire({ title: 'โปรไฟล์ผู้ใช้', html: `<div style="text-align:center;"><img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit:cover;"><h3 style="margin:10px 0 5px 0;">${user.nickname || username}</h3>${isBot ? '<p style="color:var(--bot); font-weight:bold;">🤖 ระบบตอบกลับอัตโนมัติ</p>' : `<p style="margin:0; color:#888;">ID: ${username}</p>`}${isAdmin ? '<p style="color:var(--main); font-weight:bold;">👑 Administrator</p>' : ''}${isMod ? '<p style="color:var(--line); font-weight:bold;"><i class="fas fa-shield-alt"></i> ผู้ดูแลร่วม</p>' : ''}<hr style="margin:15px 0; border:0; border-top:1px solid #eee;"><div style="display:flex; justify-content:space-around;"><div><small>ยอดซื้อทั้งหมด</small><br><b>${(isAdmin||isBot) ? 'N/A' : orderCount}</b> รายการ</div></div></div>`, showConfirmButton: false }); }
         function addToCart(id) { if(!checkAuth()) return; const p = PRODUCTS.find(item => item.id === id); const stock = state.inventory[id]?.length || 0; const itemInCart = state.cart.find(i => i.id === id); const currentQty = itemInCart ? itemInCart.qty : 0; if (stock > currentQty) { if (itemInCart) itemInCart.qty++; else state.cart.push({ id: id, name: p.name, price: p.price, qty: 1 }); updateCartBadge(); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 }); } else { Swal.fire('สินค้าไม่พอ', 'สต็อกไม่พอ', 'warning'); } }
         function updateCartBadge() { const count = state.cart.reduce((sum, item) => sum + item.qty, 0); document.getElementById('cartCount').innerText = count; }
         
