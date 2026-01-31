@@ -107,6 +107,10 @@
         .msg-admin { background: #e0e0e0; color: #333; border-bottom-left-radius: 2px; }
         .msg-user { background: var(--main); color: white; border-bottom-right-radius: 2px; }
         
+        /* สไตล์สำหรับรูปภาพในแชท */
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; transition: 0.2s; border: 1px solid rgba(0,0,0,0.1); }
+        .chat-img:hover { opacity: 0.9; }
+
         .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
         
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
@@ -258,9 +262,13 @@
             <div id="tabPrivate" class="chat-tab" onclick="setChatMode('private')">แอดมิน (ส่วนตัว)</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
-        <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: #fff;">
-            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความที่นี่...">
-            <button onclick="sendChat()" style="background: var(--main); color:white; border:none; width: 35px; height: 35px; border-radius: 50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+        <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: #fff; align-items: center;">
+            <input type="file" id="chatImageInput" hidden accept="image/*" onchange="handleChatImage(this)">
+            <button onclick="document.getElementById('chatImageInput').click()" style="background: #eee; color: #555; border:none; width: 35px; height: 35px; border-radius: 50%; cursor:pointer; flex-shrink: 0;"><i class="fas fa-image"></i></button>
+            
+            <input type="text" id="chatInput" style="flex:1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline:none;" placeholder="พิมพ์ข้อความ...">
+            
+            <button onclick="sendChat()" style="background: var(--main); color:white; border:none; width: 35px; height: 35px; border-radius: 50%; cursor:pointer; flex-shrink: 0;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
@@ -269,10 +277,10 @@
         const ADMIN_AVATAR_URL = "https://lh3.googleusercontent.com/d/12RhOdgaJigGJCiIBURsppbEyBPmBhBT7";
 
         const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 9, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 11, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let state = {
@@ -741,10 +749,42 @@
             document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
             renderChat();
         }
+
+        // --- NEW: ฟังก์ชั่นจัดการรูปภาพแชท ---
+        function handleChatImage(input) {
+            if(!state.currentUser && !state.isAdmin) return Swal.fire('แจ้งเตือน', 'กรุณาล็อกอินก่อนใช้งานแชท', 'warning');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64 = e.target.result;
+                    // ส่งรูปภาพทันที
+                    sendChat(null, base64);
+                    // เคลียร์ค่า input
+                    input.value = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function viewImage(src) {
+            Swal.fire({
+                imageUrl: src,
+                imageAlt: 'Chat Image',
+                showConfirmButton: false,
+                background: 'transparent',
+                backdrop: `rgba(0,0,0,0.8)`
+            });
+        }
         
-        function sendChat() {
+        // --- Modified: รองรับการส่งทั้ง Text และ Image ---
+        function sendChat(textOverride = null, imageBase64 = null) {
             const inp = document.getElementById('chatInput');
-            if(!inp.value.trim()) return;
+            const textToSend = textOverride || inp.value.trim();
+            
+            // ถ้าไม่มีทั้งข้อความและรูป ให้หยุดทำงาน
+            if(!textToSend && !imageBase64) return;
+
             const senderName = state.isAdmin ? "Admin" : (state.currentUser ? (state.users[state.currentUser].nickname || state.currentUser) : "Guest");
             
             if(!state.currentUser && !state.isAdmin) return Swal.fire('แจ้งเตือน', 'กรุณาล็อกอินก่อนใช้งานแชท', 'warning');
@@ -752,10 +792,12 @@
             const msg = { 
                 sender: senderName,
                 userId: state.currentUser,
-                text: inp.value, 
+                text: textToSend, 
+                image: imageBase64, // เก็บรูปภาพ
                 time: Date.now(), 
                 isAdmin: (state.isAdmin || state.isModerator) 
             };
+
             if(state.chatMode === 'global') state.globalMessages.push(msg);
             else {
                 let target = (state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser;
@@ -763,7 +805,8 @@
                 if(!state.privateMessages[target]) state.privateMessages[target] = [];
                 state.privateMessages[target].push(msg);
             }
-            persist(); renderChat(); inp.value = "";
+            persist(); renderChat(); 
+            if(!textOverride) inp.value = "";
         }
 
         function renderChat() {
@@ -789,12 +832,18 @@
                 row.className = `chat-row ${isMe ? 'right' : 'left'}`;
                 
                 const imgHTML = `<img src="${avatarUrl}" class="chat-avatar" onclick="showPublicProfile('${m.userId || 'Admin'}')">`;
+                
+                // --- ส่วนแสดงข้อความ + รูปภาพ ---
+                let contentHTML = '';
+                if(m.text) contentHTML += `<div>${m.text}</div>`;
+                if(m.image) contentHTML += `<img src="${m.image}" class="chat-img" onclick="viewImage('${m.image}')">`;
+
                 const bubbleHTML = `
                     <div class="msg ${isMe ? 'msg-user' : 'msg-admin'}">
                         <span class="msg-sender" onclick="showPublicProfile('${m.userId || 'Admin'}')">
                             ${m.isAdmin ? '👑 ' : ''}${m.sender}
                         </span>
-                        ${m.text}
+                        ${contentHTML}
                     </div>
                 `;
                 
