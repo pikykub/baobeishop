@@ -11,50 +11,39 @@
     
     <style>
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
-        
         * { box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
 
-        body { 
-            font-family: 'Kanit', sans-serif; 
-            margin: 0; 
-            background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed;
-            background-size: cover;
-            color: var(--text); 
-            overflow-x: hidden; 
-            min-height: 100vh;
-        }
-
-        /* 1. ระบบประกาศเเบบเคลื่อนที่ */
+        /* News & Announce */
         .scrolling-news { background: #000; color: gold; padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2000; border-bottom: 2px solid gold; font-size: 14px; }
         .scrolling-news div { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-
         .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
-        
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 
+        /* Navbar */
         .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
         .nav-right { display: flex; gap: 10px; align-items: center; }
         
+        .btn-auth { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
+        .btn-auth:hover { transform: translateY(-2px); background: #e61b46; }
+
         .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .btn-contact:hover { background: var(--line); color: white; transform: scale(1.1); }
         
         .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
         .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
         
-        /* เพิ่ม CSS สำหรับระบบตะกร้า */
         .cart-tag { background: #333; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; }
         .cart-count { position: absolute; top: -5px; right: -5px; background: gold; color: black; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; font-weight: bold; }
-        .btn-add-cart { background: #333; color: white; border: none; width: 100%; padding: 10px; border-radius: 12px; font-weight: 500; cursor: pointer; margin-top: 5px; transition: 0.3s; font-size: 13px; }
-        .btn-add-cart:hover { background: #000; }
-
+        
         .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
         .btn-admin:hover { background: #000; color: #fff; }
 
+        /* Container */
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
         .title-bar { display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); padding-right: 15px; }
-
         .banner-container { width: 100%; margin-bottom: 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s; }
         .banner-img { width: 100%; height: auto; display: block; object-fit: cover; }
         
@@ -63,6 +52,13 @@
         .stat-box:hover { border-color: var(--main); transform: translateY(-5px); }
         .stat-label { font-size: 13px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
+
+        /* Filter */
+        .filter-section { background: rgba(255,255,255,0.9); padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .search-input { flex: 1; padding: 10px 15px; border-radius: 50px; border: 1px solid #ddd; outline: none; font-family: 'Kanit'; transition: 0.3s; }
+        .search-input:focus { border-color: var(--main); box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.1); }
+        .category-btn { padding: 8px 15px; border-radius: 50px; border: 1px solid #ddd; background: #fff; cursor: pointer; transition: 0.3s; font-size: 13px; color: #666; }
+        .category-btn:hover, .category-btn.active { background: var(--main); color: #fff; border-color: var(--main); }
 
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
@@ -74,9 +70,15 @@
         .product-name { font-weight: 500; margin-bottom: 10px; height: 45px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .product-price { color: var(--main); font-size: 22px; font-weight: 700; margin-bottom: 15px; }
         
+        .stock-progress-container { width: 100%; height: 6px; background: #eee; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .stock-progress-bar { height: 100%; transition: 0.5s; }
+        .stock-status-text { font-size: 11px; color: #888; margin-bottom: 5px; display: block; }
+
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-buy:hover:not(:disabled) { background: #e61b46; transform: scale(1.02); }
         .btn-buy:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-add-cart { background: #333; color: white; border: none; width: 100%; padding: 10px; border-radius: 12px; font-weight: 500; cursor: pointer; margin-top: 5px; transition: 0.3s; font-size: 13px; }
+        .btn-add-cart:hover { background: #000; }
 
         .hidden { display: none !important; }
         .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
@@ -86,61 +88,68 @@
         .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
         .login-input:focus { border-color: var(--main); }
 
-        /* --- New Chat CSS for Profiles --- */
-        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
-        .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
-        .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        
-        .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
-        .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
-        .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
-
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
-        
-        /* Updated Message Styles for Avatar */
-        .chat-row { display: flex; align-items: flex-end; margin-bottom: 15px; gap: 8px; width: 100%; }
-        .chat-row.right { flex-direction: row-reverse; }
-        
-        .chat-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; flex-shrink: 0; transition: 0.2s; }
-        .chat-avatar:hover { transform: scale(1.1); }
-        
-        .msg { padding: 8px 12px; border-radius: 15px; max-width: 75%; line-height: 1.4; word-break: break-all; position: relative; }
-        .msg-admin { background: #e0e0e0; color: #333; border-bottom-left-radius: 2px; }
-        .msg-user { background: var(--main); color: white; border-bottom-right-radius: 2px; }
-        
-        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
-        .msg-sender:hover { text-decoration: underline; color: #000; }
-        /* -------------------------------- */
-        
-        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
-        .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
-
-        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
-        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 1px solid #ccc; display: none; }
-
-        .btn-history { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; }
-        .btn-history:hover { background: #000; transform: scale(1.05); }
-
-        /* ระบบ Profile */
         .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; transition: 0.3s; }
         .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
         .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
+
+        .btn-history { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; }
+        .btn-history:hover { background: #000; transform: scale(1.05); }
+        .btn-daily { background: linear-gradient(45deg, #FFD700, #FFA500); color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; font-weight: bold; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.2); margin-left: 10px; }
+        .btn-daily:hover { transform: scale(1.1) rotate(-2deg); }
+        .btn-daily.claimed { background: #ddd; color: #999; box-shadow: none; cursor: not-allowed; transform: none; }
+
+        .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
+        .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 1px solid #ccc; display: none; }
+        
+        /* Chat Styles */
+        .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
+        .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+        .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .chat-tabs { display: flex; border-bottom: 1px solid #eee; background: #f8f9fa; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
+        .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
+        .chat-row { display: flex; align-items: flex-end; margin-bottom: 15px; gap: 8px; width: 100%; }
+        .chat-row.right { flex-direction: row-reverse; }
+        .chat-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+        .chat-avatar:hover { transform: scale(1.1); }
+        .msg { padding: 8px 12px; border-radius: 15px; max-width: 75%; line-height: 1.4; word-break: break-all; position: relative; }
+        .msg-admin { background: #e0e0e0; color: #333; border-bottom-left-radius: 2px; }
+        .msg-user { background: var(--main); color: white; border-bottom-right-radius: 2px; }
+        .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
+        .msg-sender:hover { text-decoration: underline; color: #000; }
+        .chat-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-delete-chat { background: none; border: none; color: white; cursor: pointer; font-size: 16px; opacity: 0.8; transition: 0.3s; display: none; }
+        .btn-delete-chat:hover { opacity: 1; transform: scale(1.1); color: #ffeb3b; }
+        .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
+        .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
+
+        /* Spotify */
+        .spotify-widget { position: fixed; bottom: 20px; left: 20px; z-index: 1900; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden; transition: 0.3s; }
+        .spotify-widget:hover { transform: translateY(-5px); }
+        @media (max-width: 600px) { .spotify-widget { width: 280px; bottom: 90px; left: 10px; } }
 
         @media (max-width: 600px) { 
             .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
             .stats-grid { gap: 10px; }
             .stat-value { font-size: 18px; }
             .nav-nickname { display: none; }
+            .filter-section { flex-direction: column; align-items: stretch; }
+            .category-btn { text-align: center; }
         }
     </style>
 </head>
 <body>
     <div class="scrolling-news">
-        <div>✨ BAOBEI SHOP ยินดีต้อนรับ! สินค้าใหม่ลงเพียบ! | 🔥 โปรโมชั่นเดือนนี้: เติมเงินลุ้นรับรางวัลใหญ่! | ⚠️ ระวังมิจฉาชีพ แอดมินใช้บัญชีชื่อ จิตราภรณ์ จันทร เท่านั้น! ✨</div>
+        <div>✨ BAOBEI SHOP ยินดีต้อนรับ! สินค้าใหม่ลงเพียบ! | 🔥 โปรโมชั่น: กรอกโค้ด BAOBEI10 ลดทันที 10% | ⚠️ ระวังมิจฉาชีพ แอดมินใช้บัญชีชื่อ จิตราภรณ์ จันทร เท่านั้น! ✨</div>
     </div>
 
     <canvas id="snowCanvas"></canvas>
+
+    <div class="spotify-widget">
+        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    </div>
 
     <div id="registerPage" class="hidden">
         <div class="login-card">
@@ -152,7 +161,7 @@
         </div>
     </div>
 
-    <div id="loginPage">
+    <div id="loginPage" class="hidden">
         <div class="login-card">
             <h2 style="color: var(--main);">BAOBEI LOGIN</h2>
             <input type="text" id="loginUsername" class="login-input" placeholder="ชื่อผู้ใช้">
@@ -163,27 +172,32 @@
         </div>
     </div>
 
-    <div id="shopContent" class="hidden">
+    <div id="shopContent">
         <div class="announcement">✨ ยินดีต้อนรับสู่ BAOBEI SHOP | แอดมินพร้อมดูแล 24 ชม. ✨</div>
         <nav class="navbar">
             <div class="logo" onclick="showPage('home')">BAOBEI SHOP</div>
             <div class="nav-right">
-                <div class="user-profile-btn" onclick="openEditProfile()">
-                    <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
-                    <span id="navNickname" class="nav-nickname">ผู้ใช้</span>
+                <div id="guestMenu">
+                    <button class="btn-auth" onclick="toggleAuth('login')"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ / สมัครสมาชิก</button>
                 </div>
                 
-                <div class="cart-tag" onclick="showCart()">
-                    <i class="fas fa-shopping-cart"></i> 
-                    <span class="cart-count" id="cartCount">0</span>
+                <div id="userMenu" class="hidden" style="display:flex; gap:10px; align-items:center;">
+                    <div class="user-profile-btn" onclick="openEditProfile()">
+                        <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
+                        <span id="navNickname" class="nav-nickname">ผู้ใช้</span>
+                    </div>
+                    <div class="cart-tag" onclick="showCart()">
+                        <i class="fas fa-shopping-cart"></i> 
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                    <button id="adminBtn" class="btn-admin" onclick="openAdminPanel()">
+                        <i class="fas fa-user-shield"></i>
+                    </button>
+                    <div class="balance-tag" onclick="showPage('topup')">
+                        <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
+                    </div>
+                    <a href="#" onclick="handleLogout()" class="btn-contact"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
-                <button id="adminBtn" class="btn-admin" onclick="openAdminPanel()">
-                    <i class="fas fa-user-shield"></i>
-                </button>
-                <div class="balance-tag" onclick="showPage('topup')">
-                    <i class="fas fa-wallet"></i> <span id="balanceDisplay">0</span> ฿
-                </div>
-                <a href="#" onclick="handleLogout()" class="btn-contact"><i class="fas fa-sign-out-alt"></i></a>
             </div>
         </nav>
 
@@ -213,16 +227,29 @@
                 </div>
                 
                 <div class="title-bar">
-                    <h2><i class="fas fa-shopping-bag"></i> สินค้าแนะนำ</h2>
+                    <h2 style="display:flex; align-items:center;">
+                        <i class="fas fa-shopping-bag" style="margin-right:10px;"></i> สินค้าแนะนำ
+                        <button id="btnDaily" class="btn-daily" onclick="claimDailyReward()">🎁 รับเงินฟรีรายวัน</button>
+                    </h2>
                     <button class="btn-history" onclick="showOrderHistory()"><i class="fas fa-history"></i> ประวัติการซื้อ</button>
                 </div>
+
+                <div class="filter-section">
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 ค้นหาสินค้า..." onkeyup="filterProducts()">
+                    <div id="categoryFilters" style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <div class="category-btn active" onclick="setCategory('all')">ทั้งหมด</div>
+                        <div class="category-btn" onclick="setCategory('email')">อีเมล</div>
+                        <div class="category-btn" onclick="setCategory('id')">ไอดีเกม</div>
+                        <div class="category-btn" onclick="setCategory('code')">โค้ด/บัตร</div>
+                    </div>
+                </div>
+
                 <div id="productList" class="product-grid"></div>
             </div>
 
             <div id="topupPage" class="hidden">
                 <div class="topup-card">
                     <h3 style="margin-top:0"><i class="fas fa-university"></i> เติมเงินเข้าระบบ</h3>
-                    
                     <div class="qr-section">
                         <p style="font-weight: bold; color: var(--bank); margin: 5px 0;">ธนาคารเกียรตินาคินภัทร (KKP)</p>
                         <p style="font-size: 20px; letter-spacing: 1px; font-weight: bold; color: #000;">201-201-9014</p>
@@ -232,9 +259,7 @@
                         <p style="font-size: 14px; margin: 10px 0 0 0;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
                         <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 15px; width: 180px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                     </div>
-
                     <input type="number" id="topupAmount" class="login-input" placeholder="ระบุจำนวนเงินที่โอน">
-                    
                     <div style="margin-top: 10px;">
                         <label for="slipInput" style="display: block; cursor: pointer; background: #f0f0f0; padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid #ddd;">
                             <i class="fas fa-file-invoice"></i> แนบสลิปเพื่อตรวจสอบ
@@ -242,7 +267,6 @@
                         <input type="file" id="slipInput" accept="image/*" class="hidden" onchange="previewSlip(this)">
                         <img id="slipPreviewImg" class="slip-preview">
                     </div>
-
                     <button class="btn-buy" onclick="submitTopup()" style="margin-top: 20px;">ยืนยันการแจ้งโอน</button>
                     <p onclick="showPage('home')" style="cursor:pointer; margin-top:20px; color:#999; font-size: 14px;"><i class="fas fa-chevron-left"></i> กลับหน้าหลัก</p>
                 </div>
@@ -253,7 +277,10 @@
     <div class="chat-widget" id="chatBox">
         <div class="chat-header">
             <span><i class="fas fa-comments"></i> <span id="chatTitle">Global Chat</span></span>
-            <i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i>
+            <div class="chat-actions">
+                <button id="btnDeleteChat" class="btn-delete-chat" onclick="deleteCurrentChat()" title="ลบแชทนี้"><i class="fas fa-trash"></i></button>
+                <i class="fas fa-times" style="cursor:pointer" onclick="toggleWebChat()"></i>
+            </div>
         </div>
         <div class="chat-tabs">
             <div id="tabGlobal" class="chat-tab active" onclick="setChatMode('global')">แชทรวม</div>
@@ -268,25 +295,27 @@
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
-        // --- ส่วนที่แก้ไข: เพิ่มลิงก์รูปภาพแอดมินแบบถาวร ---
-        const ADMIN_AVATAR_URL = "https://lh3.googleusercontent.com/d/12RhOdgaJigGJCiIBURsppbEyBPmBhBT7";
-        // ------------------------------------------
+        const ADMIN_NAME = "adminLukpeach";
+        const ADMIN_AVATAR_URL = "https://drive.google.com/uc?export=view&id=12RhOdgaJigGJCiIBURsppbEyBPmBhBT7"; 
 
         const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 9, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 11, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 10, category: "email", image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 12, category: "email", image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 15, category: "email", image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 18, category: "email", image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 5, name: "Netflix 4K (30วัน)", price: 120, category: "code", image: "https://cdn-icons-png.flaticon.com/512/5977/5977590.png" },
+            { id: 6, name: "Valorant ID (สุ่ม)", price: 50, category: "id", image: "https://cdn-icons-png.flaticon.com/512/3408/3408506.png" }
         ];
+        const COUPONS = { "BAOBEI10": 0.10, "FREE5": 5, "ADMIN": 0.50 };
 
         let state = {
             users: JSON.parse(localStorage.getItem('baobei_users')) || {},
-            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [] },
+            inventory: JSON.parse(localStorage.getItem('baobei_inv')) || { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] },
             topupRequests: JSON.parse(localStorage.getItem('baobei_requests')) || [],
             usedSlips: JSON.parse(localStorage.getItem('baobei_used_slips')) || [],
             salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
-            currentUser: null,
+            currentUser: null, 
             isAdmin: false,
             isModerator: false, 
             activePrivateUser: null,
@@ -294,21 +323,36 @@
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
             chatMode: 'global',
             cart: [],
-            moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [] 
+            moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [],
+            currentCategory: 'all',
+            searchQuery: ''
         };
 
-        function persist() {
-            try {
-                localStorage.setItem('baobei_users', JSON.stringify(state.users));
-                localStorage.setItem('baobei_inv', JSON.stringify(state.inventory));
-                localStorage.setItem('baobei_requests', JSON.stringify(state.topupRequests));
-                localStorage.setItem('baobei_used_slips', JSON.stringify(state.usedSlips));
-                localStorage.setItem('baobei_sales', state.salesCount);
-                localStorage.setItem('baobei_total_topup', state.totalTopupSum);
-                localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
-                localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
-                localStorage.setItem('baobei_mods', JSON.stringify(state.moderators));
-            } catch (e) { console.error(e); }
+        function persist() { try { localStorage.setItem('baobei_users', JSON.stringify(state.users)); localStorage.setItem('baobei_inv', JSON.stringify(state.inventory)); localStorage.setItem('baobei_requests', JSON.stringify(state.topupRequests)); localStorage.setItem('baobei_used_slips', JSON.stringify(state.usedSlips)); localStorage.setItem('baobei_sales', state.salesCount); localStorage.setItem('baobei_total_topup', state.totalTopupSum); localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages)); localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages)); localStorage.setItem('baobei_mods', JSON.stringify(state.moderators)); } catch (e) { console.error(e); } }
+        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'คัดลอกรหัสแล้ว!', showConfirmButton: false, timer: 1500 }); }); }
+        function setCategory(cat) { state.currentCategory = cat; document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active')); event.target.classList.add('active'); updateUI(); }
+        function filterProducts() { state.searchQuery = document.getElementById('searchInput').value.toLowerCase(); updateUI(); }
+        
+        function requireLogin() {
+            if (!state.currentUser) {
+                Swal.fire({ title: 'กรุณาเข้าสู่ระบบ', text: 'คุณต้องเข้าสู่ระบบก่อนทำรายการนี้', icon: 'info', confirmButtonText: 'เข้าสู่ระบบ', confirmButtonColor: 'var(--main)' }).then((r) => { if(r.isConfirmed) toggleAuth('login'); });
+                return false;
+            }
+            return true;
+        }
+
+        function claimDailyReward() {
+            if(!requireLogin()) return;
+            const user = state.users[state.currentUser];
+            const now = Date.now();
+            const lastClaim = user.lastDailyClaim || 0;
+            if (now - lastClaim > 86400000) {
+                const reward = Math.floor(Math.random() * 5) + 1; 
+                user.balance += reward;
+                user.lastDailyClaim = now;
+                persist(); updateUI();
+                Swal.fire('ยินดีด้วย!', `คุณได้รับเงินฟรีประจำวัน ${reward} ฿`, 'success');
+            } else { Swal.fire('รับไปแล้ว', `กรุณามารับใหม่พรุ่งนี้`, 'info'); }
         }
 
         function updateUI() {
@@ -318,419 +362,154 @@
             let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
             document.getElementById('statStock').innerText = totalStock;
             
+            // Toggle Navbar based on Auth state
+            const guestMenu = document.getElementById('guestMenu');
+            const userMenu = document.getElementById('userMenu');
+            
             if (state.currentUser && state.users[state.currentUser]) {
+                // Logged In
+                guestMenu.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+                
                 const user = state.users[state.currentUser];
                 document.getElementById('balanceDisplay').innerText = user.balance.toLocaleString();
                 document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
                 
-                // แก้ไข: ถ้าเป็น Admin ให้ดึงรูป Admin มาโชว์ที่ Nav
-                if(state.isAdmin) {
-                    document.getElementById('navAvatarImg').src = ADMIN_AVATAR_URL;
-                } else if(user.avatar) {
-                    document.getElementById('navAvatarImg').src = user.avatar;
-                }
+                if(state.isAdmin) document.getElementById('navAvatarImg').src = ADMIN_AVATAR_URL;
+                else if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
                 
                 if (state.isAdmin || state.moderators.includes(state.currentUser)) {
                     document.getElementById('adminBtn').style.display = "block";
                     state.isModerator = !state.isAdmin;
+                } else {
+                    document.getElementById('adminBtn').style.display = "none";
                 }
+
+                // Daily Button Check
+                const btnDaily = document.getElementById('btnDaily');
+                if (Date.now() - (user.lastDailyClaim || 0) < 86400000) { btnDaily.classList.add('claimed'); btnDaily.innerText = "✅ รับแล้ววันนี้"; } 
+                else { btnDaily.classList.remove('claimed'); btnDaily.innerText = "🎁 รับเงินฟรีรายวัน"; }
+
+            } else {
+                // Guest Mode
+                guestMenu.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+                // Reset daily button appearance for guest
+                document.getElementById('btnDaily').classList.remove('claimed');
+                document.getElementById('btnDaily').innerText = "🎁 รับเงินฟรีรายวัน";
             }
             
+            const filtered = PRODUCTS.filter(p => {
+                const matchCat = state.currentCategory === 'all' || p.category === state.currentCategory;
+                const matchSearch = p.name.toLowerCase().includes(state.searchQuery);
+                return matchCat && matchSearch;
+            });
+
             const list = document.getElementById('productList');
-            list.innerHTML = PRODUCTS.map(p => {
+            if(filtered.length === 0) list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;">ไม่พบสินค้า</div>`;
+            else list.innerHTML = filtered.map(p => {
                 const stock = state.inventory[p.id]?.length || 0;
+                const percent = Math.min((stock / 20) * 100, 100);
+                const barColor = stock > 10 ? '#2ecc71' : (stock > 0 ? '#f39c12' : '#e74c3c');
                 return `
                 <div class="product-card">
-                    <div class="stock-tag">${stock > 0 ? 'สต็อก: ' + stock : 'หมด'}</div>
+                    <div class="stock-tag">${stock > 0 ? 'คงเหลือ: ' + stock : 'หมด'}</div>
                     <img src="${p.image}" class="product-img" loading="lazy">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
+                        <span class="stock-status-text">${stock > 0 ? 'สินค้าพร้อมส่ง' : 'สินค้าหมดชั่วคราว'}</span>
+                        <div class="stock-progress-container"><div class="stock-progress-bar" style="width: ${percent}%; background: ${barColor};"></div></div>
                         <div class="product-price">${p.price} ฿</div>
-                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin && !state.isModerator ? 'disabled' : ''}>
-                            ${(state.isAdmin || state.isModerator) ? 'ทดสอบซื้อทันที' : (stock > 0 ? 'ซื้อทันที' : 'สินค้าหมด')}
-                        </button>
-                        <button class="btn-add-cart" onclick="addToCart(${p.id})" ${stock === 0 ? 'style="display:none"' : ''}>
-                             <i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า
-                        </button>
+                        <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin && !state.isModerator ? 'disabled' : ''}>${(state.isAdmin || state.isModerator) ? 'ทดสอบ' : (stock > 0 ? 'ซื้อทันที' : 'หมด')}</button>
+                        <button class="btn-add-cart" onclick="addToCart(${p.id})" ${stock === 0 ? 'style="display:none"' : ''}><i class="fas fa-cart-plus"></i></button>
                     </div>
                 </div>`;
             }).join('');
-            renderChat();
-            updateCartBadge();
-        }
-
-        /* 1.1 ระบบแก้ไขโปรไฟล์ */
-        function openEditProfile() {
-            if(state.isAdmin) return Swal.fire('Admin', 'แอดมินแก้ไขโปรไฟล์จากหน้านี้ไม่ได้ครับ', 'info');
-            const user = state.users[state.currentUser];
-            if(!user) return;
-            Swal.fire({
-                title: 'แก้ไขข้อมูลส่วนตัว',
-                html: `
-                    <div style="text-align:center;">
-                        <img id="editProfilePreview" src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:15px; border:3px solid var(--main);">
-                        <br>
-                        <label class="btn-history" style="display:inline-block; margin-bottom:15px; cursor:pointer;">
-                            เปลี่ยนรูปโปรไฟล์ <input type="file" id="profilePicInput" hidden accept="image/*" onchange="previewProfileEdit(this)">
-                        </label>
-                        <div style="text-align:left; font-size:14px; margin-bottom:5px;">ชื่อผู้ใช้ (แก้ไขไม่ได้)</div>
-                        <input type="text" value="${state.currentUser}" class="login-input" disabled style="background:#f0f0f0; color:#888;">
-                        <div style="text-align:left; font-size:14px; margin-bottom:5px; margin-top:10px;">ชื่อเล่น</div>
-                        <input type="text" id="editNickname" class="login-input" value="${user.nickname || ''}" placeholder="ตั้งชื่อเล่นของคุณ">
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'บันทึก',
-                preConfirm: () => {
-                    return { nickname: document.getElementById('editNickname').value, avatar: document.getElementById('editProfilePreview').src }
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    state.users[state.currentUser].nickname = result.value.nickname;
-                    state.users[state.currentUser].avatar = result.value.avatar;
-                    persist(); updateUI();
-                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success');
-                }
-            });
-        }
-
-        function previewProfileEdit(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => { document.getElementById('editProfilePreview').src = e.target.result; };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        /* 1.2 ระบบดูโปรไฟล์คนอื่น */
-        function showPublicProfile(username) {
-            if(typeof username !== 'string') return;
-            
-            let user = state.users[username];
-            let isMod = state.moderators.includes(username);
-            let isAdmin = (username === "Admin");
-
-            // แก้ไข: ใส่รูปที่คุณให้มาในหน้าโปรไฟล์ของ Admin
-            if (isAdmin) {
-                user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
-            }
-
-            if (!user) return;
-            const orderCount = user.orders ? user.orders.length : 0;
-            
-            Swal.fire({
-                title: 'โปรไฟล์ผู้ใช้',
-                html: `
-                    <div style="text-align:center;">
-                        <img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit:cover;">
-                        <h3 style="margin:10px 0 5px 0;">${user.nickname || username}</h3>
-                        <p style="margin:0; color:#888;">ID: ${username}</p>
-                        ${isAdmin ? '<p style="color:var(--main); font-weight:bold;">👑 Administrator</p>' : ''}
-                        ${isMod ? '<p style="color:var(--line); font-weight:bold;"><i class="fas fa-shield-alt"></i> ผู้ดูแลร่วม</p>' : ''}
-                        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-                        <div style="display:flex; justify-content:space-around;">
-                            <div><small>ยอดซื้อทั้งหมด</small><br><b>${isAdmin ? 'N/A' : orderCount}</b> รายการ</div>
-                        </div>
-                    </div>
-                `,
-                showConfirmButton: false
-            });
-        }
-
-        /* 2. ระบบตะกร้าสินค้า */
-        function addToCart(id) {
-            const p = PRODUCTS.find(item => item.id === id);
-            const stock = state.inventory[id]?.length || 0;
-            const itemInCart = state.cart.find(i => i.id === id);
-            const currentQty = itemInCart ? itemInCart.qty : 0;
-            if (stock > currentQty) {
-                if (itemInCart) itemInCart.qty++;
-                else state.cart.push({ id: id, name: p.name, price: p.price, qty: 1 });
-                updateCartBadge();
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
-            } else { Swal.fire('สินค้าไม่พอ', 'ขออภัย สินค้าในสต็อกไม่พอเติม', 'warning'); }
-        }
-
-        function updateCartBadge() {
-            const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
-            document.getElementById('cartCount').innerText = count;
-        }
-
-        function showCart() {
-            if (state.cart.length === 0) return Swal.fire('ตะกร้าว่าง', 'คุณยังไม่ได้เลือกสินค้า', 'info');
-            let total = 0;
-            let html = `<div style="text-align:left; max-height:300px; overflow-y:auto;">`;
-            state.cart.forEach((item, index) => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                        <div><b>${item.name}</b><br><small>${item.price}฿ x ${item.qty}</small></div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <b>${subtotal}฿</b>
-                            <button onclick="state.cart.splice(${index},1); updateCartBadge(); Swal.close(); showCart();" style="border:none; background:none; color:red; cursor:pointer;">❌</button>
-                        </div>
-                    </div>`;
-            });
-            html += `</div><h3 style="text-align:right; color:var(--main); margin-top:15px;">รวมยอดชำระ: ${total} ฿</h3>`;
-            Swal.fire({ title: 'ตะกร้าของคุณ', html: html, showCancelButton: true, confirmButtonText: 'ยืนยันการซื้อทั้งหมด' }).then((result) => { if (result.isConfirmed) processBulkBuy(total); });
-        }
-
-        function processBulkBuy(totalPrice) {
-            const user = state.users[state.currentUser];
-            const hasPrivilege = (state.isAdmin || state.isModerator);
-            if (!hasPrivilege && user.balance < totalPrice) return Swal.fire('เงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอ', 'warning').then(() => showPage('topup'));
-            if (!hasPrivilege) user.balance -= totalPrice;
-            let boughtItems = [];
-            state.cart.forEach(item => {
-                for(let i=0; i < item.qty; i++) {
-                    const code = state.inventory[item.id].pop();
-                    boughtItems.push({ name: item.name, code: code });
-                    if (!hasPrivilege) { if(!user.orders) user.orders = []; user.orders.unshift({ name: item.name, code: code, date: new Date().toLocaleString() }); }
-                    state.salesCount++;
-                }
-            });
-            state.cart = []; updateCartBadge(); persist(); updateUI();
-            Swal.fire({ title: 'ซื้อสำเร็จ!', html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`, icon: 'success' });
-        }
-
-        /* 3. AUTH LOGIC */
-        function toggleAuth(type) {
-            document.getElementById('loginPage').classList.toggle('hidden', type !== 'login');
-            document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
-        }
-
-        function handleLogin() {
-            const u = document.getElementById('loginUsername').value.trim();
-            const p = document.getElementById('loginPassword').value.trim();
-            if(u.toLowerCase() === 'admin' && p === 'yongchai07') {
-                state.currentUser = "Admin"; state.isAdmin = true;
-            } else if(state.users[u] && state.users[u].password === p) {
-                state.currentUser = u; state.isAdmin = false;
-            } else { return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); }
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('shopContent').classList.remove('hidden');
-            updateUI();
-        }
-
-        function handleRegister() {
-            const u = document.getElementById('regUsername').value.trim();
-            const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
-            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
-            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
-            persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
-        }
-
-        function handleLogout() { location.reload(); }
-
-        /* 4. AUTO TOPUP */
-        function previewSlip(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => { const img = document.getElementById('slipPreviewImg'); img.src = e.target.result; img.style.display = 'block'; };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function submitTopup() {
-            const amt = parseFloat(document.getElementById('topupAmount').value);
-            const slipImg = document.getElementById('slipPreviewImg').src;
-            if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'กรุณาระบุจำนวนเงิน', 'warning');
-            if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'กรุณาแนบรูปภาพสลิป', 'warning');
-            const slipHash = slipImg.substring(slipImg.length - 200); 
-            if(state.usedSlips.includes(slipHash)) return Swal.fire('สลิปนี้ถูกใช้งานแล้ว', 'ไม่สามารถใช้สลิปซ้ำได้', 'error');
-            Swal.fire({ title: 'กำลังตรวจสอบสลิป...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-            setTimeout(() => {
-                state.users[state.currentUser].balance += amt;
-                state.totalTopupSum += amt;
-                state.usedSlips.push(slipHash); 
-                state.topupRequests.push({ user: state.currentUser, amount: amt, slip: slipImg, time: new Date().toLocaleString() });
-                persist(); updateUI();
-                Swal.fire('สำเร็จ', `เติมเงินจำนวน ${amt} ฿ เรียบร้อย`, 'success').then(() => showPage('home'));
-            }, 1500);
+            renderChat(); updateCartBadge();
         }
 
         function buyProduct(id) {
+            if(!requireLogin()) return;
             const p = PRODUCTS.find(item => item.id === id);
             const user = state.users[state.currentUser];
             const hasPrivilege = (state.isAdmin || state.isModerator);
-            if(!hasPrivilege && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
+            
             if(state.inventory[id].length > 0) {
-                const code = state.inventory[id].pop();
-                if(!hasPrivilege) {
-                    user.balance -= p.price;
-                    if(!user.orders) user.orders = [];
-                    user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
-                }
-                state.salesCount++; persist(); updateUI();
-                Swal.fire({ title: 'ซื้อสำเร็จ!', html: `CODE: <b>${code}</b>`, icon: 'success' });
+                Swal.fire({
+                    title: `ซื้อ ${p.name}`,
+                    html: `<p>ราคาปกติ: <b>${p.price} ฿</b></p><input id="couponInput" class="swal2-input" placeholder="ใส่โค้ดส่วนลด (ถ้ามี)">`,
+                    showCancelButton: true, confirmButtonText: 'ยืนยันการซื้อ',
+                    preConfirm: () => {
+                        const code = document.getElementById('couponInput').value.trim().toUpperCase();
+                        let finalPrice = p.price, discountMsg = "";
+                        if (code && COUPONS[code]) {
+                            const discount = COUPONS[code];
+                            if (discount < 1) { finalPrice = p.price * (1 - discount); discountMsg = `(ลด ${discount*100}%)`; } 
+                            else { finalPrice = Math.max(0, p.price - discount); discountMsg = `(ลด ${discount}฿)`; }
+                        }
+                        if (!hasPrivilege && user.balance < finalPrice) { Swal.showValidationMessage(`เงินไม่พอ! ราคาหลังลดคือ ${finalPrice} ฿`); return false; }
+                        return { finalPrice, discountMsg };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const { finalPrice, discountMsg } = result.value;
+                        const itemCode = state.inventory[id].pop();
+                        if(!hasPrivilege) { user.balance -= finalPrice; if(!user.orders) user.orders = []; user.orders.unshift({ name: p.name + (discountMsg ? " "+discountMsg : ""), code: itemCode, date: new Date().toLocaleString() }); }
+                        state.salesCount++; persist(); updateUI();
+                        Swal.fire({ title: 'ซื้อสำเร็จ!', html: `<div style="background:#f9f9f9; padding:20px; border-radius:15px; border:2px dashed var(--main);"><p style="color:#666;">รหัสสินค้า:</p><h3 style="color:var(--main); white-space: pre-wrap;">${itemCode}</h3><p style="font-size:12px; color:green;">จ่ายจริง: ${finalPrice}฿ ${discountMsg}</p><button onclick="copyToClipboard(\`${itemCode}\`)" class="btn-buy" style="width:auto; padding:5px 15px; font-size:12px;">คัดลอก</button></div>`, icon: 'success' });
+                    }
+                });
             } else { Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อก', 'error'); }
         }
 
-        function showOrderHistory() {
-            const user = state.users[state.currentUser];
-            if (!user.orders || user.orders.length === 0) return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อ', 'info');
-            let historyHtml = user.orders.map(o => `<div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code>${o.code}</code></div>`).join('');
-            Swal.fire({ title: 'ประวัติการซื้อ', html: `<div style="max-height: 400px; overflow-y: auto;">${historyHtml}</div>` });
-        }
-
-        /* 6. ADMIN TOOLS */
-        function openAdminPanel() {
-            let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
-                <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
-                    <p style="margin:0; font-size:12px;"><b>User:</b> ${req.user} | <b>ยอด:</b> ${req.amount}฿</p>
-                    <img src="${req.slip}" style="width: 100%; border-radius:5px; margin:5px 0;">
-                </div>
-            `).join('') || "<p>ไม่มีประวัติ</p>";
-
-            let chatUsers = Object.keys(state.privateMessages).map(user => `
-                <button onclick="adminSelectUser('${user}')" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
-                    <i class="fas fa-user"></i> ${user}
-                </button>
-            `).join('') || "<p style='color:#999; font-size:12px;'>ยังไม่มีลูกค้าทักแชทส่วนตัว</p>";
-
-            let modManagerHtml = state.isAdmin ? `
-                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการทีมงาน (ผู้ดูแลร่วม)</h4>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="modTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User">
-                    <button onclick="toggleModerator()" class="btn-buy" style="width:auto; padding:0 15px;">เพิ่ม/ลบ</button>
-                </div>
-                <div style="font-size:12px; margin-top:5px; color:#666;">ผู้ดูแลปัจจุบัน: ${state.moderators.join(', ') || 'ไม่มี'}</div>
-            ` : '';
-
-            Swal.fire({
-                title: 'ADMIN PANEL',
-                html: `
-                    <div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;">
-                        <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า (คลิกเพื่อตอบ)</h4>
-                        ${chatUsers}
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-                        <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า"></textarea>
-                        ${modManagerHtml}
-                        <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>
-                        ${reqHtml}
-                    </div>
-                `,
-                confirmButtonText: 'บันทึกสต็อก',
-                showCancelButton: true
-            }).then((res) => {
-                if(res.isConfirmed) {
-                    const pid = document.getElementById('adm_pid').value;
-                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
-                    if(codes.length > 0) { state.inventory[pid].push(...codes); persist(); updateUI(); Swal.fire('สำเร็จ', 'เพิ่มสต็อกเรียบร้อย', 'success'); }
-                }
-            });
-        }
-
-        window.toggleModerator = () => {
-            const target = document.getElementById('modTarget').value.trim();
-            if(!state.users[target]) return Swal.fire('ไม่พบผู้ใช้', 'ไม่พบชื่อผู้ใช้นี้ในระบบ', 'error');
-            if(target === 'Admin') return;
-            const index = state.moderators.indexOf(target);
-            if(index > -1) {
-                state.moderators.splice(index, 1);
-                Swal.fire('ถอดถอนแล้ว', `ถอด ${target} ออกจากตำแหน่งผู้ดูแล`, 'success');
-            } else {
-                state.moderators.push(target);
-                Swal.fire('แต่งตั้งแล้ว', `ตั้ง ${target} เป็นผู้ดูแลร่วม`, 'success');
-            }
-            persist(); openAdminPanel();
-        };
-
-        window.adminSelectUser = (username) => {
-            state.activePrivateUser = username;
-            state.chatMode = 'private';
-            Swal.close();
-            if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();
-            setChatMode('private');
-        };
-
-        /* 7. NAVIGATION & CHAT */
-        function showPage(p) {
-            document.getElementById('homePage').classList.toggle('hidden', p !== 'home');
-            document.getElementById('topupPage').classList.toggle('hidden', p !== 'topup');
-            window.scrollTo({top:0, behavior:'smooth'});
-        }
-
-        function toggleWebChat() { document.getElementById('chatBox').classList.toggle('active'); }
-        
-        function setChatMode(mode) {
-            state.chatMode = mode;
-            document.getElementById('tabGlobal').classList.toggle('active', mode === 'global');
-            document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
-            document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
-            renderChat();
+        function openEditProfile() { 
+            if(!requireLogin()) return;
+            if(state.isAdmin) return Swal.fire('Admin', 'แก้ไขไม่ได้', 'info'); 
+            const user = state.users[state.currentUser]; 
+            Swal.fire({ title: 'แก้ไขข้อมูล', html: `<div style="text-align:center;"><img id="ep" src="${user.avatar||'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--main);"><br><input type="file" id="fi" hidden onchange="document.getElementById('ep').src=window.URL.createObjectURL(this.files[0]); const r=new FileReader(); r.readAsDataURL(this.files[0]); r.onload=e=>document.getElementById('ep').src=e.target.result;"><button onclick="document.getElementById('fi').click()" class="btn-history" style="margin:10px 0;">เปลี่ยนรูป</button><br><input id="en" class="login-input" value="${user.nickname||''}" placeholder="ชื่อเล่น"></div>`, preConfirm: () => { return { n: document.getElementById('en').value, a: document.getElementById('ep').src } } }).then((r) => { if(r.isConfirmed){ user.nickname=r.value.n; user.avatar=r.value.a; persist(); updateUI(); } }); 
         }
         
-        function sendChat() {
-            const inp = document.getElementById('chatInput');
-            if(!inp.value.trim()) return;
-            const senderName = state.isAdmin ? "Admin" : (state.users[state.currentUser].nickname || state.currentUser);
-            const msg = { 
-                sender: senderName,
-                userId: state.currentUser,
-                text: inp.value, 
-                time: Date.now(), 
-                isAdmin: (state.isAdmin || state.isModerator) 
-            };
-            if(state.chatMode === 'global') state.globalMessages.push(msg);
-            else {
-                let target = (state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser;
-                if(!target) return Swal.fire('แจ้งเตือน','กรุณาเลือกชื่อลูกค้าจาก Admin Panel ก่อน','info');
-                if(!state.privateMessages[target]) state.privateMessages[target] = [];
-                state.privateMessages[target].push(msg);
-            }
-            persist(); renderChat(); inp.value = "";
+        function showPublicProfile(u) { 
+            if(typeof u!=='string') return; 
+            let usr = state.users[u], isAdm = (u==="Admin" || u===ADMIN_NAME); 
+            if(isAdm) usr={nickname:ADMIN_NAME, avatar:ADMIN_AVATAR_URL}; 
+            if(!usr) return; 
+            Swal.fire({ title: usr.nickname||u, imageUrl: usr.avatar, imageWidth: 100, imageHeight: 100, imageAlt: 'Avatar', text: isAdm?"Administrator":`User ID: ${u}` }); 
         }
-
-        function renderChat() {
-            const chatBox = document.getElementById('chatMessages');
-            chatBox.innerHTML = "";
-            let currentUserId = state.currentUser;
-            
-            let messages = (state.chatMode === 'global') 
-                ? state.globalMessages 
-                : (state.privateMessages[(state.isAdmin || state.isModerator) ? state.activePrivateUser : state.currentUser] || []);
-            
-            messages.forEach(m => {
-                const isMe = (m.userId === currentUserId) || (state.isAdmin && m.sender === 'Admin');
-                
-                // --- ส่วนที่แก้ไข: ใส่รูปแอดมินจากลิงก์ที่คุณให้มา ---
-                let avatarUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
-                if (m.userId === 'Admin' || m.sender === 'Admin') {
-                    avatarUrl = ADMIN_AVATAR_URL; // ใช้รูปที่คุณให้มา
-                } else if (state.users[m.userId]) {
-                    avatarUrl = state.users[m.userId].avatar || avatarUrl;
-                }
-                
-                const row = document.createElement('div');
-                row.className = `chat-row ${isMe ? 'right' : 'left'}`;
-                
-                const imgHTML = `<img src="${avatarUrl}" class="chat-avatar" onclick="showPublicProfile('${m.userId || 'Admin'}')">`;
-                const bubbleHTML = `
-                    <div class="msg ${isMe ? 'msg-user' : 'msg-admin'}">
-                        <span class="msg-sender" onclick="showPublicProfile('${m.userId || 'Admin'}')">
-                            ${m.isAdmin ? '👑 ' : ''}${m.sender}
-                        </span>
-                        ${m.text}
-                    </div>
-                `;
-                
-                row.innerHTML = imgHTML + bubbleHTML;
-                chatBox.appendChild(row);
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
+        
+        function addToCart(id) { 
+            if(!requireLogin()) return;
+            const p = PRODUCTS.find(i=>i.id===id); const stock = state.inventory[id]?.length||0; const item = state.cart.find(i=>i.id===id); if(stock > (item?item.qty:0)) { if(item) item.qty++; else state.cart.push({id:id, name:p.name, price:p.price, qty:1}); updateCartBadge(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Added', showConfirmButton:false, timer:800}); } else Swal.fire('หมด','สินค้าไม่พอ','warning'); 
         }
-
-        /* 8. SNOW EFFECT */
-        const canvas = document.getElementById('snowCanvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, flakes = [];
-        function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); }
-        function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); }
-        window.addEventListener('resize', initSnow); initSnow(); drawSnow(); updateUI();
+        function updateCartBadge() { document.getElementById('cartCount').innerText = state.cart.reduce((a,b)=>a+b.qty,0); }
+        function showCart() { 
+            if(!requireLogin()) return;
+            if(state.cart.length===0) return Swal.fire('Empty','ตะกร้าว่าง','info'); let total=0, html='<div style="text-align:left;max-height:300px;overflow:auto;">'; state.cart.forEach((i,x)=>{ total+=i.price*i.qty; html+=`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:5px;"><div>${i.name} x${i.qty}</div><div style="color:red;cursor:pointer" onclick="state.cart.splice(${x},1);Swal.close();showCart();">❌</div></div>`; }); html+=`</div><h3 style="text-align:right">${total} ฿</h3>`; Swal.fire({title:'Cart', html:html, showCancelButton:true, confirmButtonText:'Pay'}).then(r=>{if(r.isConfirmed) processBulkBuy(total)}); 
+        }
+        function processBulkBuy(total) { const user = state.users[state.currentUser]; if(!state.isAdmin && user.balance < total) return Swal.fire('Money','เงินไม่พอ','warning'); if(!state.isAdmin) user.balance -= total; let items=[]; state.cart.forEach(i=>{ for(let n=0;n<i.qty;n++){ const c=state.inventory[i.id].pop(); items.push({n:i.name,c:c}); if(!state.isAdmin){ if(!user.orders) user.orders=[]; user.orders.unshift({name:i.name,code:c,date:new Date().toLocaleString()}); } state.salesCount++; } }); state.cart=[]; persist(); updateUI(); Swal.fire('Success',items.map(x=>`${x.n}: ${x.c}`).join('<br>'),'success'); }
+        function toggleAuth(t) { document.getElementById('loginPage').classList.toggle('hidden',t!=='login'); document.getElementById('registerPage').classList.toggle('hidden',t!=='register'); }
+        function handleLogin() { const u=document.getElementById('loginUsername').value.trim(), p=document.getElementById('loginPassword').value.trim(); if(u.toLowerCase()==='admin' && p==='yongchai07'){ state.currentUser='Admin'; state.isAdmin=true; } else if(state.users[u] && state.users[u].password===p){ state.currentUser=u; state.isAdmin=false; } else return Swal.fire('Error','Login Failed','error'); document.getElementById('loginPage').classList.add('hidden'); updateUI(); }
+        function handleRegister() { const u=document.getElementById('regUsername').value.trim(), p=document.getElementById('regPassword').value.trim(); if(!u||!p) return Swal.fire('Error','Empty fields','warning'); if(state.users[u]||u==='Admin') return Swal.fire('Error','Username taken','error'); state.users[u]={password:p, balance:0, orders:[], nickname:u, avatar:null}; persist(); Swal.fire('Success','Created','success').then(()=>toggleAuth('login')); }
+        function handleLogout() { location.reload(); }
+        function previewSlip(input) { if(input.files[0]){ const r=new FileReader(); r.onload=e=>document.getElementById('slipPreviewImg').src=e.target.result; r.readAsDataURL(input.files[0]); } }
+        async function submitTopup() { if(!requireLogin()) return; const amt=parseFloat(document.getElementById('topupAmount').value), slip=document.getElementById('slipPreviewImg').src; if(!amt || slip.length<100) return Swal.fire('Error','Invalid input','warning'); const h=slip.substring(slip.length-20); if(state.usedSlips.includes(h)) return Swal.fire('Error','Slip used','error'); Swal.showLoading(); setTimeout(()=>{ state.users[state.currentUser].balance+=amt; state.totalTopupSum+=amt; state.usedSlips.push(h); state.topupRequests.push({user:state.currentUser,amount:amt,slip:slip,time:new Date().toLocaleString()}); persist(); updateUI(); Swal.fire('Success',`Added ${amt}฿`,'success').then(()=>showPage('home')); },1000); }
+        function showOrderHistory() { if(!requireLogin()) return; const user = state.users[state.currentUser]; if(!user.orders||user.orders.length===0) return Swal.fire('Empty','No history','info'); Swal.fire({title:'History', html:`<div style="max-height:300px;overflow:auto;">${user.orders.map(o=>`<div style="border-bottom:1px solid #eee;padding:5px;text-align:left"><small>${o.date}</small><br><b>${o.name}</b><br><code style="white-space:pre-wrap;display:block;background:#f4f4f4;padding:5px;border-radius:5px;">${o.code}</code></div>`).join('')}</div>`}); }
+        
+        function openAdminPanel() { 
+            let reqs = state.topupRequests.slice(-5).reverse().map(r=>`<div><small>${r.user} ${r.amount}฿</small><br><img src="${r.slip}" style="width:100px;"></div>`).join(''); 
+            let chats = Object.keys(state.privateMessages).map(u=>`<button onclick="adminSelectUser('${u}')" style="margin:2px; padding:8px 12px; border:1px solid #ddd; background:#fff; border-radius:5px; cursor:pointer;">${u}</button>`).join(''); 
+            let modSection = state.isAdmin ? `<hr><h3>จัดการทีมงาน</h3><div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" id="modTarget" class="swal2-input" style="flex:1; margin:0;" placeholder="ชื่อ User"><button onclick="toggleModerator()" class="btn-buy" style="width:auto; padding:0 15px;">เพิ่ม/ลบ</button></div><small style="color:#666;">ผู้ดูแลปัจจุบัน: ${state.moderators.join(', ') || '-'}</small>` : '';
+            Swal.fire({ title:'Admin', html:`<h3>Chats</h3><div style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">${chats || '<span style="color:#999">ไม่มีข้อความ</span>'}</div><hr><h3>Stock</h3><select id="ap" style="width:100%; margin-bottom:5px; padding:8px; border-radius:5px; border:1px solid #ccc;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select><textarea id="ac" style="width:100%; height:80px; padding:8px; border-radius:5px; border:1px solid #ccc;" placeholder="วางรหัสสินค้า..."></textarea><select id="am" style="margin-top:5px; padding:5px;"><option value="1">1 Line / Item</option><option value="2">2 Lines / Item</option></select>${modSection}<hr><h3>Topups</h3><div style="max-height:150px; overflow-y:auto;">${reqs}</div>`, preConfirm: () => { const pid=document.getElementById('ap').value, codes=document.getElementById('ac').value, mode=document.getElementById('am').value; if(codes.trim()){ const lines = codes.split('\n').filter(l=>l.trim()); let final = []; if(mode==="1") final=lines; else for(let i=0;i<lines.length;i+=2) final.push(lines[i]+(lines[i+1]?("\n"+lines[i+1]):"")); state.inventory[pid].push(...final); persist(); updateUI(); return true; } } }); 
+        }
+        window.toggleModerator = () => { const target = document.getElementById('modTarget').value.trim(); if(!state.users[target]) return Swal.fire('Error', 'User not found', 'error'); if(target === 'Admin') return; const index = state.moderators.indexOf(target); if(index > -1) { state.moderators.splice(index, 1); Swal.fire('Removed', `${target} is no longer mod`, 'success'); } else { state.moderators.push(target); Swal.fire('Added', `${target} is now mod`, 'success'); } persist(); openAdminPanel(); };
+        window.adminSelectUser=u=>{state.activePrivateUser=u;state.chatMode='private';Swal.close();if(!document.getElementById('chatBox').classList.contains('active')) toggleWebChat();setChatMode('private');};
+        function showPage(p) { if(p==='topup' && !requireLogin())return; document.getElementById('homePage').classList.toggle('hidden',p!=='home'); document.getElementById('topupPage').classList.toggle('hidden',p!=='topup'); }
+        function toggleWebChat() { if(!requireLogin()) return; document.getElementById('chatBox').classList.toggle('active'); }
+        function setChatMode(m) { state.chatMode=m; document.getElementById('tabGlobal').classList.toggle('active',m==='global'); document.getElementById('tabPrivate').classList.toggle('active',m==='private'); const isPrivateAdmin = (m === 'private' && (state.isAdmin || state.isModerator)); document.getElementById('btnDeleteChat').style.display = isPrivateAdmin ? 'block' : 'none'; document.getElementById('chatTitle').innerText = (m === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน"); renderChat(); }
+        function deleteCurrentChat() { if(state.chatMode === 'private' && (state.isAdmin || state.isModerator) && state.activePrivateUser) { Swal.fire({ title: 'ลบแชท?', text: 'ยืนยัน?', icon: 'warning', showCancelButton: true }).then((r) => { if (r.isConfirmed) { delete state.privateMessages[state.activePrivateUser]; persist(); renderChat(); } }); } }
+        function sendChat() { const t=document.getElementById('chatInput').value; if(!t)return; const senderName = state.isAdmin ? ADMIN_NAME : (state.users[state.currentUser].nickname || state.currentUser); const msg={sender:senderName, text:t, userId:state.currentUser, isAdmin:state.isAdmin}; if(state.chatMode==='global') state.globalMessages.push(msg); else { let u=state.isAdmin?state.activePrivateUser:state.currentUser; if(!state.privateMessages[u])state.privateMessages[u]=[]; state.privateMessages[u].push(msg); } persist(); renderChat(); document.getElementById('chatInput').value=''; }
+        function renderChat() { const b=document.getElementById('chatMessages'); b.innerHTML=''; const msgs = state.chatMode==='global'?state.globalMessages:(state.privateMessages[state.isAdmin?state.activePrivateUser:state.currentUser]||[]); msgs.forEach(m=>{ const isMe = (m.userId === state.currentUser) || (state.isAdmin && (m.sender === 'Admin' || m.sender === ADMIN_NAME)); let ava = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; if(m.sender==='Admin' || m.sender===ADMIN_NAME) ava=ADMIN_AVATAR_URL; else if(state.users[m.userId]?.avatar) ava=state.users[m.userId].avatar; b.innerHTML+=`<div class="chat-row ${isMe?'right':''}"><img src="${ava}" class="chat-avatar" onclick="showPublicProfile('${m.userId}')"><div class="msg ${isMe?'msg-user':'msg-admin'}"><span class="msg-sender">${m.isAdmin?'👑 ':''}${m.sender}</span>${m.text}</div></div>`; }); b.scrollTop=b.scrollHeight; }
+        const canvas=document.getElementById('snowCanvas'), ctx=canvas.getContext('2d'); let w,h,f=[]; function initS(){w=window.innerWidth;h=window.innerHeight;canvas.width=w;canvas.height=h;f=Array.from({length:80},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*3+1,d:Math.random()*1+0.5}));} function drawS(){ctx.clearRect(0,0,w,h);ctx.fillStyle="rgba(255,255,255,0.6)";ctx.beginPath();f.forEach(p=>{ctx.moveTo(p.x,p.y);ctx.arc(p.x,p.y,p.r,0,Math.PI*2);});ctx.fill();f.forEach(p=>{p.y+=p.d;if(p.y>h)p.y=-10;});requestAnimationFrame(drawS);} window.addEventListener('resize',initS);initS();drawS();updateUI();
     </script>
 </body>
 </html>
