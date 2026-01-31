@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
     <style>
-        :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --danger: #dc3545; }
+        :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --danger: #dc3545; --bot: #007bff; }
         
         * { box-sizing: border-box; }
 
@@ -107,7 +107,9 @@
         .msg-admin { background: #e0e0e0; color: #333; border-bottom-left-radius: 2px; }
         .msg-user { background: var(--main); color: white; border-bottom-right-radius: 2px; }
         
-        /* สไตล์สำหรับรูปภาพในแชท */
+        /* New: Bot Message Style */
+        .msg-bot { background: linear-gradient(135deg, #007bff, #00c6ff); color: white; border-radius: 15px; border-bottom-left-radius: 2px; box-shadow: 0 2px 10px rgba(0,123,255,0.2); }
+
         .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; transition: 0.2s; border: 1px solid rgba(0,0,0,0.1); }
         .chat-img:hover { opacity: 0.9; }
 
@@ -275,6 +277,7 @@
 
     <script>
         const ADMIN_AVATAR_URL = "https://lh3.googleusercontent.com/d/12RhOdgaJigGJCiIBURsppbEyBPmBhBT7";
+        const BOT_AVATAR_URL = "https://cdn-icons-png.flaticon.com/512/4712/4712035.png";
 
         const PRODUCTS = [
             { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
@@ -298,7 +301,9 @@
             privateMessages: JSON.parse(localStorage.getItem('baobei_private_chat')) || {},
             chatMode: 'global',
             cart: [],
-            moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [] 
+            moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [],
+            // NEW: Bot Configuration
+            botConfig: JSON.parse(localStorage.getItem('baobei_bot')) || { active: false, interval: 60, text: "ยินดีต้อนรับสู่ร้าน BAOBEI SHOP! สินค้าเติมตลอด 24 ชม.", lastRun: 0 }
         };
 
         function persist() {
@@ -312,10 +317,12 @@
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
                 localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
                 localStorage.setItem('baobei_mods', JSON.stringify(state.moderators));
+                // Save Bot Config
+                localStorage.setItem('baobei_bot', JSON.stringify(state.botConfig));
             } catch (e) { console.error(e); }
         }
 
-        // ฟังก์ชั่นเช็ค Login (Guard)
+        // ... [Authentication & UI Functions remain same] ...
         function checkAuth() {
             if (!state.currentUser) {
                 Swal.fire({
@@ -402,6 +409,7 @@
             updateCartBadge();
         }
 
+        // ... [Profile, Cart, Auth, Topup functions] ...
         function openEditProfile() {
             if(!checkAuth()) return;
             if(state.isAdmin) return Swal.fire('Admin', 'แอดมินแก้ไขโปรไฟล์จากหน้านี้ไม่ได้ครับ', 'info');
@@ -451,9 +459,12 @@
             let user = state.users[username];
             let isMod = state.moderators.includes(username);
             let isAdmin = (username === "Admin");
+            let isBot = (username === "Admin Bot");
 
             if (isAdmin) {
                 user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
+            } else if (isBot) {
+                user = { nickname: "Admin Bot", avatar: BOT_AVATAR_URL, orders: [] };
             }
 
             if (!user) return;
@@ -465,12 +476,12 @@
                     <div style="text-align:center;">
                         <img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit:cover;">
                         <h3 style="margin:10px 0 5px 0;">${user.nickname || username}</h3>
-                        <p style="margin:0; color:#888;">ID: ${username}</p>
+                        ${isBot ? '<p style="color:var(--bot); font-weight:bold;">🤖 ระบบตอบกลับอัตโนมัติ</p>' : `<p style="margin:0; color:#888;">ID: ${username}</p>`}
                         ${isAdmin ? '<p style="color:var(--main); font-weight:bold;">👑 Administrator</p>' : ''}
                         ${isMod ? '<p style="color:var(--line); font-weight:bold;"><i class="fas fa-shield-alt"></i> ผู้ดูแลร่วม</p>' : ''}
                         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
                         <div style="display:flex; justify-content:space-around;">
-                            <div><small>ยอดซื้อทั้งหมด</small><br><b>${isAdmin ? 'N/A' : orderCount}</b> รายการ</div>
+                            <div><small>ยอดซื้อทั้งหมด</small><br><b>${(isAdmin||isBot) ? 'N/A' : orderCount}</b> รายการ</div>
                         </div>
                     </div>
                 `,
@@ -536,7 +547,6 @@
             Swal.fire({ title: 'ซื้อสำเร็จ!', html: `<div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`, icon: 'success' });
         }
 
-        /* AUTH LOGIC */
         function toggleAuth(type) {
             document.getElementById('loginPage').classList.toggle('hidden', type !== 'login');
             document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
@@ -577,7 +587,6 @@
             location.reload(); 
         }
 
-        /* AUTO TOPUP */
         function previewSlip(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -640,7 +649,6 @@
                 </div>
             `).join('') || "<p>ไม่มีประวัติ</p>";
 
-            // --- Updated: Chat Users with Delete Button ---
             let chatUsers = Object.keys(state.privateMessages).map(user => `
                 <div style="display:flex; gap:5px; margin-bottom:5px;">
                     <button onclick="adminSelectUser('${user}')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; text-align:left; cursor:pointer;">
@@ -651,7 +659,6 @@
                     </button>
                 </div>
             `).join('') || "<p style='color:#999; font-size:12px;'>ยังไม่มีลูกค้าทักแชทส่วนตัว</p>";
-            // ---------------------------------------------
 
             let modManagerHtml = state.isAdmin ? `
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการทีมงาน (ผู้ดูแลร่วม)</h4>
@@ -661,6 +668,18 @@
                 </div>
                 <div style="font-size:12px; margin-top:5px; color:#666;">ผู้ดูแลปัจจุบัน: ${state.moderators.join(', ') || 'ไม่มี'}</div>
                 
+                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--bot);">ระบบบอทอัตโนมัติ (Global Chat)</h4>
+                <div style="background:#eef6ff; padding:10px; border-radius:8px;">
+                    <div style="margin-bottom:5px; font-size:13px;">ข้อความบอท:</div>
+                    <input type="text" id="botText" class="login-input" style="margin:0 0 5px 0;" value="${state.botConfig.text}">
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <span style="font-size:13px;">ส่งทุกๆ (วินาที):</span>
+                        <input type="number" id="botInterval" class="login-input" style="width:80px; margin:0;" value="${state.botConfig.interval}">
+                        <button onclick="saveBotSettings()" class="btn-buy" style="flex:1; padding:10px;">บันทึก & ${state.botConfig.active ? 'หยุด' : 'เริ่ม'}บอท</button>
+                    </div>
+                    <div style="font-size:11px; color:#666; margin-top:5px;">สถานะ: ${state.botConfig.active ? '<span style="color:green">● กำลังทำงาน</span>' : '<span style="color:red">● หยุดทำงาน</span>'}</div>
+                </div>
+
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--danger);">จัดการระบบแชท (Danger Zone)</h4>
                 <div style="display:flex; gap:10px;">
                     <button onclick="resetChat('global')" class="btn-buy" style="background:var(--danger); flex:1;">ล้างแชทรวม</button>
@@ -693,7 +712,56 @@
             });
         }
 
-        // --- NEW: Delete Single Chat ---
+        // --- BOT FUNCTIONS ---
+        window.saveBotSettings = () => {
+            const text = document.getElementById('botText').value;
+            const interval = parseInt(document.getElementById('botInterval').value);
+            
+            if(!text || interval < 5) return Swal.fire('ข้อมูลไม่ถูกต้อง', 'กรุณากรอกข้อความและตั้งเวลาอย่างน้อย 5 วินาที', 'warning');
+
+            // Toggle active state
+            state.botConfig.active = !state.botConfig.active;
+            state.botConfig.text = text;
+            state.botConfig.interval = interval;
+            // Reset timer
+            state.botConfig.lastRun = Date.now();
+            
+            persist();
+            openAdminPanel(); // Refresh UI
+            Swal.fire('สำเร็จ', `บอท ${state.botConfig.active ? 'เริ่มทำงาน' : 'หยุดทำงาน'} แล้ว`, 'success');
+        };
+
+        function initBotSystem() {
+            setInterval(() => {
+                if(!state.botConfig.active) return;
+                
+                const now = Date.now();
+                const diff = (now - state.botConfig.lastRun) / 1000; // seconds
+                
+                if(diff >= state.botConfig.interval) {
+                    // Send Bot Message
+                    const botMsg = { 
+                        sender: "Admin Bot",
+                        userId: "Admin Bot",
+                        text: state.botConfig.text, 
+                        image: null,
+                        time: Date.now(), 
+                        isAdmin: true,
+                        isBot: true // Flag specifically for styling if needed
+                    };
+                    
+                    state.globalMessages.push(botMsg);
+                    state.botConfig.lastRun = now;
+                    persist();
+                    
+                    // Update Chat UI if chat is open and mode is global
+                    if(document.getElementById('chatBox').classList.contains('active') && state.chatMode === 'global') {
+                        renderChat();
+                    }
+                }
+            }, 1000); // Check every second
+        }
+
         window.deletePrivateChat = (targetUser) => {
             Swal.fire({
                 title: 'ลบแชทนี้?',
@@ -715,7 +783,6 @@
                 }
             });
         }
-        // ------------------------------
 
         window.resetChat = (type) => {
             if (!state.isAdmin) return;
@@ -781,7 +848,6 @@
             renderChat();
         }
 
-        // --- NEW: ฟังก์ชั่นจัดการรูปภาพแชท ---
         function handleChatImage(input) {
             if(!state.currentUser && !state.isAdmin) return Swal.fire('แจ้งเตือน', 'กรุณาล็อกอินก่อนใช้งานแชท', 'warning');
 
@@ -789,9 +855,7 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const base64 = e.target.result;
-                    // ส่งรูปภาพทันที
                     sendChat(null, base64);
-                    // เคลียร์ค่า input
                     input.value = '';
                 };
                 reader.readAsDataURL(input.files[0]);
@@ -808,12 +872,10 @@
             });
         }
         
-        // --- Modified: รองรับการส่งทั้ง Text และ Image ---
         function sendChat(textOverride = null, imageBase64 = null) {
             const inp = document.getElementById('chatInput');
             const textToSend = textOverride || inp.value.trim();
             
-            // ถ้าไม่มีทั้งข้อความและรูป ให้หยุดทำงาน
             if(!textToSend && !imageBase64) return;
 
             const senderName = state.isAdmin ? "Admin" : (state.currentUser ? (state.users[state.currentUser].nickname || state.currentUser) : "Guest");
@@ -824,7 +886,7 @@
                 sender: senderName,
                 userId: state.currentUser,
                 text: textToSend, 
-                image: imageBase64, // เก็บรูปภาพ
+                image: imageBase64, 
                 time: Date.now(), 
                 isAdmin: (state.isAdmin || state.isModerator) 
             };
@@ -851,10 +913,13 @@
             
             messages.forEach(m => {
                 const isMe = (m.userId === currentUserId) || (state.isAdmin && m.sender === 'Admin');
+                const isBot = m.userId === "Admin Bot";
                 
                 let avatarUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
                 if (m.userId === 'Admin' || m.sender === 'Admin') {
                     avatarUrl = ADMIN_AVATAR_URL; 
+                } else if (isBot) {
+                    avatarUrl = BOT_AVATAR_URL;
                 } else if (state.users[m.userId]) {
                     avatarUrl = state.users[m.userId].avatar || avatarUrl;
                 }
@@ -864,15 +929,17 @@
                 
                 const imgHTML = `<img src="${avatarUrl}" class="chat-avatar" onclick="showPublicProfile('${m.userId || 'Admin'}')">`;
                 
-                // --- ส่วนแสดงข้อความ + รูปภาพ ---
                 let contentHTML = '';
                 if(m.text) contentHTML += `<div>${m.text}</div>`;
                 if(m.image) contentHTML += `<img src="${m.image}" class="chat-img" onclick="viewImage('${m.image}')">`;
 
+                let msgClass = isMe ? 'msg-user' : 'msg-admin';
+                if(isBot) msgClass = 'msg-bot';
+
                 const bubbleHTML = `
-                    <div class="msg ${isMe ? 'msg-user' : 'msg-admin'}">
+                    <div class="msg ${msgClass}">
                         <span class="msg-sender" onclick="showPublicProfile('${m.userId || 'Admin'}')">
-                            ${m.isAdmin ? '👑 ' : ''}${m.sender}
+                            ${(m.isAdmin && !isBot) ? '👑 ' : ''}${m.sender}
                         </span>
                         ${contentHTML}
                     </div>
@@ -884,13 +951,15 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        /* SNOW EFFECT */
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
         function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); }
         function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); }
-        window.addEventListener('resize', initSnow); initSnow(); drawSnow(); updateUI();
+        window.addEventListener('resize', initSnow); initSnow(); drawSnow(); 
+        
+        updateUI();
+        initBotSystem(); // Start the bot loop
     </script>
 </body>
 </html>
