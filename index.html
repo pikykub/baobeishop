@@ -78,6 +78,11 @@
         .btn-buy:hover:not(:disabled) { background: #e61b46; transform: scale(1.02); }
         .btn-buy:disabled { background: #ccc; cursor: not-allowed; }
 
+        /* ระบบ Progress Bar สำหรับสต็อก */
+        .stock-progress-container { width: 100%; height: 6px; background: #eee; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .stock-progress-bar { height: 100%; transition: 0.5s; }
+        .stock-status-text { font-size: 11px; color: #888; margin-bottom: 5px; display: block; }
+
         .hidden { display: none !important; }
         .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         
@@ -265,11 +270,12 @@
     <div class="floating-chat" onclick="toggleWebChat()"><i class="fas fa-comment-dots"></i></div>
 
     <script>
+        const ADMIN_AVATAR_URL = "https://lh3.googleusercontent.com/d/12RhOdgaJigGJCiIBURsppbEyBPmBhBT7";
         const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 9, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 11, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let state = {
@@ -279,8 +285,8 @@
             usedSlips: JSON.parse(localStorage.getItem('baobei_used_slips')) || [],
             salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
-            // 2. ปรับปรุง State เริ่มต้นให้ currentUser เป็น null เสมอ เพื่อปิด Auto Login
-            currentUser: null,
+            // currentUser เป็น null = ปิด Auto Login
+            currentUser: null, 
             isAdmin: false,
             isModerator: false, 
             activePrivateUser: null,
@@ -305,6 +311,16 @@
             } catch (e) { console.error(e); }
         }
 
+        // --- ฟังก์ชันคัดลอกรหัส ---
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success', title: 'คัดลอกรหัสแล้ว!', showConfirmButton: false, timer: 1500
+                });
+            });
+        }
+
+        // --- อัปเดต UI (พร้อม Progress Bar) ---
         function updateUI() {
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
@@ -316,7 +332,8 @@
                 const user = state.users[state.currentUser];
                 document.getElementById('balanceDisplay').innerText = user.balance.toLocaleString();
                 document.getElementById('navNickname').innerText = user.nickname || state.currentUser;
-                if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
+                if(state.isAdmin) document.getElementById('navAvatarImg').src = ADMIN_AVATAR_URL;
+                else if(user.avatar) document.getElementById('navAvatarImg').src = user.avatar;
                 
                 if (state.isAdmin || state.moderators.includes(state.currentUser)) {
                     document.getElementById('adminBtn').style.display = "block";
@@ -327,15 +344,23 @@
             const list = document.getElementById('productList');
             list.innerHTML = PRODUCTS.map(p => {
                 const stock = state.inventory[p.id]?.length || 0;
+                // คำนวณความยาว Progress Bar (สมมติว่า 20 คือสต็อกเต็ม)
+                const percent = Math.min((stock / 20) * 100, 100);
+                const barColor = stock > 10 ? '#2ecc71' : (stock > 0 ? '#f39c12' : '#e74c3c');
+
                 return `
                 <div class="product-card">
-                    <div class="stock-tag">${stock > 0 ? 'สต็อก: ' + stock : 'หมด'}</div>
+                    <div class="stock-tag">${stock > 0 ? 'คงเหลือ: ' + stock : 'หมด'}</div>
                     <img src="${p.image}" class="product-img" loading="lazy">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
+                        <span class="stock-status-text">${stock > 0 ? 'สินค้าพร้อมส่ง' : 'สินค้าหมดชั่วคราว'}</span>
+                        <div class="stock-progress-container">
+                            <div class="stock-progress-bar" style="width: ${percent}%; background: ${barColor};"></div>
+                        </div>
                         <div class="product-price">${p.price} ฿</div>
                         <button class="btn-buy" onclick="buyProduct(${p.id})" ${stock === 0 && !state.isAdmin && !state.isModerator ? 'disabled' : ''}>
-                            ${(state.isAdmin || state.isModerator) ? 'ทดสอบซื้อทันที' : (stock > 0 ? 'ซื้อทันที' : 'สินค้าหมด')}
+                            ${(state.isAdmin || state.isModerator) ? 'ทดสอบซื้อ' : (stock > 0 ? 'ซื้อทันที' : 'สินค้าหมด')}
                         </button>
                         <button class="btn-add-cart" onclick="addToCart(${p.id})" ${stock === 0 ? 'style="display:none"' : ''}>
                              <i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า
@@ -349,6 +374,7 @@
 
         /* 1.1 ระบบแก้ไขโปรไฟล์ */
         function openEditProfile() {
+            if(state.isAdmin) return Swal.fire('Admin', 'แอดมินแก้ไขโปรไฟล์จากหน้านี้ไม่ได้ครับ', 'info');
             const user = state.users[state.currentUser];
             if(!user) return;
             Swal.fire({
@@ -366,17 +392,13 @@
                         <input type="text" id="editNickname" class="login-input" value="${user.nickname || ''}" placeholder="ตั้งชื่อเล่นของคุณ">
                     </div>
                 `,
-                showCancelButton: true,
-                confirmButtonText: 'บันทึก',
-                preConfirm: () => {
-                    return { nickname: document.getElementById('editNickname').value, avatar: document.getElementById('editProfilePreview').src }
-                }
+                showCancelButton: true, confirmButtonText: 'บันทึก',
+                preConfirm: () => { return { nickname: document.getElementById('editNickname').value, avatar: document.getElementById('editProfilePreview').src } }
             }).then((result) => {
                 if (result.isConfirmed) {
                     state.users[state.currentUser].nickname = result.value.nickname;
                     state.users[state.currentUser].avatar = result.value.avatar;
-                    persist(); updateUI();
-                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success');
+                    persist(); updateUI(); Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success');
                 }
             });
         }
@@ -391,11 +413,13 @@
 
         /* 1.2 ระบบดูโปรไฟล์คนอื่น */
         function showPublicProfile(username) {
-            const user = (username === "Admin") ? { nickname: "Admin", avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png", orders: [] } : state.users[username];
+            if(typeof username !== 'string') return;
+            let user = state.users[username];
+            let isMod = state.moderators.includes(username);
+            let isAdmin = (username === "Admin");
+            if (isAdmin) user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
             if (!user) return;
             const orderCount = user.orders ? user.orders.length : 0;
-            const isMod = state.moderators.includes(username);
-            
             Swal.fire({
                 title: 'โปรไฟล์ผู้ใช้',
                 html: `
@@ -403,10 +427,11 @@
                         <img src="${user.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--main); object-fit:cover;">
                         <h3 style="margin:10px 0 5px 0;">${user.nickname || username}</h3>
                         <p style="margin:0; color:#888;">ID: ${username}</p>
+                        ${isAdmin ? '<p style="color:var(--main); font-weight:bold;">👑 Administrator</p>' : ''}
                         ${isMod ? '<p style="color:var(--line); font-weight:bold;"><i class="fas fa-shield-alt"></i> ผู้ดูแลร่วม</p>' : ''}
                         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
                         <div style="display:flex; justify-content:space-around;">
-                            <div><small>ยอดซื้อทั้งหมด</small><br><b>${orderCount}</b> รายการ</div>
+                            <div><small>ยอดซื้อทั้งหมด</small><br><b>${isAdmin ? 'N/A' : orderCount}</b> รายการ</div>
                         </div>
                     </div>
                 `,
@@ -477,19 +502,9 @@
             document.getElementById('registerPage').classList.toggle('hidden', type !== 'register');
         }
 
-        function handleRegister() {
-            const u = document.getElementById('regUsername').value.trim();
-            const p = document.getElementById('regPassword').value.trim();
-            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
-            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
-            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
-            persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
-        }
-
         function handleLogin() {
             const u = document.getElementById('loginUsername').value.trim();
             const p = document.getElementById('loginPassword').value.trim();
-            // --- แก้ไขรหัสผ่าน Admin ตรงนี้ ---
             if(u.toLowerCase() === 'admin' && p === 'yongchai07') {
                 state.currentUser = "Admin"; state.isAdmin = true;
             } else if(state.users[u] && state.users[u].password === p) {
@@ -498,18 +513,15 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('shopContent').classList.remove('hidden');
             updateUI();
-            
-            // 1. เพิ่มฟังก์ชันพูดต้อนรับ
-            speakWelcome();
         }
 
-        // ฟังก์ชันสำหรับพูดต้อนรับ
-        function speakWelcome() {
-            if ('speechSynthesis' in window) {
-                const msg = new SpeechSynthesisUtterance("ยินดีต้อนรับเข้าสู่ BAOBEI SHOP ค่ะ");
-                msg.lang = 'th-TH'; // ตั้งค่าภาษาไทย
-                window.speechSynthesis.speak(msg);
-            }
+        function handleRegister() {
+            const u = document.getElementById('regUsername').value.trim();
+            const p = document.getElementById('regPassword').value.trim();
+            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
+            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'กรุณาใช้ชื่อผู้ใช้อื่น', 'error');
+            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null }; 
+            persist(); Swal.fire('สำเร็จ', 'สมัครสมาชิกแล้ว เข้าสู่ระบบได้เลย', 'success').then(() => toggleAuth('login'));
         }
 
         function handleLogout() { location.reload(); }
@@ -541,31 +553,69 @@
             }, 1500);
         }
 
+        // --- ฟังก์ชันซื้อสินค้า (อัปเดตให้รองรับการแสดงผลหลายบรรทัด) ---
         function buyProduct(id) {
             const p = PRODUCTS.find(item => item.id === id);
             const user = state.users[state.currentUser];
             const hasPrivilege = (state.isAdmin || state.isModerator);
-            if(!hasPrivilege && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
+            
+            if(!hasPrivilege && user.balance < p.price) {
+                return Swal.fire('เงินไม่พอ', 'กรุณาเติมเงินก่อน', 'warning').then(() => showPage('topup'));
+            }
+
             if(state.inventory[id].length > 0) {
-                const code = state.inventory[id].pop();
-                if(!hasPrivilege) {
-                    user.balance -= p.price;
-                    if(!user.orders) user.orders = [];
-                    user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
-                }
-                state.salesCount++; persist(); updateUI();
-                Swal.fire({ title: 'ซื้อสำเร็จ!', html: `CODE: <b>${code}</b>`, icon: 'success' });
-            } else { Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อก', 'error'); }
+                // ระบบยืนยันการซื้อ
+                Swal.fire({
+                    title: 'ยืนยันการสั่งซื้อ?',
+                    text: `คุณต้องการซื้อ ${p.name} ราคา ${p.price} บาท ใช่หรือไม่?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: 'var(--main)',
+                    confirmButtonText: 'ยืนยัน',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const code = state.inventory[id].pop();
+                        if(!hasPrivilege) {
+                            user.balance -= p.price;
+                            if(!user.orders) user.orders = [];
+                            user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() });
+                        }
+                        state.salesCount++; 
+                        persist(); 
+                        updateUI();
+
+                        // แสดงผลสำเร็จพร้อมปุ่มคัดลอกรหัส (รองรับหลายบรรทัดด้วย white-space: pre-wrap)
+                        Swal.fire({
+                            title: 'ซื้อสำเร็จ!',
+                            html: `
+                                <div style="background:#f9f9f9; padding:20px; border-radius:15px; border:2px dashed var(--main); margin-top:10px;">
+                                    <p style="font-size:14px; color:#666; margin-bottom:5px;">นี่คือรหัสสินค้าของคุณ:</p>
+                                    <h2 style="color:var(--main); letter-spacing:1px; margin-bottom:15px; white-space: pre-wrap; font-size:18px; line-height:1.5;">${code}</h2>
+                                    <button onclick="copyToClipboard(\`${code}\`)" style="background:#333; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">
+                                        <i class="fas fa-copy"></i> คัดลอกรหัส
+                                    </button>
+                                </div>
+                            `,
+                            icon: 'success'
+                        });
+                    }
+                });
+            } else {
+                Swal.fire('สินค้าหมด', 'ขออภัย สินค้าหมดสต็อก', 'error');
+            }
         }
 
+        // --- แก้ไขประวัติการซื้อ ให้แสดงผลหลายบรรทัดได้ ---
         function showOrderHistory() {
             const user = state.users[state.currentUser];
             if (!user.orders || user.orders.length === 0) return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อ', 'info');
-            let historyHtml = user.orders.map(o => `<div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code>${o.code}</code></div>`).join('');
+            // ใส่ white-space: pre-wrap ให้กับ tag <code>
+            let historyHtml = user.orders.map(o => `<div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code style="white-space: pre-wrap; display:block; background:#f4f4f4; padding:5px; margin-top:5px; border-radius:5px;">${o.code}</code></div>`).join('');
             Swal.fire({ title: 'ประวัติการซื้อ', html: `<div style="max-height: 400px; overflow-y: auto;">${historyHtml}</div>` });
         }
 
-        /* 6. ADMIN TOOLS */
+        /* 6. ADMIN TOOLS (อัปเดตระบบเพิ่มสต็อก) */
         function openAdminPanel() {
             let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
                 <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
@@ -596,8 +646,16 @@
                         <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า (คลิกเพื่อตอบ)</h4>
                         ${chatUsers}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-                        <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า"></textarea>
+                        
+                        <select id="adm_pid" class="swal2-input" style="width:100%; margin-bottom:5px;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                        
+                        <select id="adm_mode" class="swal2-input" style="width:100%; margin-bottom:5px; font-size:14px;">
+                            <option value="1">ลงแบบ: 1 บรรทัด / 1 ชิ้น (ปกติ)</option>
+                            <option value="2">ลงแบบ: 2 บรรทัด / 1 ชิ้น (สำหรับ ID+Pass)</option>
+                        </select>
+
+                        <textarea id="adm_codes" class="swal2-textarea" placeholder="วางรหัสสินค้าที่นี่..."></textarea>
+                        
                         ${modManagerHtml}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>
                         ${reqHtml}
@@ -608,8 +666,34 @@
             }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
-                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
-                    if(codes.length > 0) { state.inventory[pid].push(...codes); persist(); updateUI(); Swal.fire('สำเร็จ', 'เพิ่มสต็อกเรียบร้อย', 'success'); }
+                    const mode = document.getElementById('adm_mode').value;
+                    const rawText = document.getElementById('adm_codes').value;
+                    let newCodes = [];
+
+                    if (rawText.trim() !== "") {
+                        const lines = rawText.split('\n').filter(l => l.trim() !== "");
+                        
+                        if (mode === "1") {
+                            // แบบปกติ 1 บรรทัด = 1 ชิ้น
+                            newCodes = lines;
+                        } else {
+                            // แบบพิเศษ 2 บรรทัด = 1 ชิ้น
+                            for (let i = 0; i < lines.length; i += 2) {
+                                let item = lines[i];
+                                if (lines[i+1]) {
+                                    item += "\n" + lines[i+1]; // รวมบรรทัดที่ 1 และ 2 เข้าด้วยกัน
+                                }
+                                newCodes.push(item);
+                            }
+                        }
+                    }
+
+                    if(newCodes.length > 0) { 
+                        state.inventory[pid].push(...newCodes); 
+                        persist(); 
+                        updateUI(); 
+                        Swal.fire('สำเร็จ', `เพิ่มสต็อกจำนวน ${newCodes.length} ชิ้น เรียบร้อย`, 'success'); 
+                    }
                 }
             });
         }
@@ -652,14 +736,14 @@
             document.getElementById('tabPrivate').classList.toggle('active', mode === 'private');
             document.getElementById('chatTitle').innerText = (mode === 'global') ? "Global Chat" : ((state.isAdmin || state.isModerator) ? "คุยกับ: "+state.activePrivateUser : "แชทกับแอดมิน");
             
-            // 3. แสดง/ซ่อนปุ่มลบแชท (แสดงเฉพาะเมื่อเป็น Private Chat และเป็น Admin)
+            // --- 3. แสดง/ซ่อนปุ่มลบแชท ---
             const isPrivateAdmin = (mode === 'private' && (state.isAdmin || state.isModerator));
             document.getElementById('btnDeleteChat').style.display = isPrivateAdmin ? 'block' : 'none';
             
             renderChat();
         }
         
-        // 4. ฟังก์ชันลบแชท
+        // --- 4. ฟังก์ชันลบแชท ---
         function deleteCurrentChat() {
             if(state.chatMode === 'private' && (state.isAdmin || state.isModerator) && state.activePrivateUser) {
                 Swal.fire({
@@ -716,7 +800,6 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        /* 8. SNOW EFFECT */
         const canvas = document.getElementById('snowCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, flakes = [];
