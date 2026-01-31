@@ -451,6 +451,48 @@
             });
         };
 
+        /* --- ฟังก์ชันใหม่: แอดมินเติมเงินมือถือ (Direct Topup) --- */
+        window.adminTopup = (targetUser = null, targetAmount = null) => {
+            // ถ้าไม่ได้รับค่ามา ให้ไปดึงจาก input
+            if(!targetUser) targetUser = document.getElementById('topupTarget').value.trim();
+            if(!targetAmount) targetAmount = parseFloat(document.getElementById('topupAmountInput').value);
+
+            // ถ้าเป็นการกดจากปุ่มใน list อาจจะต้องรับค่า amount ใหม่
+            if(targetUser && !targetAmount && isNaN(targetAmount)) {
+                 Swal.fire({
+                    title: `เติมเงินให้ ${targetUser}`,
+                    input: 'number',
+                    inputLabel: 'ระบุจำนวนเงิน',
+                    showCancelButton: true,
+                    confirmButtonText: 'เติมเงิน',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        adminTopup(targetUser, parseFloat(result.value));
+                    }
+                });
+                return;
+            }
+
+            if (!targetUser || !state.users[targetUser]) {
+                return Swal.fire('ผิดพลาด', 'ไม่พบ User นี้ในระบบ', 'error');
+            }
+            if (isNaN(targetAmount) || targetAmount <= 0) {
+                return Swal.fire('ผิดพลาด', 'ยอดเงินไม่ถูกต้อง', 'error');
+            }
+
+            // ทำการเติมเงิน
+            state.users[targetUser].balance += targetAmount;
+            state.totalTopupSum += targetAmount;
+            
+            persist();
+            updateUI();
+            
+            // รีเฟรชหน้า Admin Panel
+            openAdminPanel(); 
+
+            Swal.fire('สำเร็จ', `เติม ${targetAmount}฿ ให้ ${targetUser} แล้ว`, 'success');
+        };
+
         /* ADMIN TOOLS */
         function openAdminPanel() {
             // 1. สร้าง HTML รายชื่อผู้ใช้งาน (Loop ข้อมูลจาก state.users)
@@ -472,6 +514,9 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:5px;">
+                        <button onclick="adminTopup('${username}')" style="background:var(--line); color:white; border:none; padding:6px 10px; border-radius:5px; cursor:pointer; font-size:11px;" title="เติมเงินด่วน">
+                            💰
+                        </button>
                         <button onclick="document.getElementById('banTarget').value = '${username}'; toggleBan();" 
                                 style="background:${isBan ? '#28a745' : '#dc3545'}; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; font-size:11px; transition:0.3s;">
                             ${isBan ? 'ปลดแบน' : 'แบน'}
@@ -491,6 +536,13 @@
                 <div style="display:flex; gap:5px;"><input type="text" id="modTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User"><button onclick="toggleModerator()" class="btn-buy" style="width:auto; padding:0 15px;">เพิ่ม/ลบ</button></div>
                 <div style="font-size:12px; margin-top:5px; color:#666;">ผู้ดูแล: ${state.moderators.join(', ') || 'ไม่มี'}</div>
                 
+                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--line);">💰 เติมเงินให้ลูกค้า (Manual Top-up)</h4>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="topupTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User">
+                    <input type="number" id="topupAmountInput" class="login-input" style="flex:1; margin:0;" placeholder="จำนวนเงิน">
+                    <button onclick="adminTopup()" class="btn-buy" style="width:auto; padding:0 15px; background:var(--line);">เติม</button>
+                </div>
+
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:#007bff;">👥 รายชื่อสมาชิกทั้งหมด (${Object.keys(state.users).length})</h4>
                 <div style="background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd;">
                     <input type="text" onkeyup="filterUserList(this.value)" class="login-input" placeholder="🔍 ค้นหาชื่อสมาชิก..." style="margin-bottom:10px; font-size:13px;">
