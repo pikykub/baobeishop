@@ -10,39 +10,60 @@
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
     <style>
-        /* --- เพิ่ม CSS สำหรับ Progress Bar และการตกแต่งใหม่ --- */
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; }
         
-        /* (CSS เดิมของคุณ...) */
         * { box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            margin: 0; 
+            background: url('https://lh3.googleusercontent.com/d/1tgohnqPTuEtMOrhLQ_YMF7nqqQZETbsx') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        /* 1. ระบบประกาศเเบบเคลื่อนที่ */
         .scrolling-news { background: #000; color: gold; padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2000; border-bottom: 2px solid gold; font-size: 14px; }
         .scrolling-news div { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
         .announcement { background: rgba(34, 34, 34, 0.9); color: #fff; padding: 10px; text-align: center; font-size: 13px; font-weight: 300; position: relative; z-index: 10; }
+        
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
         .navbar { background: rgba(255, 255, 255, 0.95); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
         .logo { font-size: 22px; font-weight: bold; color: var(--main); cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
         .nav-right { display: flex; gap: 10px; align-items: center; }
+        
         .btn-contact { background: #eee; color: #555; padding: 8px 15px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .btn-contact:hover { background: var(--line); color: white; transform: scale(1.1); }
+        
         .balance-tag { background: var(--main); color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3); }
         .balance-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 45, 85, 0.4); }
+        
+        /* เพิ่ม CSS สำหรับระบบตะกร้า */
         .cart-tag { background: #333; color: white; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px; }
         .cart-count { position: absolute; top: -5px; right: -5px; background: gold; color: black; font-size: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; font-weight: bold; }
         .btn-add-cart { background: #333; color: white; border: none; width: 100%; padding: 10px; border-radius: 12px; font-weight: 500; cursor: pointer; margin-top: 5px; transition: 0.3s; font-size: 13px; }
         .btn-add-cart:hover { background: #000; }
+
         .btn-admin { background: #333; color: gold; padding: 8px 15px; border-radius: 50px; font-size: 14px; font-weight: bold; display: none; cursor: pointer; border: none; transition: 0.3s; }
         .btn-admin:hover { background: #000; color: #fff; }
+
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 5; }
         .title-bar { display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--main); padding-left: 15px; margin-bottom: 35px; background: rgba(255, 255, 255, 0.85); border-radius: 0 10px 10px 0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); padding-right: 15px; }
+
         .banner-container { width: 100%; margin-bottom: 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s; }
         .banner-img { width: 100%; height: auto; display: block; object-fit: cover; }
+        
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
         .stat-box { background: rgba(26, 26, 26, 0.85); color: white; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; text-align: center; backdrop-filter: blur(5px); }
         .stat-box:hover { border-color: var(--main); transform: translateY(-5px); }
         .stat-label { font-size: 13px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
+
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .product-card { background: rgba(255,255,255,0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.4s; position: relative; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
         .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
@@ -52,11 +73,25 @@
         .product-info { padding: 20px; text-align: center; border-top: 1px solid #f1f1f1; background: #fff; }
         .product-name { font-weight: 500; margin-bottom: 10px; height: 45px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .product-price { color: var(--main); font-size: 22px; font-weight: 700; margin-bottom: 15px; }
+        
         .btn-buy { background: var(--main); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-buy:hover:not(:disabled) { background: #e61b46; transform: scale(1.02); }
         .btn-buy:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* --- Chat Styles (คงเดิม) --- */
+        /* ระบบ Progress Bar สำหรับสต็อก */
+        .stock-progress-container { width: 100%; height: 6px; background: #eee; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .stock-progress-bar { height: 100%; transition: 0.5s; }
+        .stock-status-text { font-size: 11px; color: #888; margin-bottom: 5px; display: block; }
+
+        .hidden { display: none !important; }
+        .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        
+        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
+        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
+        .login-input:focus { border-color: var(--main); }
+
+        /* --- Chat Styles --- */
         .chat-widget { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; z-index: 2500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
         .chat-widget.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .chat-header { background: var(--main); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -64,6 +99,7 @@
         .chat-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: 0.3s; color: #999; border-bottom: 2px solid transparent; }
         .chat-tab.active { color: var(--main); border-bottom: 2px solid var(--main); background: #fff; font-weight: bold; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; font-size: 14px; display: flex; flex-direction: column; }
+        
         .chat-row { display: flex; align-items: flex-end; margin-bottom: 15px; gap: 8px; width: 100%; }
         .chat-row.right { flex-direction: row-reverse; }
         .chat-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; flex-shrink: 0; transition: 0.2s; }
@@ -73,24 +109,21 @@
         .msg-user { background: var(--main); color: white; border-bottom-right-radius: 2px; }
         .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; opacity: 0.7; cursor: pointer; }
         .msg-sender:hover { text-decoration: underline; color: #000; }
+        
         .floating-chat { position: fixed; bottom: 30px; right: 30px; background: var(--line); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(6, 199, 85, 0.4); transition: 0.3s; }
         .floating-chat:hover { transform: rotate(15deg) scale(1.1); }
-        
-        /* Other Styles */
+
         .qr-section { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #ddd; }
         .slip-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 10px auto; border: 1px solid #ccc; display: none; }
+
         .btn-history { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.3s; }
         .btn-history:hover { background: #000; transform: scale(1.05); }
+
+        /* ระบบ Profile */
         .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; transition: 0.3s; }
         .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
         .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
-        .hidden { display: none !important; }
-        .topup-card { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 25px; text-align: center; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        #loginPage, #registerPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(8px); }
-        .login-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
-        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; font-family: 'Kanit'; outline: none; transition: 0.3s; }
-        .login-input:focus { border-color: var(--main); }
 
         @media (max-width: 600px) { 
             .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
@@ -98,11 +131,6 @@
             .stat-value { font-size: 18px; }
             .nav-nickname { display: none; }
         }
-
-        /* ระบบ Progress Bar สำหรับสต็อก */
-        .stock-progress-container { width: 100%; height: 6px; background: #eee; border-radius: 10px; margin: 10px 0; overflow: hidden; }
-        .stock-progress-bar { height: 100%; transition: 0.5s; }
-        .stock-status-text { font-size: 11px; color: #888; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -240,10 +268,10 @@
     <script>
         const ADMIN_AVATAR_URL = "https://lh3.googleusercontent.com/d/12RhOdgaJigGJCiIBURsppbEyBPmBhBT7";
         const PRODUCTS = [
-            { id: 1, name: "email(นอก) ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 2, name: "email(นอก) โนเเพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ติดสิท", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai โนแพค", price: 18, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 1, name: "email(นอก) ติดสิท", price: 9, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 2, name: "email(นอก) โนเเพค", price: 11, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 3, name: "emailThai ติดสิท", price: 10, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai โนแพค", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let state = {
@@ -278,21 +306,16 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- เพิ่มฟังก์ชันคัดลอกรหัส ---
+        // --- ฟังก์ชันคัดลอกรหัส ---
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'คัดลอกรหัสแล้ว!',
-                    showConfirmButton: false,
-                    timer: 1500
+                    toast: true, position: 'top-end', icon: 'success', title: 'คัดลอกรหัสแล้ว!', showConfirmButton: false, timer: 1500
                 });
             });
         }
 
-        // --- แก้ไขฟังก์ชัน updateUI เพื่อใส่ Progress Bar ---
+        // --- อัปเดต UI (พร้อม Progress Bar) ---
         function updateUI() {
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
             document.getElementById('statUsers').innerText = Object.keys(state.users).length;
@@ -363,17 +386,13 @@
                         <input type="text" id="editNickname" class="login-input" value="${user.nickname || ''}" placeholder="ตั้งชื่อเล่นของคุณ">
                     </div>
                 `,
-                showCancelButton: true,
-                confirmButtonText: 'บันทึก',
-                preConfirm: () => {
-                    return { nickname: document.getElementById('editNickname').value, avatar: document.getElementById('editProfilePreview').src }
-                }
+                showCancelButton: true, confirmButtonText: 'บันทึก',
+                preConfirm: () => { return { nickname: document.getElementById('editNickname').value, avatar: document.getElementById('editProfilePreview').src } }
             }).then((result) => {
                 if (result.isConfirmed) {
                     state.users[state.currentUser].nickname = result.value.nickname;
                     state.users[state.currentUser].avatar = result.value.avatar;
-                    persist(); updateUI();
-                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success');
+                    persist(); updateUI(); Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์แล้ว', 'success');
                 }
             });
         }
@@ -389,18 +408,12 @@
         /* 1.2 ระบบดูโปรไฟล์คนอื่น */
         function showPublicProfile(username) {
             if(typeof username !== 'string') return;
-            
             let user = state.users[username];
             let isMod = state.moderators.includes(username);
             let isAdmin = (username === "Admin");
-
-            if (isAdmin) {
-                user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
-            }
-
+            if (isAdmin) user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
             if (!user) return;
             const orderCount = user.orders ? user.orders.length : 0;
-            
             Swal.fire({
                 title: 'โปรไฟล์ผู้ใช้',
                 html: `
@@ -534,7 +547,7 @@
             }, 1500);
         }
 
-        // --- แก้ไขฟังก์ชัน buyProduct ใหม่ (ใส่ยืนยัน + คัดลอกรหัส) ---
+        // --- ฟังก์ชันซื้อสินค้า (อัปเดตให้รองรับการแสดงผลหลายบรรทัด) ---
         function buyProduct(id) {
             const p = PRODUCTS.find(item => item.id === id);
             const user = state.users[state.currentUser];
@@ -566,14 +579,14 @@
                         persist(); 
                         updateUI();
 
-                        // แสดงผลสำเร็จพร้อมปุ่มคัดลอกรหัส
+                        // แสดงผลสำเร็จพร้อมปุ่มคัดลอกรหัส (รองรับหลายบรรทัดด้วย white-space: pre-wrap)
                         Swal.fire({
                             title: 'ซื้อสำเร็จ!',
                             html: `
                                 <div style="background:#f9f9f9; padding:20px; border-radius:15px; border:2px dashed var(--main); margin-top:10px;">
                                     <p style="font-size:14px; color:#666; margin-bottom:5px;">นี่คือรหัสสินค้าของคุณ:</p>
-                                    <h2 style="color:var(--main); letter-spacing:1px; margin-bottom:15px;">${code}</h2>
-                                    <button onclick="copyToClipboard('${code}')" style="background:#333; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">
+                                    <h2 style="color:var(--main); letter-spacing:1px; margin-bottom:15px; white-space: pre-wrap; font-size:18px; line-height:1.5;">${code}</h2>
+                                    <button onclick="copyToClipboard(\`${code}\`)" style="background:#333; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">
                                         <i class="fas fa-copy"></i> คัดลอกรหัส
                                     </button>
                                 </div>
@@ -587,14 +600,16 @@
             }
         }
 
+        // --- แก้ไขประวัติการซื้อ ให้แสดงผลหลายบรรทัดได้ ---
         function showOrderHistory() {
             const user = state.users[state.currentUser];
             if (!user.orders || user.orders.length === 0) return Swal.fire('ไม่มีข้อมูล', 'คุณยังไม่มีประวัติการซื้อ', 'info');
-            let historyHtml = user.orders.map(o => `<div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code>${o.code}</code></div>`).join('');
+            // ใส่ white-space: pre-wrap ให้กับ tag <code>
+            let historyHtml = user.orders.map(o => `<div style="background:#fff; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 10px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code style="white-space: pre-wrap; display:block; background:#f4f4f4; padding:5px; margin-top:5px; border-radius:5px;">${o.code}</code></div>`).join('');
             Swal.fire({ title: 'ประวัติการซื้อ', html: `<div style="max-height: 400px; overflow-y: auto;">${historyHtml}</div>` });
         }
 
-        /* 6. ADMIN TOOLS */
+        /* 6. ADMIN TOOLS (อัปเดตระบบเพิ่มสต็อก) */
         function openAdminPanel() {
             let reqHtml = state.topupRequests.slice(-5).reverse().map((req) => `
                 <div style="background:#fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 10px; text-align:left;">
@@ -625,8 +640,16 @@
                         <h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า (คลิกเพื่อตอบ)</h4>
                         ${chatUsers}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4>
-                        <select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-                        <textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า"></textarea>
+                        
+                        <select id="adm_pid" class="swal2-input" style="width:100%; margin-bottom:5px;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+                        
+                        <select id="adm_mode" class="swal2-input" style="width:100%; margin-bottom:5px; font-size:14px;">
+                            <option value="1">ลงแบบ: 1 บรรทัด / 1 ชิ้น (ปกติ)</option>
+                            <option value="2">ลงแบบ: 2 บรรทัด / 1 ชิ้น (สำหรับ ID+Pass)</option>
+                        </select>
+
+                        <textarea id="adm_codes" class="swal2-textarea" placeholder="วางรหัสสินค้าที่นี่..."></textarea>
+                        
                         ${modManagerHtml}
                         <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>
                         ${reqHtml}
@@ -637,8 +660,34 @@
             }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
-                    const codes = document.getElementById('adm_codes').value.split('\n').filter(l => l.trim() !== "");
-                    if(codes.length > 0) { state.inventory[pid].push(...codes); persist(); updateUI(); Swal.fire('สำเร็จ', 'เพิ่มสต็อกเรียบร้อย', 'success'); }
+                    const mode = document.getElementById('adm_mode').value;
+                    const rawText = document.getElementById('adm_codes').value;
+                    let newCodes = [];
+
+                    if (rawText.trim() !== "") {
+                        const lines = rawText.split('\n').filter(l => l.trim() !== "");
+                        
+                        if (mode === "1") {
+                            // แบบปกติ 1 บรรทัด = 1 ชิ้น
+                            newCodes = lines;
+                        } else {
+                            // แบบพิเศษ 2 บรรทัด = 1 ชิ้น
+                            for (let i = 0; i < lines.length; i += 2) {
+                                let item = lines[i];
+                                if (lines[i+1]) {
+                                    item += "\n" + lines[i+1]; // รวมบรรทัดที่ 1 และ 2 เข้าด้วยกัน
+                                }
+                                newCodes.push(item);
+                            }
+                        }
+                    }
+
+                    if(newCodes.length > 0) { 
+                        state.inventory[pid].push(...newCodes); 
+                        persist(); 
+                        updateUI(); 
+                        Swal.fire('สำเร็จ', `เพิ่มสต็อกจำนวน ${newCodes.length} ชิ้น เรียบร้อย`, 'success'); 
+                    }
                 }
             });
         }
@@ -715,11 +764,9 @@
             
             messages.forEach(m => {
                 const isMe = (m.userId === currentUserId) || (state.isAdmin && m.sender === 'Admin');
-                
-                // --- ส่วนที่แก้ไข: ใส่รูปแอดมินจากลิงก์ที่คุณให้มา ---
                 let avatarUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
                 if (m.userId === 'Admin' || m.sender === 'Admin') {
-                    avatarUrl = ADMIN_AVATAR_URL; // ใช้รูปที่คุณให้มา
+                    avatarUrl = ADMIN_AVATAR_URL; 
                 } else if (state.users[m.userId]) {
                     avatarUrl = state.users[m.userId].avatar || avatarUrl;
                 }
