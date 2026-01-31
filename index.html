@@ -302,8 +302,8 @@
             chatMode: 'global',
             cart: [],
             moderators: JSON.parse(localStorage.getItem('baobei_mods')) || [],
-            // NEW: Bot Configuration with Image
-            botConfig: JSON.parse(localStorage.getItem('baobei_bot')) || { active: false, interval: 60, text: "ยินดีต้อนรับสู่ร้าน BAOBEI SHOP! สินค้าเติมตลอด 24 ชม.", image: null, lastRun: 0 }
+            // NEW: Bot Config now has 'avatar' property
+            botConfig: JSON.parse(localStorage.getItem('baobei_bot')) || { active: false, interval: 60, text: "ยินดีต้อนรับสู่ร้าน BAOBEI SHOP! สินค้าเติมตลอด 24 ชม.", image: null, avatar: null, lastRun: 0 }
         };
 
         function persist() {
@@ -317,7 +317,6 @@
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
                 localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
                 localStorage.setItem('baobei_mods', JSON.stringify(state.moderators));
-                // Save Bot Config
                 localStorage.setItem('baobei_bot', JSON.stringify(state.botConfig));
             } catch (e) { console.error(e); }
         }
@@ -464,7 +463,8 @@
             if (isAdmin) {
                 user = { nickname: "Admin", avatar: ADMIN_AVATAR_URL, orders: [] };
             } else if (isBot) {
-                user = { nickname: "Admin Bot", avatar: BOT_AVATAR_URL, orders: [] };
+                // Use custom avatar if set, else default
+                user = { nickname: "Admin Bot", avatar: state.botConfig.avatar || BOT_AVATAR_URL, orders: [] };
             }
 
             if (!user) return;
@@ -660,11 +660,15 @@
                 </div>
             `).join('') || "<p style='color:#999; font-size:12px;'>ยังไม่มีลูกค้าทักแชทส่วนตัว</p>";
 
-            // --- Updated: Bot Image Preview ---
             let botImgHtml = state.botConfig.image 
                 ? `<div style="margin:5px 0;"><img src="${state.botConfig.image}" style="height:60px; border-radius:5px; border:1px solid #ccc;"> <br> <button onclick="deleteBotImage()" style="background:#dc3545; color:white; border:none; padding:2px 8px; border-radius:4px; font-size:10px; cursor:pointer; margin-top:3px;">ลบรูป</button></div>` 
                 : '';
-            // ----------------------------------
+
+            // --- New: Bot Avatar Preview in Admin ---
+            let botAvatarHtml = state.botConfig.avatar
+                ? `<div style="margin-top:5px; text-align:center;"><img src="${state.botConfig.avatar}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #ccc;"><br><button onclick="resetBotAvatar()" style="font-size:10px; margin-top:2px;">รีเซ็ตรูป</button></div>`
+                : `<div style="margin-top:5px; text-align:center;"><img src="${BOT_AVATAR_URL}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; opacity:0.5;"></div>`;
+            // ----------------------------------------
 
             let modManagerHtml = state.isAdmin ? `
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการทีมงาน (ผู้ดูแลร่วม)</h4>
@@ -676,10 +680,21 @@
                 
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--bot);">ระบบบอทอัตโนมัติ (Global Chat)</h4>
                 <div style="background:#eef6ff; padding:10px; border-radius:8px;">
+                    
+                    <h5 style="margin:0 0 5px 0; color:#333;">1. ตั้งค่าหน้าตาบอท</h5>
+                    <div style="display:flex; gap:10px; align-items:center; background:white; padding:8px; border-radius:5px; border:1px solid #ddd;">
+                        ${botAvatarHtml}
+                        <div style="flex:1;">
+                            <span style="font-size:12px;">เปลี่ยนรูปโปรไฟล์บอท:</span>
+                            <input type="file" id="botAvatarFile" accept="image/*" class="login-input" style="padding:5px; font-size:11px; margin:2px 0;">
+                        </div>
+                    </div>
+
+                    <h5 style="margin:10px 0 5px 0; color:#333;">2. ตั้งค่าข้อความ</h5>
                     <div style="margin-bottom:5px; font-size:13px;">ข้อความบอท:</div>
                     <input type="text" id="botText" class="login-input" style="margin:0 0 5px 0;" value="${state.botConfig.text}">
                     
-                    <div style="margin-bottom:5px; font-size:13px;">รูปภาพประกอบ (ถ้ามี):</div>
+                    <div style="margin-bottom:5px; font-size:13px;">รูปภาพประกอบข้อความ (ถ้ามี):</div>
                     ${botImgHtml}
                     <input type="file" id="botFile" accept="image/*" class="login-input" style="padding:5px; font-size:12px;">
 
@@ -727,32 +742,54 @@
         window.saveBotSettings = () => {
             const text = document.getElementById('botText').value;
             const interval = parseInt(document.getElementById('botInterval').value);
-            const fileInput = document.getElementById('botFile');
+            const msgFileInput = document.getElementById('botFile');
+            const avatarFileInput = document.getElementById('botAvatarFile');
             
             if(!text || interval < 5) return Swal.fire('ข้อมูลไม่ถูกต้อง', 'กรุณากรอกข้อความและตั้งเวลาอย่างน้อย 5 วินาที', 'warning');
 
-            const saveState = (imgBase64) => {
+            // Helper to handle multiple file reads
+            const readFile = (file) => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            const processSave = async () => {
+                let msgImgBase64 = state.botConfig.image; // default to existing
+                if (msgFileInput.files && msgFileInput.files[0]) {
+                    msgImgBase64 = await readFile(msgFileInput.files[0]);
+                }
+
+                let avatarBase64 = state.botConfig.avatar; // default to existing
+                if (avatarFileInput.files && avatarFileInput.files[0]) {
+                    avatarBase64 = await readFile(avatarFileInput.files[0]);
+                }
+
                 state.botConfig.active = !state.botConfig.active;
                 state.botConfig.text = text;
                 state.botConfig.interval = interval;
-                if(imgBase64 !== undefined) state.botConfig.image = imgBase64;
+                state.botConfig.image = msgImgBase64;
+                state.botConfig.avatar = avatarBase64;
                 state.botConfig.lastRun = Date.now();
+                
                 persist();
                 openAdminPanel();
                 Swal.fire('สำเร็จ', `บอท ${state.botConfig.active ? 'เริ่มทำงาน' : 'หยุดทำงาน'} แล้ว`, 'success');
             };
 
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => saveState(e.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveState(undefined); // Keep existing image
-            }
+            processSave();
         };
 
         window.deleteBotImage = () => {
             state.botConfig.image = null;
+            persist();
+            openAdminPanel();
+        };
+
+        window.resetBotAvatar = () => {
+            state.botConfig.avatar = null;
             persist();
             openAdminPanel();
         };
@@ -765,12 +802,12 @@
                 const diff = (now - state.botConfig.lastRun) / 1000; // seconds
                 
                 if(diff >= state.botConfig.interval) {
-                    // Send Bot Message (Text + Image)
+                    // Send Bot Message
                     const botMsg = { 
                         sender: "Admin Bot",
                         userId: "Admin Bot",
                         text: state.botConfig.text, 
-                        image: state.botConfig.image, // Include Image
+                        image: state.botConfig.image, 
                         time: Date.now(), 
                         isAdmin: true,
                         isBot: true 
@@ -944,7 +981,7 @@
                 if (m.userId === 'Admin' || m.sender === 'Admin') {
                     avatarUrl = ADMIN_AVATAR_URL; 
                 } else if (isBot) {
-                    avatarUrl = BOT_AVATAR_URL;
+                    avatarUrl = state.botConfig.avatar || BOT_AVATAR_URL;
                 } else if (state.users[m.userId]) {
                     avatarUrl = state.users[m.userId].avatar || avatarUrl;
                 }
