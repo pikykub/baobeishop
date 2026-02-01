@@ -281,8 +281,8 @@
         const PRODUCTS = [
             { id: 1, name: "email(นอก) ไม่ติดสิท / ติดแพ็ค", price: 9, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
             { id: 2, name: "email(นอก) ไม่ติดแพ็ค / ติดสิทธิ", price: 11, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 3, name: "emailThai ไม่ติดแพ็ค / ติดสิทธิ ", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
-            { id: 4, name: "emailThai ไม่ติดสิทธิ / ติดแพ็ค ", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
+            { id: 3, name: "emailThai ไม่ติดสิทธิ / ติดแพ็ค ", price: 12, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" },
+            { id: 4, name: "emailThai ไม่ติดแพค / ติดสิทธิ ", price: 15, image: "https://lh3.googleusercontent.com/d/1JdUzWjV-sWQkS6vHCekLb7HN9Uc6g4J7" }
         ];
 
         let state = {
@@ -516,6 +516,37 @@
             });
         };
 
+        /* --- ฟังก์ชันใหม่: แก้ไขสถิติ (Edit Statistics) --- */
+        window.editStats = () => {
+            Swal.fire({
+                title: 'แก้ไขสถิติร้านค้า',
+                html: `
+                    <div style="text-align:left; font-size:14px; margin-bottom:5px;">ยอดขายสะสม (บิล)</div>
+                    <input type="number" id="editSales" class="swal2-input" value="${state.salesCount}" style="margin-bottom:15px;">
+                    <div style="text-align:left; font-size:14px; margin-bottom:5px;">ยอดเติมเงินรวม (฿)</div>
+                    <input type="number" id="editTopup" class="swal2-input" value="${state.totalTopupSum}">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    return {
+                        sales: parseInt(document.getElementById('editSales').value) || 0,
+                        topup: parseFloat(document.getElementById('editTopup').value) || 0
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    state.salesCount = result.value.sales;
+                    state.totalTopupSum = result.value.topup;
+                    persist();
+                    updateUI();
+                    openAdminPanel(); 
+                    Swal.fire('บันทึกสำเร็จ', 'อัปเดตสถิติเรียบร้อยแล้ว', 'success');
+                }
+            });
+        };
+
         /* ADMIN TOOLS */
         function openAdminPanel() {
             let userListHTML = Object.entries(state.users).map(([username, u]) => {
@@ -558,6 +589,15 @@
                 <div style="display:flex; gap:5px;"><input type="text" id="modTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User"><button onclick="toggleModerator()" class="btn-buy" style="width:auto; padding:0 15px;">เพิ่ม/ลบ</button></div>
                 <div style="font-size:12px; margin-top:5px; color:#666;">ผู้ดูแล: ${state.moderators.join(', ') || 'ไม่มี'}</div>
                 
+                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:#6f42c1;">📊 ตั้งค่าสถิติร้าน (Fake Stats)</h4>
+                <div style="display:flex; align-items:center; justify-content:space-between; background:#f3e5f5; padding:10px; border-radius:8px;">
+                    <div style="font-size:12px;">
+                        <div>ยอดขาย: <b style="color:var(--main);">${state.salesCount.toLocaleString()}</b></div>
+                        <div>ยอดเติม: <b style="color:var(--line);">${state.totalTopupSum.toLocaleString()}</b></div>
+                    </div>
+                    <button onclick="editStats()" class="btn-buy" style="width:auto; padding:5px 15px; font-size:12px; background:#6f42c1;">แก้ไข</button>
+                </div>
+
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--line);">💰 เติมเงินให้ลูกค้า (Manual Top-up)</h4>
                 <div style="display:flex; gap:5px;">
                     <input type="text" id="topupTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User">
@@ -572,6 +612,14 @@
                         ${userListHTML}
                     </div>
                 </div>
+                
+                <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการสต็อกสินค้า</h4>
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <select id="adm_pid" class="swal2-input" style="flex:1; margin:0; font-size:14px;">${PRODUCTS.map(p => `<option value="${p.id}">${p.name} (มี ${state.inventory[p.id] ? state.inventory[p.id].length : 0})</option>`).join('')}</select>
+                    <button onclick="clearStock()" class="btn-buy" style="width:auto; background:var(--danger); font-size:12px;"><i class="fas fa-trash"></i> ล้าง</button>
+                </div>
+                <textarea id="adm_codes" class="swal2-textarea" placeholder="วางโค้ดสินค้าที่นี่ (1 บรรทัด = 1 ชิ้น)"></textarea>
+                <div style="margin-top:5px; text-align:left;"><input type="checkbox" id="adm_2lines"> <label for="adm_2lines">โหมด 2 บรรทัด = 1 สินค้า</label></div>
                 
                 <h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd; color:var(--danger);">จัดการผู้ใช้ (Ban User)</h4>
                 <div style="display:flex; gap:5px;"><input type="text" id="banTarget" class="login-input" style="flex:1; margin:0;" placeholder="ชื่อ User"><button onclick="toggleBan()" class="btn-buy" style="width:auto; padding:0 15px; background:var(--danger);">Ban/Unban</button></div>
@@ -593,7 +641,7 @@
                 <div style="display:flex; gap:10px;"><button onclick="resetChat('global')" class="btn-buy" style="background:var(--danger); flex:1;">ล้างแชทรวม</button><button onclick="resetChat('private')" class="btn-buy" style="background:#6c757d; flex:1;">ล้างแชทส่วนตัว</button></div>
             ` : '';
 
-            Swal.fire({ title: 'ADMIN PANEL', html: `<div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;"><h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>${chatUsers}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการสต็อกสินค้า</h4><div style="display:flex; gap:5px; margin-bottom:5px;"><select id="adm_pid" class="swal2-input" style="flex:1; margin:0; font-size:14px;">${PRODUCTS.map(p => `<option value="${p.id}">${p.name} (มี ${state.inventory[p.id] ? state.inventory[p.id].length : 0})</option>`).join('')}</select><button onclick="clearStock()" class="btn-buy" style="width:auto; background:var(--danger); font-size:12px;"><i class="fas fa-trash"></i> ล้าง</button></div><textarea id="adm_codes" class="swal2-textarea" placeholder="วางโค้ดสินค้าที่นี่ (1 บรรทัด = 1 ชิ้น)"></textarea><div style="margin-top:5px; text-align:left;"><input type="checkbox" id="adm_2lines"> <label for="adm_2lines">โหมด 2 บรรทัด = 1 สินค้า</label></div>${modManagerHtml}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>${reqHtml}</div>`, confirmButtonText: 'บันทึกสต็อก', showCancelButton: true }).then((res) => {
+            Swal.fire({ title: 'ADMIN PANEL', html: `<div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;"><h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>${chatUsers}${modManagerHtml}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>${reqHtml}</div>`, confirmButtonText: 'บันทึกสต็อก', showCancelButton: true }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
                     const isTwoLine = document.getElementById('adm_2lines').checked;
