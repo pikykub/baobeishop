@@ -292,6 +292,7 @@
             usedSlips: JSON.parse(localStorage.getItem('baobei_used_slips')) || [],
             salesCount: parseInt(localStorage.getItem('baobei_sales')) || 1089,
             totalTopupSum: parseFloat(localStorage.getItem('baobei_total_topup')) || 0,
+            customUserCount: parseInt(localStorage.getItem('baobei_user_count')) || 703, // Default count
             currentUser: null,
             isAdmin: false,
             isModerator: false, 
@@ -313,6 +314,7 @@
                 localStorage.setItem('baobei_used_slips', JSON.stringify(state.usedSlips));
                 localStorage.setItem('baobei_sales', state.salesCount);
                 localStorage.setItem('baobei_total_topup', state.totalTopupSum);
+                localStorage.setItem('baobei_user_count', state.customUserCount);
                 localStorage.setItem('baobei_global_chat', JSON.stringify(state.globalMessages));
                 localStorage.setItem('baobei_private_chat', JSON.stringify(state.privateMessages));
                 localStorage.setItem('baobei_mods', JSON.stringify(state.moderators));
@@ -358,7 +360,11 @@
 
         function updateUI() {
             document.getElementById('statSalesTotal').innerText = state.salesCount.toLocaleString();
-            document.getElementById('statUsers').innerText = Object.keys(state.users).length;
+            
+            // ใช้ค่าสูงสุดระหว่าง ค่าที่ตั้งเอง (Fake) หรือ จำนวนผู้ใช้จริง (Real) เพื่อไม่ให้เลขลดลง
+            let displayUsers = Math.max(Object.keys(state.users).length, state.customUserCount);
+            document.getElementById('statUsers').innerText = displayUsers.toLocaleString();
+            
             document.getElementById('statTopupTotal').innerText = Math.floor(state.totalTopupSum).toLocaleString();
             let totalStock = Object.values(state.inventory).reduce((a, b) => a + b.length, 0);
             document.getElementById('statStock').innerText = totalStock;
@@ -431,7 +437,25 @@
 
         function toggleAuth(type) { document.getElementById('loginPage').classList.toggle('hidden', type !== 'login'); document.getElementById('registerPage').classList.toggle('hidden', type !== 'register'); }
         function closeAuth() { document.getElementById('loginPage').classList.add('hidden'); document.getElementById('registerPage').classList.add('hidden'); }
-        function handleRegister() { const u = document.getElementById('regUsername').value.trim(); const p = document.getElementById('regPassword').value.trim(); if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูล', 'warning'); if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'เปลี่ยนชื่อ', 'error'); state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null, isBanned: false }; persist(); Swal.fire('สำเร็จ', 'สมัครเสร็จสิ้น', 'success').then(() => toggleAuth('login')); }
+        
+        // --- UPDATED: Handle Register with Auto Increment ---
+        function handleRegister() { 
+            const u = document.getElementById('regUsername').value.trim(); 
+            const p = document.getElementById('regPassword').value.trim(); 
+            if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูล', 'warning'); 
+            if(state.users[u] || u === 'Admin') return Swal.fire('ชื่อนี้ใช้ไม่ได้', 'เปลี่ยนชื่อ', 'error'); 
+            
+            // Create user
+            state.users[u] = { password: p, balance: 0, orders: [], nickname: u, avatar: null, isBanned: false }; 
+            
+            // Auto Increment User Count
+            state.customUserCount++;
+            
+            persist(); 
+            updateUI(); // Refresh UI to show new count immediately
+            Swal.fire('สำเร็จ', 'สมัครเสร็จสิ้น', 'success').then(() => toggleAuth('login')); 
+        }
+
         function handleLogout() { state.currentUser = null; state.isAdmin = false; state.isModerator = false; location.reload(); }
         function previewSlip(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('slipPreviewImg').src = e.target.result; document.getElementById('slipPreviewImg').style.display = 'block'; }; reader.readAsDataURL(input.files[0]); } }
         async function submitTopup() { if(!checkAuth()) return; const amt = parseFloat(document.getElementById('topupAmount').value); const slipImg = document.getElementById('slipPreviewImg').src; if(!amt || amt <= 0) return Swal.fire('ผิดพลาด', 'ระบุจำนวนเงิน', 'warning'); if(!slipImg || slipImg.length < 100) return Swal.fire('ขาดสลิป', 'แนบสลิป', 'warning'); const slipHash = slipImg.substring(slipImg.length - 200); if(state.usedSlips.includes(slipHash)) return Swal.fire('ซ้ำ', 'สลิปนี้ใช้แล้ว', 'error'); Swal.fire({ title: 'ตรวจสอบ...', didOpen: () => Swal.showLoading() }); setTimeout(() => { state.users[state.currentUser].balance += amt; state.totalTopupSum += amt; state.usedSlips.push(slipHash); state.topupRequests.push({ user: state.currentUser, amount: amt, slip: slipImg, time: new Date().toLocaleString() }); persist(); updateUI(); Swal.fire('สำเร็จ', `เติม ${amt}฿`, 'success').then(() => showPage('home')); }, 1500); }
@@ -523,6 +547,8 @@
                 html: `
                     <div style="text-align:left; font-size:14px; margin-bottom:5px;">ยอดขายสะสม (บิล)</div>
                     <input type="number" id="editSales" class="swal2-input" value="${state.salesCount}" style="margin-bottom:15px;">
+                    <div style="text-align:left; font-size:14px; margin-bottom:5px;">จำนวนสมาชิก (คน)</div>
+                    <input type="number" id="editUsers" class="swal2-input" value="${state.customUserCount}" style="margin-bottom:15px;">
                     <div style="text-align:left; font-size:14px; margin-bottom:5px;">ยอดเติมเงินรวม (฿)</div>
                     <input type="number" id="editTopup" class="swal2-input" value="${state.totalTopupSum}">
                 `,
@@ -532,12 +558,14 @@
                 preConfirm: () => {
                     return {
                         sales: parseInt(document.getElementById('editSales').value) || 0,
+                        users: parseInt(document.getElementById('editUsers').value) || 0,
                         topup: parseFloat(document.getElementById('editTopup').value) || 0
                     }
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
                     state.salesCount = result.value.sales;
+                    state.customUserCount = result.value.users;
                     state.totalTopupSum = result.value.topup;
                     persist();
                     updateUI();
@@ -593,6 +621,7 @@
                 <div style="display:flex; align-items:center; justify-content:space-between; background:#f3e5f5; padding:10px; border-radius:8px;">
                     <div style="font-size:12px;">
                         <div>ยอดขาย: <b style="color:var(--main);">${state.salesCount.toLocaleString()}</b></div>
+                        <div>สมาชิก: <b style="color:#333;">${Math.max(Object.keys(state.users).length, state.customUserCount).toLocaleString()}</b></div>
                         <div>ยอดเติม: <b style="color:var(--line);">${state.totalTopupSum.toLocaleString()}</b></div>
                     </div>
                     <button onclick="editStats()" class="btn-buy" style="width:auto; padding:5px 15px; font-size:12px; background:#6f42c1;">แก้ไข</button>
