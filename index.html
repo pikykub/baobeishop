@@ -453,11 +453,9 @@
 
         /* --- ฟังก์ชันใหม่: แอดมินเติมเงินมือถือ (Direct Topup) --- */
         window.adminTopup = (targetUser = null, targetAmount = null) => {
-            // ถ้าไม่ได้รับค่ามา ให้ไปดึงจาก input
             if(!targetUser) targetUser = document.getElementById('topupTarget').value.trim();
             if(!targetAmount) targetAmount = parseFloat(document.getElementById('topupAmountInput').value);
 
-            // ถ้าเป็นการกดจากปุ่มใน list อาจจะต้องรับค่า amount ใหม่
             if(targetUser && !targetAmount && isNaN(targetAmount)) {
                  Swal.fire({
                     title: `เติมเงินให้ ${targetUser}`,
@@ -480,22 +478,46 @@
                 return Swal.fire('ผิดพลาด', 'ยอดเงินไม่ถูกต้อง', 'error');
             }
 
-            // ทำการเติมเงิน
             state.users[targetUser].balance += targetAmount;
             state.totalTopupSum += targetAmount;
             
             persist();
             updateUI();
-            
-            // รีเฟรชหน้า Admin Panel
             openAdminPanel(); 
 
             Swal.fire('สำเร็จ', `เติม ${targetAmount}฿ ให้ ${targetUser} แล้ว`, 'success');
         };
 
+        /* --- ฟังก์ชันใหม่: ล้างสต็อก (Clear Stock) --- */
+        window.clearStock = () => {
+            const pid = parseInt(document.getElementById('adm_pid').value);
+            const p = PRODUCTS.find(item => item.id === pid);
+            const count = state.inventory[pid] ? state.inventory[pid].length : 0;
+            
+            if(count === 0) return Swal.fire('ว่างเปล่า', 'สินค้านี้ไม่มีสต็อกอยู่แล้ว', 'info');
+
+            Swal.fire({
+                title: 'ยืนยันล้างสต็อก?',
+                html: `ต้องการลบสต็อก <b>${p.name}</b><br>จำนวน ${count} ชิ้น ออกทั้งหมดใช่ไหม?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    state.inventory[pid] = [];
+                    persist();
+                    updateUI();
+                    // Re-open admin panel to update counts
+                    openAdminPanel();
+                    Swal.fire('เรียบร้อย', 'ลบสต็อกสินค้านี้แล้ว', 'success');
+                }
+            });
+        };
+
         /* ADMIN TOOLS */
         function openAdminPanel() {
-            // 1. สร้าง HTML รายชื่อผู้ใช้งาน (Loop ข้อมูลจาก state.users)
             let userListHTML = Object.entries(state.users).map(([username, u]) => {
                 let isBan = u.isBanned;
                 let avatar = u.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
@@ -571,7 +593,7 @@
                 <div style="display:flex; gap:10px;"><button onclick="resetChat('global')" class="btn-buy" style="background:var(--danger); flex:1;">ล้างแชทรวม</button><button onclick="resetChat('private')" class="btn-buy" style="background:#6c757d; flex:1;">ล้างแชทส่วนตัว</button></div>
             ` : '';
 
-            Swal.fire({ title: 'ADMIN PANEL', html: `<div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;"><h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>${chatUsers}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">เติมสต็อก</h4><select id="adm_pid" class="swal2-input" style="width:100%;">${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select><textarea id="adm_codes" class="swal2-textarea" placeholder="รหัสสินค้า"></textarea><div style="margin-top:5px; text-align:left;"><input type="checkbox" id="adm_2lines"> <label for="adm_2lines">โหมด 2 บรรทัด = 1 สินค้า</label></div>${modManagerHtml}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>${reqHtml}</div>`, confirmButtonText: 'บันทึกสต็อก', showCancelButton: true }).then((res) => {
+            Swal.fire({ title: 'ADMIN PANEL', html: `<div style="max-height: 500px; overflow-y: auto; background:#f4f4f4; padding:15px; border-radius:10px; text-align:left;"><h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd;">แชทลูกค้า</h4>${chatUsers}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">จัดการสต็อกสินค้า</h4><div style="display:flex; gap:5px; margin-bottom:5px;"><select id="adm_pid" class="swal2-input" style="flex:1; margin:0; font-size:14px;">${PRODUCTS.map(p => `<option value="${p.id}">${p.name} (มี ${state.inventory[p.id] ? state.inventory[p.id].length : 0})</option>`).join('')}</select><button onclick="clearStock()" class="btn-buy" style="width:auto; background:var(--danger); font-size:12px;"><i class="fas fa-trash"></i> ล้าง</button></div><textarea id="adm_codes" class="swal2-textarea" placeholder="วางโค้ดสินค้าที่นี่ (1 บรรทัด = 1 ชิ้น)"></textarea><div style="margin-top:5px; text-align:left;"><input type="checkbox" id="adm_2lines"> <label for="adm_2lines">โหมด 2 บรรทัด = 1 สินค้า</label></div>${modManagerHtml}<h4 style="margin:15px 0 10px 0; border-bottom:1px solid #ddd;">ประวัติเติมเงิน</h4>${reqHtml}</div>`, confirmButtonText: 'บันทึกสต็อก', showCancelButton: true }).then((res) => {
                 if(res.isConfirmed) {
                     const pid = document.getElementById('adm_pid').value;
                     const isTwoLine = document.getElementById('adm_2lines').checked;
