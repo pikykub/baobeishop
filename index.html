@@ -86,8 +86,9 @@
         .user-profile-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8f9fa; padding: 5px 12px; border-radius: 50px; border: 1px solid #eee; transition: 0.3s; }
         .user-profile-btn:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--main); }
-        .nav-nickname { font-size: 14px; font-weight: 500; color: #333; }
-        
+        .nav-nickname { font-size: 14px; font-weight: 500; color: #333; display: flex; flex-direction: column; line-height: 1.1; text-align: left; }
+        .nav-id-badge { font-size: 10px; color: #888; letter-spacing: 0.5px; }
+
         /* สไตล์สำหรับปุ่ม Social Media */
         .contact-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
         .social-btn { display: flex; align-items: center; gap: 10px; padding: 12px 25px; border-radius: 50px; color: white; text-decoration: none; font-weight: bold; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 2px solid white; }
@@ -114,7 +115,7 @@
         <div class="login-card">
             <i class="fas fa-times btn-close-modal" onclick="closeAuth()"></i>
             <h2 style="color: var(--main);">CREATE ACCOUNT</h2>
-            <div style="font-size: 12px; color: #777; margin-bottom: 10px;">*ระบบจะสร้าง ID ให้คุณอัตโนมัติ (ชื่อซ้ำได้)</div>
+            <div style="font-size: 12px; color: #777; margin-bottom: 10px;">*ระบบจะสร้าง ID ให้คุณอัตโนมัติ (8-12 หลัก)</div>
             <input type="text" id="regUsername" class="login-input" placeholder="ตั้งชื่อผู้ใช้ (ชื่อเล่น)">
             <input type="password" id="regPassword" class="login-input" placeholder="ตั้งรหัสผ่าน">
             <button class="btn-buy" onclick="handleRegister()">สมัครสมาชิก</button>
@@ -141,7 +142,10 @@
             <div class="nav-right">
                 <div class="user-profile-btn" onclick="openEditProfile()">
                     <img id="navAvatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="nav-avatar">
-                    <span id="navNickname" class="nav-nickname">ผู้เยี่ยมชม</span>
+                    <div id="navNickname" class="nav-nickname">
+                        <span>ผู้เยี่ยมชม</span>
+                        <span class="nav-id-badge" style="display:none;" id="navIdBadge">ID: -</span>
+                    </div>
                 </div>
                 
                 <div class="cart-tag" onclick="showCart()">
@@ -212,6 +216,10 @@
                         <p style="font-size: 20px; letter-spacing: 1px; font-weight: bold; color: #000;">080-920-0932</p>
                         <p style="font-size: 14px; margin: 10px 0 0 0;">ชื่อบัญชี: จิตราภรณ์ จันทร</p>
                         <img src="https://lh3.googleusercontent.com/d/1ardGOoNH5cU-qLoTaZ7VHLs8kUCriNmX" alt="QR Code" style="margin-top: 15px; width: 180px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    </div>
+                    
+                    <div style="background:#fff3cd; color:#856404; padding:10px; border-radius:10px; font-size:13px; margin-bottom:15px; border:1px solid #ffeeba;">
+                        <b>⚠️ แจ้งแอดมิน:</b> หากเติมแล้วยอดไม่เข้า แจ้ง "เลข ID ของคุณ" กับแอดมินได้เลย
                     </div>
 
                     <input type="number" id="topupAmount" class="login-input" placeholder="ระบุจำนวนเงินที่โอน">
@@ -444,12 +452,26 @@
             const topupBtn = document.getElementById('topupBtn');
             const historyBtn = document.getElementById('historyBtn');
 
+            // Nav Elements for ID Display
+            const navNickname = document.getElementById('navNickname').querySelector('span:first-child');
+            const navIdBadge = document.getElementById('navIdBadge');
+
             if (state.currentUser) {
                 // ถ้าเป็น Admin ให้ใช้ข้อมูลจำลอง
                 const user = (state.currentUser === "Admin") ? { balance: 0, nickname: "Admin", avatar: null } : state.users[state.currentUser] || {};
                 
                 if(document.getElementById('balanceDisplay')) document.getElementById('balanceDisplay').innerText = (user.balance || 0).toLocaleString();
-                if(document.getElementById('navNickname')) document.getElementById('navNickname').innerText = user.nickname || user.username || state.currentUser;
+                
+                // Show Name and ID
+                if(navNickname) navNickname.innerText = user.nickname || user.username || state.currentUser;
+                if(navIdBadge) {
+                    if (state.currentUser !== "Admin") {
+                        navIdBadge.innerText = `ID: ${state.currentUser}`;
+                        navIdBadge.style.display = 'block';
+                    } else {
+                        navIdBadge.style.display = 'none';
+                    }
+                }
                 
                 let avatarUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 if(state.isAdmin) avatarUrl = ADMIN_AVATAR_URL;
@@ -468,7 +490,8 @@
                     authBtn.style.background = '#eee';
                 }
             } else {
-                if(document.getElementById('navNickname')) document.getElementById('navNickname').innerText = "ผู้เยี่ยมชม";
+                if(navNickname) navNickname.innerText = "ผู้เยี่ยมชม";
+                if(navIdBadge) navIdBadge.style.display = 'none';
                 if(document.getElementById('navAvatarImg')) document.getElementById('navAvatarImg').src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 if(document.getElementById('adminBtn')) document.getElementById('adminBtn').style.display = "none"; 
                 if(topupBtn) topupBtn.style.display = 'none'; 
@@ -519,7 +542,7 @@
                     
                     <div style="background:#f9f9f9; padding:10px; border-radius:8px; border:1px dashed #ccc; margin-bottom:15px;">
                         <div style="font-size:12px; color:#555;">USER ID (ใช้แจ้งแอดมิน)</div>
-                        <div style="font-size:24px; font-weight:bold; color:var(--main); letter-spacing:2px;">${state.currentUser}</div>
+                        <div style="font-size:24px; font-weight:bold; color:var(--main); letter-spacing:2px; font-family:monospace;">${state.currentUser}</div>
                     </div>
 
                     <div style="text-align:left; font-size:14px; margin-bottom:5px;">ชื่อผู้ใช้ (Login)</div>
