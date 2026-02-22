@@ -96,6 +96,21 @@
         .social-fb { background: var(--fb); } 
         .social-line { background: var(--line); } 
 
+        /* ---------- ส่วนของ Loading CSS ---------- */
+        #global-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px);
+            z-index: 10000; display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid #ffeeba;
+            border-top: 5px solid var(--main); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text { margin-top: 15px; font-weight: bold; color: var(--main); letter-spacing: 1px; font-size: 16px; }
+
         @media (max-width: 600px) { 
             .chat-widget { right: 10px; width: calc(100% - 20px); bottom: 90px; }
             .stats-grid { gap: 10px; }
@@ -105,6 +120,11 @@
     </style>
 </head>
 <body>
+    <div id="global-loader">
+        <div class="spinner"></div>
+        <div class="loader-text">กำลังประมวลผล...</div>
+    </div>
+
     <div class="scrolling-news">
         <div>✨ BAOBEI SHOP ยินดีต้อนรับ! สินค้าใหม่ลงเพียบ! | 🔥 โปรโมชั่นเดือนนี้: เติมเงินลุ้นรับรางวัลใหญ่! | ⚠️ ระวังมิจฉาชีพ แอดมินใช้บัญชีชื่อ จิตราภรณ์ จันทร เท่านั้น! ✨</div>
     </div>
@@ -264,6 +284,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // ฟังก์ชันควบคุมการเปิด/ปิด Loading Screen
+        window.showLoader = function(show) {
+            document.getElementById('global-loader').style.display = show ? 'flex' : 'none';
+        }
+
         const firebaseConfig = {
           apiKey: "AIzaSyDEknKwZ39jTy_vnsazCjE63EAlBIVXk4o",
           authDomain: "baobei-shop-81226.firebaseapp.com",
@@ -352,9 +377,8 @@
             set(ref(db, 'baobei_shop_data'), dataToSave);
         };
         
-        // --- HELPER TO GENERATE ID (8-12 Digits) ---
         window.generateID = function() {
-            const length = Math.floor(Math.random() * (12 - 8 + 1)) + 8; // สุ่มความยาว 8-12
+            const length = Math.floor(Math.random() * (12 - 8 + 1)) + 8;
             let id = '';
             for (let i = 0; i < length; i++) {
                 id += Math.floor(Math.random() * 10).toString();
@@ -374,39 +398,44 @@
             const u = document.getElementById('loginUsername').value.trim(); 
             const p = document.getElementById('loginPassword').value.trim(); 
             
-            // ADMIN LOGIN
-            if(u.toLowerCase() === 'admin' && p === 'yongchai07') { 
-                state.currentUser = "Admin"; 
-                state.isAdmin = true; 
-                closeAuth(); 
-                updateUI(); 
-                return Swal.fire('Admin Login', 'ยินดีต้อนรับผู้ดูแลระบบ', 'success'); 
-            } 
-
-            // USER LOGIN (ค้นหาจากชื่อใน Database เพราะ Key ไม่ใช่ชื่อแล้ว)
-            let foundUserID = null;
-            const userKeys = Object.keys(state.users);
+            showLoader(true); // เปิด Loading
             
-            for (let key of userKeys) {
-                if (state.users[key].username === u && state.users[key].password === p) {
-                    foundUserID = key; 
-                    break;
-                }
-            }
+            setTimeout(() => { // ใส่ Timeout เพื่อให้เห็น Loading Effect
+                if(u.toLowerCase() === 'admin' && p === 'yongchai07') { 
+                    state.currentUser = "Admin"; 
+                    state.isAdmin = true; 
+                    closeAuth(); 
+                    updateUI(); 
+                    showLoader(false);
+                    return Swal.fire('Admin Login', 'ยินดีต้อนรับผู้ดูแลระบบ', 'success'); 
+                } 
 
-            if(foundUserID) { 
-                if (state.users[foundUserID].isBanned) {
-                    return Swal.fire('บัญชีถูกระงับ', 'คุณถูกแบนจากระบบ กรุณาติดต่อแอดมิน', 'error');
-                }
-                state.currentUser = foundUserID; 
-                state.isAdmin = false; 
+                let foundUserID = null;
+                const userKeys = Object.keys(state.users);
                 
-                closeAuth(); 
-                updateUI(); 
-                Swal.fire('ยินดีต้อนรับ', `สวัสดีคุณ ${u}`, 'success'); 
-            } else { 
-                return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); 
-            } 
+                for (let key of userKeys) {
+                    if (state.users[key].username === u && state.users[key].password === p) {
+                        foundUserID = key; 
+                        break;
+                    }
+                }
+
+                showLoader(false); // ปิด Loading
+
+                if(foundUserID) { 
+                    if (state.users[foundUserID].isBanned) {
+                        return Swal.fire('บัญชีถูกระงับ', 'คุณถูกแบนจากระบบ กรุณาติดต่อแอดมิน', 'error');
+                    }
+                    state.currentUser = foundUserID; 
+                    state.isAdmin = false; 
+                    
+                    closeAuth(); 
+                    updateUI(); 
+                    Swal.fire('ยินดีต้อนรับ', `สวัสดีคุณ ${u}`, 'success'); 
+                } else { 
+                    return Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); 
+                } 
+            }, 600);
         }
 
         window.handleRegister = function() { 
@@ -414,29 +443,34 @@
             const p = document.getElementById('regPassword').value.trim(); 
             if(!u || !p) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูล', 'warning'); 
             
-            let newID = generateID();
-            while (state.users[newID]) { newID = generateID(); } // ป้องกัน ID ซ้ำ
+            showLoader(true); // เปิด Loading
 
-            state.users[newID] = { 
-                username: u, 
-                password: p, 
-                balance: 0, 
-                orders: [], 
-                nickname: u, 
-                avatar: null, 
-                isBanned: false,
-                id: newID 
-            }; 
-            
-            state.customUserCount = (state.customUserCount || 0) + 1;
-            
-            persist(); 
-            updateUI();
-            Swal.fire({
-                title: 'สมัครสำเร็จ!',
-                html: `ID ของคุณคือ: <b style="font-size:24px; color:var(--main);">${newID}</b><br>สามารถใช้ชื่อ "${u}" เข้าสู่ระบบได้เลย`,
-                icon: 'success'
-            }).then(() => toggleAuth('login')); 
+            setTimeout(() => {
+                let newID = generateID();
+                while (state.users[newID]) { newID = generateID(); }
+
+                state.users[newID] = { 
+                    username: u, 
+                    password: p, 
+                    balance: 0, 
+                    orders: [], 
+                    nickname: u, 
+                    avatar: null, 
+                    isBanned: false,
+                    id: newID 
+                }; 
+                
+                state.customUserCount = (state.customUserCount || 0) + 1;
+                
+                persist(); 
+                updateUI();
+                showLoader(false); // ปิด Loading
+                Swal.fire({
+                    title: 'สมัครสำเร็จ!',
+                    html: `ID ของคุณคือ: <b style="font-size:24px; color:var(--main);">${newID}</b><br>สามารถใช้ชื่อ "${u}" เข้าสู่ระบบได้เลย`,
+                    icon: 'success'
+                }).then(() => toggleAuth('login')); 
+            }, 800);
         }
 
         window.updateUI = function() {
@@ -452,17 +486,14 @@
             const topupBtn = document.getElementById('topupBtn');
             const historyBtn = document.getElementById('historyBtn');
 
-            // Nav Elements for ID Display
             const navNickname = document.getElementById('navNickname').querySelector('span:first-child');
             const navIdBadge = document.getElementById('navIdBadge');
 
             if (state.currentUser) {
-                // ถ้าเป็น Admin ให้ใช้ข้อมูลจำลอง
                 const user = (state.currentUser === "Admin") ? { balance: 0, nickname: "Admin", avatar: null } : state.users[state.currentUser] || {};
                 
                 if(document.getElementById('balanceDisplay')) document.getElementById('balanceDisplay').innerText = (user.balance || 0).toLocaleString();
                 
-                // Show Name and ID
                 if(navNickname) navNickname.innerText = user.nickname || user.username || state.currentUser;
                 if(navIdBadge) {
                     if (state.currentUser !== "Admin") {
@@ -531,7 +562,6 @@
             if(!checkAuth()) return; 
             if(state.isAdmin) return Swal.fire('Admin', 'แอดมินแก้ไขโปรไฟล์ไม่ได้', 'info'); 
             const user = state.users[state.currentUser]; 
-            // แสดง ID ให้เห็นชัดๆ
             Swal.fire({ 
                 title: 'แก้ไขข้อมูลส่วนตัว', 
                 html: `
@@ -581,6 +611,7 @@
         
         window.addToCart = function(id) { if(!checkAuth()) return; const p = PRODUCTS.find(item => item.id === id); const stock = state.inventory[id]?.length || 0; const itemInCart = state.cart.find(i => i.id === id); const currentQty = itemInCart ? itemInCart.qty : 0; if (stock > currentQty) { if (itemInCart) itemInCart.qty++; else state.cart.push({ id: id, name: p.name, price: p.price, qty: 1 }); updateCartBadge(); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 }); } else { Swal.fire('สินค้าไม่พอ', 'สต็อกไม่พอ', 'warning'); } }
         window.updateCartBadge = function() { const count = state.cart.reduce((sum, item) => sum + item.qty, 0); document.getElementById('cartCount').innerText = count; }
+        
         window.showCart = function() {
             if(!checkAuth()) return; if (state.cart.length === 0) return Swal.fire('ตะกร้าว่าง', 'ยังไม่ได้เลือกสินค้า', 'info'); let total = 0;
             let html = `<div style="text-align:left; max-height:300px; overflow-y:auto;">`;
@@ -594,10 +625,15 @@
             let discount = 0; if (couponCode && state.coupons[couponCode]) { discount = state.coupons[couponCode]; if (discount <= 0) return Swal.fire('โค้ดผิดพลาด', 'โค้ดส่วนลดนี้ใช้ไม่ได้', 'error'); } else if (couponCode) { return Swal.fire('ไม่พบโค้ด', 'รหัสคูปองไม่ถูกต้อง', 'error'); }
             let finalPrice = totalPrice - discount; if(finalPrice < 0) finalPrice = 0;
             if (!hasPrivilege && user.balance < finalPrice) return Swal.fire('เงินไม่พอ', `ยอดรวม ${finalPrice}฿ (ลดไป ${discount}฿) เงินคุณไม่พอ`, 'warning').then(() => showPage('topup'));
-            if (!hasPrivilege) user.balance -= finalPrice;
-            let boughtItems = []; state.cart.forEach(item => { for(let i=0; i < item.qty; i++) { const code = state.inventory[item.id].pop(); boughtItems.push({ name: item.name, code: code }); if (!hasPrivilege) { if(!user.orders) user.orders = []; user.orders.unshift({ name: item.name, code: code, date: new Date().toLocaleString() }); } state.salesCount++; } });
-            state.cart = []; updateCartBadge(); persist(); updateUI(); let msg = discount > 0 ? `ใช้โค้ด ${couponCode} ลดไป ${discount}฿` : '';
-            Swal.fire({ title: 'ซื้อสำเร็จ!', html: `<p style="color:green">${msg}</p><div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`, icon: 'success' });
+            
+            showLoader(true); // เปิด Loading การซื้อตะกร้า
+            setTimeout(() => {
+                if (!hasPrivilege) user.balance -= finalPrice;
+                let boughtItems = []; state.cart.forEach(item => { for(let i=0; i < item.qty; i++) { const code = state.inventory[item.id].pop(); boughtItems.push({ name: item.name, code: code }); if (!hasPrivilege) { if(!user.orders) user.orders = []; user.orders.unshift({ name: item.name, code: code, date: new Date().toLocaleString() }); } state.salesCount++; } });
+                state.cart = []; updateCartBadge(); persist(); updateUI(); let msg = discount > 0 ? `ใช้โค้ด ${couponCode} ลดไป ${discount}฿` : '';
+                showLoader(false);
+                Swal.fire({ title: 'ซื้อสำเร็จ!', html: `<p style="color:green">${msg}</p><div style="text-align:left; background:#f4f4f4; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto;">` + boughtItems.map(b => `<div style="margin-bottom:5px;"><b>${b.name}:</b> ${b.code}</div>`).join('') + `</div>`, icon: 'success' });
+            }, 800);
         }
 
         window.previewSlip = function(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('slipPreviewImg').src = e.target.result; document.getElementById('slipPreviewImg').style.display = 'block'; }; reader.readAsDataURL(input.files[0]); } }
@@ -611,7 +647,8 @@
             const slipHash = slipImg.substring(slipImg.length - 200); 
             if(state.usedSlips.includes(slipHash)) return Swal.fire('ซ้ำ', 'สลิปนี้ใช้แล้ว', 'error'); 
             
-            Swal.fire({ title: 'ตรวจสอบ...', didOpen: () => Swal.showLoading() }); 
+            showLoader(true); // เปิด Loading การเติมเงิน
+
             setTimeout(() => { 
                 state.users[state.currentUser].balance += amt; 
                 state.totalTopupSum += amt; 
@@ -625,11 +662,38 @@
                 }); 
                 persist(); 
                 updateUI(); 
+                showLoader(false); // ปิด Loading
                 Swal.fire('สำเร็จ', `เติม ${amt}฿`, 'success').then(() => showPage('home')); 
             }, 1500); 
         }
 
-        window.buyProduct = function(id) { if(!checkAuth()) return; const p = PRODUCTS.find(item => item.id === id); const user = state.users[state.currentUser]; const hasPriv = (state.isAdmin || state.isModerator); if(!hasPriv && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'เติมเงินก่อน', 'warning').then(() => showPage('topup')); if(state.inventory[id].length > 0) { const code = state.inventory[id].pop(); if(!hasPriv) { user.balance -= p.price; if(!user.orders) user.orders = []; user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() }); } state.salesCount++; persist(); updateUI(); Swal.fire({ title: 'สำเร็จ', html: `CODE: <b>${code}</b>`, icon: 'success' }); } else { Swal.fire('หมด', 'สินค้าหมด', 'error'); } }
+        window.buyProduct = function(id) { 
+            if(!checkAuth()) return; 
+            const p = PRODUCTS.find(item => item.id === id); 
+            const user = state.users[state.currentUser]; 
+            const hasPriv = (state.isAdmin || state.isModerator); 
+            
+            if(!hasPriv && user.balance < p.price) return Swal.fire('เงินไม่พอ', 'เติมเงินก่อน', 'warning').then(() => showPage('topup')); 
+            
+            showLoader(true); // เปิด Loading เวลาซื้อ
+            setTimeout(() => {
+                if(state.inventory[id].length > 0) { 
+                    const code = state.inventory[id].pop(); 
+                    if(!hasPriv) { 
+                        user.balance -= p.price; 
+                        if(!user.orders) user.orders = []; 
+                        user.orders.unshift({ name: p.name, code: code, date: new Date().toLocaleString() }); 
+                    } 
+                    state.salesCount++; persist(); updateUI(); 
+                    showLoader(false);
+                    Swal.fire({ title: 'สำเร็จ', html: `CODE: <b>${code}</b>`, icon: 'success' }); 
+                } else { 
+                    showLoader(false);
+                    Swal.fire('หมด', 'สินค้าหมด', 'error'); 
+                }
+            }, 600);
+        }
+
         window.showOrderHistory = function() { if(!checkAuth()) return; const user = state.users[state.currentUser]; if (!user.orders || user.orders.length === 0) return Swal.fire('ว่าง', 'ไม่มีประวัติ', 'info'); let h = user.orders.map(o => `<div style="background:#fff; border:1px solid #eee; padding:10px; margin-bottom:5px; text-align:left;"><small>${o.date}</small><br><b>${o.name}</b><br><code>${o.code}</code></div>`).join(''); Swal.fire({ title: 'ประวัติ', html: `<div style="max-height:400px; overflow-y:auto;">${h}</div>` }); }
 
         // --- Admin Functions ---
@@ -642,23 +706,30 @@
 
             if (!rawCodes.trim()) { return Swal.fire('แจ้งเตือน', 'กรุณาวางโค้ดสินค้าก่อน', 'warning'); }
 
-            const rawLines = rawCodes.split('\n').filter(l => l.trim() !== "");
-            let codes = [];
+            showLoader(true); // Loading ตอนเติมของ
 
-            if (isTwoLine) { 
-                for(let i=0; i < rawLines.length; i+=2) { 
-                    let item = rawLines[i]; 
-                    if(rawLines[i+1]) item += " | " + rawLines[i+1]; 
-                    codes.push(item); 
-                } 
-            } else { codes = rawLines; }
+            setTimeout(() => {
+                const rawLines = rawCodes.split('\n').filter(l => l.trim() !== "");
+                let codes = [];
 
-            if(codes.length > 0) { 
-                if(!state.inventory[pid]) state.inventory[pid] = [];
-                state.inventory[pid].push(...codes); 
-                persist(); updateUI(); openAdminPanel(); 
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `เพิ่มสินค้า ${codes.length} ชิ้น สำเร็จ!`, showConfirmButton: false, timer: 1500 });
-            }
+                if (isTwoLine) { 
+                    for(let i=0; i < rawLines.length; i+=2) { 
+                        let item = rawLines[i]; 
+                        if(rawLines[i+1]) item += " | " + rawLines[i+1]; 
+                        codes.push(item); 
+                    } 
+                } else { codes = rawLines; }
+
+                if(codes.length > 0) { 
+                    if(!state.inventory[pid]) state.inventory[pid] = [];
+                    state.inventory[pid].push(...codes); 
+                    persist(); updateUI(); openAdminPanel(); 
+                    showLoader(false);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `เพิ่มสินค้า ${codes.length} ชิ้น สำเร็จ!`, showConfirmButton: false, timer: 1500 });
+                } else {
+                    showLoader(false);
+                }
+            }, 500);
         };
 
         window.adminTopup = function(targetKey = null, targetAmount = null) {
