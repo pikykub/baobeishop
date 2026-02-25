@@ -11,7 +11,8 @@
     <style>
         :root { --main: #ff2d55; --bg: #fff5e6; --card-bg: #ffffff; --bank: #5d2e8e; --text: #2d3436; --line: #06C755; --danger: #dc3545; --bot: #007bff; --coupon: #ff9f43; --fb: #1877F2; }
         * { box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; margin: 0; background-color: var(--bg); background-repeat: no-repeat; background-position: center center; background-attachment: fixed; background-size: cover; color: var(--text); overflow-x: hidden; min-height: 100vh; }
+        body { font-family: 'Kanit', sans-serif; margin: 0; background-color: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+        #bg-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-repeat: no-repeat; background-position: center center; background-size: cover; z-index: -10; }
         .scrolling-news { background: #000; color: gold; padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2000; border-bottom: 2px solid gold; font-size: 14px; }
         .scrolling-news div { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
@@ -109,6 +110,7 @@
     </style>
 </head>
 <body>
+    <div id="bg-layer"></div>
     <div id="global-loader">
         <div class="spinner"></div>
         <div class="loader-text">กำลังประมวลผล...</div>
@@ -423,7 +425,7 @@
 
         window.updateUI = function() {
             if(state.siteImages) {
-                document.body.style.backgroundImage = `url('${state.siteImages.background}')`;
+                if(document.getElementById('bg-layer')) document.getElementById('bg-layer').style.backgroundImage = `url('${state.siteImages.background}')`;
                 if(document.getElementById('mainBannerImg')) document.getElementById('mainBannerImg').src = state.siteImages.banner;
                 if(document.getElementById('qrCodeImg')) document.getElementById('qrCodeImg').src = state.siteImages.qr;
                 window.ADMIN_AVATAR_URL = state.siteImages.adminAvatar;
@@ -665,7 +667,9 @@
         window.sendChat = function(text = null, image = null) { if(!checkAuth()) return; if(!text) text = document.getElementById('chatInput').value.trim(); if(!text && !image) return; const msg = { sender: state.currentUser, text: text, image: image, time: Date.now() }; if(state.chatMode === 'global') { if(!state.globalMessages) state.globalMessages = []; state.globalMessages.push(msg); if(state.globalMessages.length > 50) state.globalMessages.shift(); } else { let target = state.currentUser; if(state.isAdmin || state.isModerator) target = state.activePrivateUser; if(!target) return Swal.fire('Error', 'เลือกคู่สนทนาก่อน', 'error'); if(!state.privateMessages[target]) state.privateMessages[target] = []; state.privateMessages[target].push(msg); } document.getElementById('chatInput').value = ''; persist(); renderChat(); }
         window.initBotSystem = function() { setInterval(() => { if(!state.botConfig.active || !state.globalMessages) return; const now = Date.now(); const diff = (now - state.botConfig.lastRun) / 1000; if(diff >= state.botConfig.interval) { const botMsg = { sender: 'Admin Bot', text: state.botConfig.text, image: state.botConfig.image, time: now }; state.globalMessages.push(botMsg); if(state.globalMessages.length > 50) state.globalMessages.shift(); state.botConfig.lastRun = now; persist(); if(state.chatMode === 'global') renderChat(); } }, 1000); }
         
-        const canvas = document.getElementById('snowCanvas'); const ctx = canvas.getContext('2d'); let width, height, flakes = []; function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); } function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); } window.addEventListener('resize', initSnow); initSnow(); drawSnow(); 
+        const canvas = document.getElementById('snowCanvas'); const ctx = canvas.getContext('2d'); let width, height, flakes = []; function initSnow() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; flakes = Array.from({length: 80}, () => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 3 + 1, d: Math.random() * 1 + 0.5 })); } function drawSnow() { ctx.clearRect(0, 0, width, height); ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath(); flakes.forEach(f => { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); }); ctx.fill(); flakes.forEach(f => { f.y += f.d; if (f.y > height) f.y = -10; }); requestAnimationFrame(drawSnow); } 
+        let resizeTimer; window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(initSnow, 200); }); 
+        initSnow(); drawSnow(); 
         
         updateUI(); 
         initBotSystem();
