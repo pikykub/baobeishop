@@ -668,5 +668,63 @@
         updateUI(); 
         initBotSystem();
     </script>
+    <script type="module">
+    // 1. นำเข้าโมดูล Firebase จาก CDN (ไม่ต้องติดตั้งเพิ่ม)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // 2. รหัสเชื่อมต่อ Firebase ของคุณ (ม่อนใส่รหัสที่คุณก๊อปมาให้แล้วครับ)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBORnXLQdZnETh9AMFMUx50FlLylKCVc2w",
+      authDomain: "web-rental-system-d8894.firebaseapp.com",
+      projectId: "web-rental-system-d8894",
+      storageBucket: "web-rental-system-d8894.firebasestorage.app",
+      messagingSenderId: "389385259939",
+      appId: "1:389385259939:web:5a8de35f4a06b906e66816"
+    };
+
+    // เริ่มทำงาน Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 3. กำหนดรหัสร้านค้า (สำหรับเว็บนี้คือ shop001 ตามที่คุณสร้างในฐานข้อมูล)
+    const CURRENT_SHOP_ID = "shop001"; 
+
+    // 4. ฟังก์ชันตรวจสอบสถานะ
+    async function checkShopStatus() {
+        try {
+            const shopRef = doc(db, "shops", CURRENT_SHOP_ID);
+            const shopSnap = await getDoc(shopRef);
+
+            if (shopSnap.exists()) {
+                const shopData = shopSnap.data();
+                
+                // ถ้าในฐานข้อมูลสถานะไม่ใช่ 'active' (เช่นเป็น 'suspended')
+                if (shopData.status !== "active") {
+                    // ทำการ "ล้างหน้าเว็บ" และแสดงข้อความบล็อกทันที
+                    document.body.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; color: white; font-family: 'Kanit', sans-serif; margin: 0; text-align: center;">
+                            <div style="padding: 20px; border: 2px solid #ff4d4d; border-radius: 15px; background: #2d2d2d; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                                <h1 style="font-size: 50px; margin-bottom: 10px;">⚠️</h1>
+                                <h2 style="color: #ff4d4d; margin-bottom: 15px;">ขออภัย เว็บไซต์นี้ถูกระงับการใช้งาน</h2>
+                                <p style="font-size: 18px; color: #ccc;">กรุณาติดต่อเจ้าของระบบเพื่อดำเนินการต่ออายุ</p>
+                                <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
+                                <p style="font-size: 14px; color: #888;">รหัสอ้างอิง: ${CURRENT_SHOP_ID}</p>
+                            </div>
+                        </div>
+                    `;
+                    // ป้องกันการเลื่อนหน้าจอ
+                    document.body.style.overflow = "hidden";
+                }
+            }
+        } catch (error) {
+            console.error("เกิดข้อผิดพลาดในการเชื่อมต่อระบบตรวจสอบ:", error);
+        }
+    }
+
+    // สั่งให้ตรวจสอบทันทีที่หน้าเว็บโหลด
+    checkShopStatus();
+</script>
+
 </body>
 </html>
